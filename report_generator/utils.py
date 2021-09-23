@@ -61,8 +61,8 @@ def draw_board_with_pins(board: Board, file_name: str):
     fig_size = width / float(dpi), height / float(dpi)
     fig = plt.figure(figsize=fig_size)
     ax = fig.add_axes([0, 0, 1, 1])
-    ax.axis('off')
-    ax.imshow(board.image, interpolation='nearest')
+    ax.axis("off")
+    ax.imshow(board.image, interpolation="nearest")
     marker_size = width // 35
     for pin_type, x_and_y in pins_xy.items():
         ax.scatter(*x_and_y, s=marker_size, c=PIN_COLORS[pin_type], zorder=1)
