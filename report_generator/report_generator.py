@@ -103,7 +103,8 @@ class ReportGenerator(QThread):
         """
 
         logger.info("Drawing of IV-curves was started")
-        logger.info("Drawing of IV-curves was finished")
+        ut.draw_ivc_for_pins(self._board, self._static_dir_name)
+        logger.info("Images of IV-curves were saved to directory '%s'", self._static_dir_name)
 
     def _draw_pins(self):
         """
@@ -111,7 +112,8 @@ class ReportGenerator(QThread):
         """
 
         logger.info("Drawing of pins was started")
-        logger.info("Drawing of pins was finished")
+        ut.draw_pins(self._board, self._static_dir_name)
+        logger.info("Images of pins were saved to directory '%s'", self._static_dir_name)
 
     @staticmethod
     def _get_default_dir_name() -> str:
