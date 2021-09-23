@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Full report - ${pcb_name}</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="static/style.css">
+	<script type="text/javascript">
+					function byId(e){return document.getElementById(e);}
+						var flag = false;
+					function coordresize()
+					{
+						if(!flag)
+						{
+						flag = true; 
+						var myImg = byId('board');
+						var realWidth = myImg.naturalWidth;
+						var realHeight = myImg.naturalHeight;
+						var newheight = realHeight * 800 / realWidth;
+						byId('board').width = "800";
+						byId('board').height = newheight;
+						var elements = document.getElementsByTagName('area');
+						  for (var i = 0; i < elements.length; i++) 
+						  {
+								var element = elements[i];			
+								var coordStr = element.getAttribute('coords');
+								var mCoords = coordStr.split(',');
+								var top, left;
+								left = mCoords[0];
+								top = mCoords[1];
+								left = (left * 800 / realWidth);
+								top = top * 800 /realWidth;
+								mCoords[0] = left;
+								mCoords[1] = top;
+								coordStr = mCoords[0] + ',' + mCoords[1] + ',' + mCoords[2];
+								element.setAttribute('coords', coordStr);
+						}
+					   }
+					}
+				</script>
+</head>
+<body onload = 'coordresize()'>
+ <div id="wrapper">
+  <h1>Full report</h1>
+  % if not is_sample:
+  <h2>Sample: ${reference_board}</h2>
+  % endif
+  <h2>${pcb_name}</h2>
+    <table id="general_info" cellspacing="0" cellpadding="0">
+        <thead>
+          <tr>
+            <th colspan="2"><h2>General information</h2></th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+            % if is_sample:
+                <td>
+            % else:
+                <td style="vertical-align: top;">
+            % endif
+                <span>Test system: EyePoint P10</span><br>
+                <span>Version: ${gen_info["version"]}</span><br>
+                <span>Date: ${gen_info["date"]}</span><br>
+                <span>Computer: ${gen_info["computer"]}</span><br>
+                <span>Operating system: ${gen_info["operating_system"]}</span><br>
+                <span>The duration of the test: ${gen_info["test_time"]}</span><br>
+                <span>All components: ${gen_info["els_fail"].split("/")[1]}</span><br>
+                <span>All test points: ${gen_info["test_points_fail"].split("/")[1]}</span><br>
+                <span>HTML: v4.01 </span><br>
+                <span><a href="full_img.html" target="_blank">image inspect </span><br>
+            </td>
+
+            <td>
+                <img src="static/hist.png" width="400px">
+            </td>
+
+        </tr>
+        <tr>
+            <th colspan="2">
+				% if len(tp)>0:
+                    % if is_sample:
+                        <h2>Test points map, axis in mm:</h2>
+                    % else:
+                        <h2>Faults map, axis in mm:</h2>
+                    % endif
+			    % else:
+					<h2>No faulty components</h2>
+				% endif    
+				<img id = 'board' src="static/board.png" usemap="#map">
+					<p><map name="map">
+					% for name, manual_name, el_i, p_i, r, c, score in tp:	
+					<area shape="circle" coords="${c},${r},6" href="#point${c}${r}" alt="">
+					%endfor
+					</map></p>
+            </th>
+        </tr>
+        </tbody>
+    </table>
+  
+  % if len(tp)>0:
+  <table id="report" cellspacing="0" cellpadding="0">
+    <thead>
+      <tr>
+        <th class="element-name"><span>Name</span></th>
+        <th class="element-image"><span>Tested component</span></th>
+        % if is_sample:
+          <th class="element-plot"><span>IVC</span></th>
+        % else:
+          <th class="element-plot"><span>IVC (reference is blue)</span></th>
+        % endif
+      </tr>
+    </thead>
+    <tbody>
+	% for name, manual_name, el_i, p_i, r, c, score in tp:
+		<tr>
+		% if name.split("_")[0] == "UserElement":
+            <td class="lalign"><span>${manual_name} (pin ${p_i + 1})</span> <br>
+        % else:
+		    <td class="lalign"><span>${name} (pin ${p_i + 1})</span> <br>
+        %endif
+        % if not is_sample:
+		    <span>Score = ${'%.4f' % score}</span> <br>
+        % endif
+            <a class="anchor" id="top" name="point${c}${r}"></a>
+		    <span>X = ${'%.2f' % (c*pix_per_mm) } mm, Y = ${'%.2f' % (r*pix_per_mm)} mm</span><br>
+            <span>element index: ${el_i}<br>pin index: ${p_i}</span>
+		</td>
+		<td>
+			<a class="img_pin">
+                <img src="static/${'%s_%s_%s.png'%(name, el_i, p_i)}" height="${patch_size}"/>
+                <span style="position:absolute; left:-500px;">
+                    <img src="static/board_clean.png" width=300px" height="${gen_info["height"]*(300/gen_info["width"])}px" style="position:fixed; top:50px; left:50px;">
+                        <div class="pin" style="position:fixed; top:${50 + r*(300/gen_info["width"])}px;
+                         left:${50 + c*(300/gen_info["width"])-3}px;" ></div>
+
+                    </img>
+                </span>
+            </a>
+		</td>
+		<td>
+			<img src="static/${'plot_%s_%s_%s.png'%(name, el_i, p_i)}" height="${patch_size}">
+		</td>
+		</tr>
+	% endfor
+    </tbody>
+  </table>
+  <!-- % else: -->
+  <!--  <h2>No faulty elements</h2> -->
+  % endif
+ </div> 
+</body>
+</html>

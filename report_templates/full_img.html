@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script>
+		/**
+		 * Function hides or shows image of IV-curve for pin.
+		 * @param pin: area on big image of board that represents pin;
+		 * @param show: if false image is hidden.
+		 */
+		function hide_or_show_img(pin, show) {
+			var coords = pin.getAttribute("coords");
+			var pin_iv_img = document.getElementById("img" + coords);
+			if (show)
+				pin_iv_img.style.display = "block";
+			else {
+				pin_iv_img.style.display = "none";
+				pin_iv_img.style.top = "0px"
+			}
+		}
+
+		window.onresize = function () {
+			var imgs = document.getElementsByTagName("img");
+			for (var i = 1; i < imgs.length; i++) {
+				var pin_iv_img = imgs[i];
+				pin_iv_img.style.width = "20%";
+			}
+		}
+
+		/**
+		 * Function changes position of image of IV-curve for pin.
+		 * @param pin_iv_img: image of IV-curve for pin.
+		 */
+		function change_position(pin_iv_img) {
+			pin_iv_img.style.top = "60%";
+		}
+
+	</script>
+	<title>Изображение</title>
+</head>
+
+<body>
+	<canvas id="myCanvas"></canvas>
+	<center><img id="base" src="static/board.png" usemap="#map"></center>
+	<p><map name="map">
+			% for name, element_index, pin_index, x, y in pins:
+			<area onmouseover="hide_or_show_img(this, true);" onmouseout="hide_or_show_img(this, false);" shape="circle"
+				coords="${x-3},${y},6" href="#point${x}${y}" alt="">
+			%endfor
+		</map></p>
+	% for name, element_index, pin_index, x, y in pins:
+	<img id="img${x-3},${y},6" onmouseover="change_position(this);"
+		style="position: fixed; top: 0px; left: 0px; width:20%; display: none;"
+		src="static/${'%s_%s_%s_iv.png'%(name, element_index, pin_index)}" />
+	%endfor
+</body>
+
+</html>

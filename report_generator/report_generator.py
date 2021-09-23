@@ -17,6 +17,8 @@ _BOARD_IMAGE = "board_clear.png"
 _BOARD_WITH_PINS_IMAGE = "board.png"
 _DEFAULT_DIR_NAME = "board_report"
 _STATIC_DIR_NAME = "static"
+_TEMPLATES_DIR = "report_templates"
+_TEMPLATE_FILE_WITH_FULL_IMAGE = "full_img.html"
 
 
 class ConfigAttributes(Enum):
@@ -77,6 +79,19 @@ class ReportGenerator(QThread):
         self._static_dir_name = os.path.join(self._dir_name, _STATIC_DIR_NAME)
         create_dir(self._static_dir_name)
 
+    def _create_report_with_full_image(self, pins_info: List):
+        """
+        Method creates report with one big image of board.
+        :param pins_info: list with information about pins.
+        """
+
+        logger.info("Creation of report with full image was started")
+        dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_FULL_IMAGE)
+        template_file_name = os.path.join(dir_name, _TEMPLATES_DIR, _TEMPLATE_FILE_WITH_FULL_IMAGE)
+        ut.create_report(template_file_name, report_file_name, pins=pins_info)
+        logger.info("Report with full image was saved to '%s'", report_file_name)
+
     def _draw_board(self):
         """
         Method draws and saves board image.
@@ -125,6 +140,18 @@ class ReportGenerator(QThread):
         parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         return os.path.join(parent_dir, _DEFAULT_DIR_NAME)
 
+    def _get_info_about_pins(self) -> List:
+        """
+        Method returns list with information about pins.
+        :return: list with information about pins.
+        """
+
+        pins_info = []
+        for element_index, element in enumerate(self._board.elements):
+            for pin_index, pin in enumerate(element.pins):
+                pins_info.append((element.name, element_index, pin_index, pin.x, pin.y))
+        return pins_info
+
     def _read_config(self, config: Dict):
         """
         Method reads dictionary with full information about required report.
@@ -157,6 +184,8 @@ class ReportGenerator(QThread):
         for requirement, method in methods.items():
             if requirement in self._requirements:
                 method()
+        pins_info = self._get_info_about_pins()
+        self._create_report_with_full_image(pins_info)
 
     @classmethod
     def get_version(cls) -> str:

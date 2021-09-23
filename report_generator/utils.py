@@ -8,6 +8,7 @@ from enum import Enum
 from typing import List, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
+from mako.template import Template
 from PIL.Image import Image
 from PyQt5.QtGui import QColor
 from epcore.elements import Board
@@ -97,6 +98,19 @@ def _get_pin_type(pin: "Pin") -> PinTypes:
     return pin_type
 
 
+def create_report(template_file: str, report_file: str, **kwargs):
+    """
+    Function creates report.
+    :param template_file: name of template file for report;
+    :param report_file: name of file where report should be saved;
+    :param kwargs: arguments for template.
+    """
+
+    report = Template(filename=template_file, input_encoding="utf-8")
+    with open(report_file, "w", encoding="utf-8") as file:
+        file.write(report.render(**kwargs))
+
+
 def draw_board_with_pins(board: Board, file_name: str):
     """
     Function draws and saves image of board with pins. Function was borrowed
@@ -154,10 +168,10 @@ def draw_ivc_for_pins(board: Board, dir_name: str):
                 curve.set_curve_params(QColor(PIN_COLORS[pin_type]))
             else:
                 curve.clear_curve()
-            file_name = f"{element.name}-{element_index}-{pin_index}-iv.png"
+            file_name = f"{element.name}_{element_index}_{pin_index}_iv.png"
             path = os.path.join(dir_name, file_name)
             viewer.plot.grab().save(path)
-            logger.info("IV-curve of pin '%s-%s-%s' was saved to '%s'", element.name, element_index,
+            logger.info("IV-curve of pin '%s_%s_%s' was saved to '%s'", element.name, element_index,
                         pin_index, file_name)
 
 
@@ -178,8 +192,8 @@ def draw_pins(board: Board, dir_name: str):
             pin_image = board.image.crop((left, upper, right, lower))
             pin_color = PIN_COLORS[pin_type]
             fig = _draw_circle(pin_image, ([pin.x - left], [pin.y - upper]), pin_color)
-            file_name = f"{element.name}-{element_index}-{pin_index}-pin.png"
+            file_name = f"{element.name}_{element_index}_{pin_index}_pin.png"
             path = os.path.join(dir_name, file_name)
             fig.savefig(path)
-            logger.info("Image of pin '%s-%s-%s' was saved to '%s'", element.name, element_index,
+            logger.info("Image of pin '%s_%s_%s' was saved to '%s'", element.name, element_index,
                         pin_index, file_name)
