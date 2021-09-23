@@ -92,8 +92,9 @@ class ReportGenerator(QThread):
         Method draws and saves image of board with pins.
         """
 
-        logger.info("Board with pins drawing was started")
+        logger.info("Drawing of board with pins was started")
         file_name = os.path.join(self._static_dir_name, _BOARD_WITH_PINS_IMAGE)
+        ut.draw_board_with_pins(self._board, file_name)
         logger.info("Image of board with pins was saved to '%s'", file_name)
 
     def _draw_ivc(self):
@@ -189,4 +190,4 @@ class ReportGenerator(QThread):
         try:
             self._run()
         except Exception as exc:
-            logger.error("", exc)
+            logger.error("Error occurred while generating report: %s", exc)
