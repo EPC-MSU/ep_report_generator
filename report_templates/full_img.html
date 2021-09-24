@@ -4,6 +4,14 @@
 <head>
 	<script>
 		/**
+		 * Function changes position of image of IV-curve for pin.
+		 * @param pin_iv_img: image of IV-curve for pin.
+		 */
+		function change_position(pin_iv_img) {
+			pin_iv_img.style.top = "60%";
+		}
+
+		/**
 		 * Function hides or shows image of IV-curve for pin.
 		 * @param pin: area on big image of board that represents pin;
 		 * @param show: if false image is hidden.
@@ -27,32 +35,23 @@
 			}
 		}
 
-		/**
-		 * Function changes position of image of IV-curve for pin.
-		 * @param pin_iv_img: image of IV-curve for pin.
-		 */
-		function change_position(pin_iv_img) {
-			pin_iv_img.style.top = "60%";
-		}
-
 	</script>
 	<title>Изображение</title>
 </head>
 
 <body>
-	<canvas id="myCanvas"></canvas>
-	<center><img id="base" src="static/board.png" usemap="#map"></center>
+	<center><img id="base" src="static/img/board.png" usemap="#map"></center>
 	<p><map name="map">
 			% for name, element_index, pin_index, x, y in pins:
 			<area onmouseover="hide_or_show_img(this, true);" onmouseout="hide_or_show_img(this, false);" shape="circle"
-				coords="${x-3},${y},6" href="#point${x}${y}" alt="">
-			%endfor
+				coords="${x},${y},10" href="#point${x}${y}" alt="">
+			% endfor
 		</map></p>
 	% for name, element_index, pin_index, x, y in pins:
-	<img id="img${x-3},${y},6" onmouseover="change_position(this);"
-		style="position: fixed; top: 0px; left: 0px; width:20%; display: none;"
-		src="static/${'%s_%s_%s_iv.png'%(name, element_index, pin_index)}" />
-	%endfor
+	<img id="img${x},${y},10" onmouseover="change_position(this);"
+		style="position: fixed; top: 0px; left: 0px; width: 20%; display: none;"
+		src="static/img/${'%s_%s_%s_iv.png'%(name, element_index, pin_index)}" />
+	% endfor
 </body>
 
 </html>

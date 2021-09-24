@@ -5,7 +5,7 @@ File with class to generate report.
 import logging
 import os
 from enum import Enum
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from PyQt5.QtCore import QThread
 from epcore.elements import Board
 from epcore.filemanager import load_board_from_ufiv
@@ -15,10 +15,13 @@ from .version import Version
 logger = logging.getLogger(__name__)
 _BOARD_IMAGE = "board_clear.png"
 _BOARD_WITH_PINS_IMAGE = "board.png"
-_DEFAULT_DIR_NAME = "board_report"
+_DEFAULT_REPORT_DIR_NAME = "board_report"
+_IMG_DIR_NAME = "img"
 _STATIC_DIR_NAME = "static"
-_TEMPLATES_DIR = "report_templates"
+_STYLES_DIR_NAME = "styles"
 _TEMPLATE_FILE_WITH_FULL_IMAGE = "full_img.html"
+_TEMPLATE_FILE_WITH_REPORT = "report.html"
+_TEMPLATES_DIR_NAME = "report_templates"
 
 
 class ConfigAttributes(Enum):
@@ -75,11 +78,14 @@ class ReportGenerator(QThread):
             if not os.path.exists(path):
                 os.makedirs(path)
 
-        create_dir(self._dir_name)
         self._static_dir_name = os.path.join(self._dir_name, _STATIC_DIR_NAME)
-        create_dir(self._static_dir_name)
+        img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
+        styles_dir_path = os.path.join(self._static_dir_name, _STYLES_DIR_NAME)
+        dir_paths = self._dir_name, self._static_dir_name, img_dir_path, styles_dir_path
+        for dir_path in dir_paths:
+            create_dir(dir_path)
 
-    def _create_report_with_full_image(self, pins_info: List):
+    def _create_report_with_full_image(self, pins_info: List[Tuple]):
         """
         Method creates report with one big image of board.
         :param pins_info: list with information about pins.
@@ -88,9 +94,30 @@ class ReportGenerator(QThread):
         logger.info("Creation of report with full image was started")
         dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_FULL_IMAGE)
-        template_file_name = os.path.join(dir_name, _TEMPLATES_DIR, _TEMPLATE_FILE_WITH_FULL_IMAGE)
+        template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME,
+                                          _TEMPLATE_FILE_WITH_FULL_IMAGE)
         ut.create_report(template_file_name, report_file_name, pins=pins_info)
         logger.info("Report with full image was saved to '%s'", report_file_name)
+
+    def _create_report(self, pins_info: List[Tuple]):
+        """
+        Method creates report.
+        :param pins_info: list with information about pins.
+        """
+
+        logger.info("Creation of report was started")
+        dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_REPORT)
+        template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_REPORT)
+        data = {"pins": pins_info,
+                "pcb_name": self._board.pcb.pcb_name,
+                "mm_per_px": self._board.pcb.image_resolution_ppcm,
+                "elements_number": 3,
+                "pins_number": len(pins_info),
+                "board_img_width": self._board.image.width,
+                "pin_img_size": 100}
+        ut.create_report(template_file_name, report_file_name, **data)
+        logger.info("Report was saved to '%s'", report_file_name)
 
     def _draw_board(self):
         """
@@ -98,7 +125,7 @@ class ReportGenerator(QThread):
         """
 
         logger.info("Board drawing was started")
-        file_name = os.path.join(self._static_dir_name, _BOARD_IMAGE)
+        file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, _BOARD_IMAGE)
         self._board.image.save(file_name)
         logger.info("Board image was saved to '%s'", file_name)
 
@@ -108,7 +135,7 @@ class ReportGenerator(QThread):
         """
 
         logger.info("Drawing of board with pins was started")
-        file_name = os.path.join(self._static_dir_name, _BOARD_WITH_PINS_IMAGE)
+        file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, _BOARD_WITH_PINS_IMAGE)
         ut.draw_board_with_pins(self._board, file_name)
         logger.info("Image of board with pins was saved to '%s'", file_name)
 
@@ -118,8 +145,9 @@ class ReportGenerator(QThread):
         """
 
         logger.info("Drawing of IV-curves was started")
-        ut.draw_ivc_for_pins(self._board, self._static_dir_name)
-        logger.info("Images of IV-curves were saved to directory '%s'", self._static_dir_name)
+        img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
+        ut.draw_ivc_for_pins(self._board, img_dir_path)
+        logger.info("Images of IV-curves were saved to directory '%s'", img_dir_path)
 
     def _draw_pins(self):
         """
@@ -127,8 +155,9 @@ class ReportGenerator(QThread):
         """
 
         logger.info("Drawing of pins was started")
-        ut.draw_pins(self._board, self._static_dir_name)
-        logger.info("Images of pins were saved to directory '%s'", self._static_dir_name)
+        img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
+        ut.draw_pins(self._board, img_dir_path)
+        logger.info("Images of pins were saved to directory '%s'", img_dir_path)
 
     @staticmethod
     def _get_default_dir_name() -> str:
@@ -138,9 +167,9 @@ class ReportGenerator(QThread):
         """
 
         parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        return os.path.join(parent_dir, _DEFAULT_DIR_NAME)
+        return os.path.join(parent_dir, _DEFAULT_REPORT_DIR_NAME)
 
-    def _get_info_about_pins(self) -> List:
+    def _get_info_about_pins(self) -> List[Tuple]:
         """
         Method returns list with information about pins.
         :return: list with information about pins.
@@ -186,6 +215,7 @@ class ReportGenerator(QThread):
                 method()
         pins_info = self._get_info_about_pins()
         self._create_report_with_full_image(pins_info)
+        self._create_report(pins_info)
 
     @classmethod
     def get_version(cls) -> str:
