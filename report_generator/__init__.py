@@ -3,10 +3,10 @@ Package to generate report for Board object from epcore library.
 """
 
 import logging
-from .report_generator import ConfigAttributes, ReportGenerator, RequirementTypes
+from .report_generator import ConfigAttributes, ObjectsForReport, ReportGenerator, RequirementTypes
 from .version import Version
 
-__all__ = ["ConfigAttributes", "ReportGenerator", "RequirementTypes", "Version"]
+__all__ = ["ConfigAttributes", "ObjectsForReport", "ReportGenerator", "RequirementTypes", "Version"]
 
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(message)s")
 handler = logging.StreamHandler()

@@ -35,33 +35,27 @@
 <body onload="change_size()">
     <div id="wrapper">
         <h1>Полный отчет</h1>
-        <h2>${pcb_name}</h2>
         <table id="general_info" cellspacing="0" cellpadding="0">
-            <thead>
-                <tr>
+            <tbody>
+				<tr>
                     <th colspan="2">
                         <h2>Общая информация</h2>
                     </th>
                 </tr>
-            </thead>
-            <tbody>
                 <tr>
                     <td style="vertical-align: top;">
-                        <span>Всего компонентов: ${elements_number}</span><br>
-                        <span>Всего точек тестирования: ${pins_number}</span><br>
+						<span>Название платы: ${pcb_name}</span><br>
+                        <span>Количество элементов: ${elements_number}</span><br>
+                        <span>Количество точек тестирования: ${pins_number}</span><br>
                         <span><a href="full_img.html" target="_blank">Исследовать по изображению</span><br>
                     </td>
                 </tr>
                 <tr>
                     <th colspan="2">
-                        % if len(pins) > 0:
                         <h2>Карта точек тестирования</h2>
-                        % else:
-                        <h2>Точек тестирования нет</h2>
-                        % endif
                         <img id="board" src="static/img/board.png" usemap="#map">
                         <p><map name="map">
-                            % for name, element_index, pin_index, x, y in pins:
+                            % for name, element_index, pin_index, x, y, _ in pins:
                             <area shape="circle" coords="${x},${y},10" href="#point${x}${y}" alt="">
                             % endfor
                             </map>
@@ -81,20 +75,35 @@
                 </tr>
             </thead>
             <tbody>
-                % for name, element_index, pin_index, x, y in pins:
+				<%
+					prev_element_index = None
+				%>
+                % for name, element_index, pin_index, x, y, _ in pins:
+				% if element_index != prev_element_index:
+				<%
+					prev_element_index = element_index
+				%>
+				<tr>
+					<td colspan="3">
+						<h2>${"#{} - {}".format(element_index + 1, name)}</h2>
+					</td>
+				</tr>
+				% endif
                 <tr>
-                    <td class="lalign"><span>${name} (pin ${pin_index + 1})</span><br>
+                    <td class="align_left"><span>${name} (pin ${pin_index + 1})</span><br>
                         <a class="anchor" id="top" name="point${x}${y}"></a>
                         % if mm_per_px:
-                        <span>X = ${"%.2f".format(x * mm_per_px) } мм, Y = ${"%.2f".format(y * mm_per_px)} мм</span>
+                        <span>X = ${"{:.2f}".format(x * mm_per_px) } мм</span><br>
+						<span>Y = ${"{:.2f}".format(y * mm_per_px)} мм</span>
                         % else:
-                        <span>X = ${x} пк, Y = ${y} пк</span>
+                        <span>X = ${"{:.2f}".format(x)} пк</span><br>
+						<span>Y = ${"{:.2f}".format(y)} пк</span>
                         % endif
                     </td>
                     <td>
                         <a class="img_pin">
                             <img src="static/img/${'%s_%s_%s_pin.png'%(name, element_index, pin_index)}" height="${pin_img_size}" />
-                            <span style="position:absolute; left:-500px;">
+                            <span>
                                 <img src="static/img/board.png" width="500px" style="position:relative">
                                 <div class="pin" style="position:absolute; top:${y * (500 / board_img_width)}px; left:${x * (500 / board_img_width)}px;">
                                 </div>

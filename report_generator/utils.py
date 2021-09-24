@@ -80,18 +80,18 @@ def _get_pin_borders(center: float, board_width: int) -> Tuple[float, float]:
     return left, right
 
 
-def _get_pin_type(pin: "Pin") -> PinTypes:
+def _get_pin_type(measurements: List["Measurement"]) -> PinTypes:
     """
     Function determines type of pin.
-    :param pin: pin.
+    :param measurements: list of measurements in pin.
     :return: type of pin.
     """
 
     pin_type = PinTypes.EMPTY
-    if len(pin.measurements):
-        if pin.measurements[0].is_dynamic:
+    if len(measurements):
+        if measurements[0].is_dynamic:
             pin_type = PinTypes.DYNAMIC
-        elif pin.measurements[0].is_reference:
+        elif measurements[0].is_reference:
             pin_type = PinTypes.REFERENCE
         else:
             pin_type = PinTypes.NORMAL
@@ -111,11 +111,12 @@ def create_report(template_file: str, report_file: str, **kwargs):
         file.write(report.render(**kwargs))
 
 
-def draw_board_with_pins(board: Board, file_name: str):
+def draw_board_with_pins(image: Image, pins_info: List, file_name: str):
     """
     Function draws and saves image of board with pins. Function was borrowed
     from https://stackoverflow.com/questions/34768717.
-    :param board: board;
+    :param image: board image;
+    :param pins_info: list with information about pins required for report;
     :param file_name: name of file where image should be saved.
     """
 
@@ -124,20 +125,20 @@ def draw_board_with_pins(board: Board, file_name: str):
                PinTypes.HIGH_SCORE: [[], []],
                PinTypes.NORMAL: [[], []],
                PinTypes.REFERENCE: [[], []]}
-    for element in board.elements:
-        for pin in element.pins:
-            pin_type = _get_pin_type(pin)
-            pin_xy = pins_xy[pin_type]
-            pin_xy[0].append(pin.x)
-            pin_xy[1].append(pin.y)
+    for pin_info in pins_info:
+        _, _, _, x, y, measurements = pin_info
+        pin_type = _get_pin_type(measurements)
+        pin_xy = pins_xy[pin_type]
+        pin_xy[0].append(x)
+        pin_xy[1].append(y)
     dpi = plt.rcParams["figure.dpi"]
-    height = board.image.height
-    width = board.image.width
+    height = image.height
+    width = image.width
     fig_size = width / float(dpi), height / float(dpi)
     fig = plt.figure(figsize=fig_size)
     ax = fig.add_axes([0, 0, 1, 1])
     ax.axis("off")
-    ax.imshow(board.image, interpolation="nearest")
+    ax.imshow(image, interpolation="nearest")
     marker_size = width // 35
     for pin_type, x_and_y in pins_xy.items():
         ax.scatter(*x_and_y, s=marker_size, c=PIN_COLORS[pin_type], zorder=1)
@@ -145,55 +146,56 @@ def draw_board_with_pins(board: Board, file_name: str):
     fig.savefig(file_name, dpi=dpi, transparent=True)
 
 
-def draw_ivc_for_pins(board: Board, dir_name: str):
+def draw_ivc_for_pins(pins_info: List, dir_name: str):
     """
     Function draws and saves IV-curves for pins of board.
-    :param board: board;
+    :param pins_info: list with information about pins required for report;
     :param dir_name: name of directory where images should be saved.
     """
 
     viewer = Viewer()
     viewer.resize(*IV_IMAGE_SIZE)
     curve = viewer.plot.add_curve()
-    for element_index, element in enumerate(board.elements):
-        for pin_index, pin in enumerate(element.pins):
-            pin_type = _get_pin_type(pin)
-            if pin_type is not PinTypes.EMPTY:
-                currents = pin.measurements[0].ivc.currents
-                voltages = pin.measurements[0].ivc.voltages
-                i_max = 1.2 * 1000 * np.amax(np.absolute(currents))
-                v_max = 1.2 * np.amax(np.absolute(voltages))
-                viewer.plot.set_scale(v_max, i_max)
-                curve.set_curve(Curve(voltages, currents))
-                curve.set_curve_params(QColor(PIN_COLORS[pin_type]))
-            else:
-                curve.clear_curve()
-            file_name = f"{element.name}_{element_index}_{pin_index}_iv.png"
-            path = os.path.join(dir_name, file_name)
-            viewer.plot.grab().save(path)
-            logger.info("IV-curve of pin '%s_%s_%s' was saved to '%s'", element.name, element_index,
-                        pin_index, file_name)
+    for pin_info in pins_info:
+        element_name, element_index, pin_index, _, _, measurements = pin_info
+        pin_type = _get_pin_type(measurements)
+        if pin_type is not PinTypes.EMPTY:
+            currents = measurements[0].ivc.currents
+            voltages = measurements[0].ivc.voltages
+            i_max = 1.2 * 1000 * np.amax(np.absolute(currents))
+            v_max = 1.2 * np.amax(np.absolute(voltages))
+            viewer.plot.set_scale(v_max, i_max)
+            curve.set_curve(Curve(voltages, currents))
+            curve.set_curve_params(QColor(PIN_COLORS[pin_type]))
+        else:
+            curve.clear_curve()
+        file_name = f"{element_name}_{element_index}_{pin_index}_iv.png"
+        path = os.path.join(dir_name, file_name)
+        viewer.plot.grab().save(path)
+        logger.info("IV-curve of pin '%s_%s_%s' was saved to '%s'", element_name, element_index,
+                    pin_index, file_name)
 
 
-def draw_pins(board: Board, dir_name: str):
+def draw_pins(image: Image, pins_info: List, dir_name: str):
     """
     Function draws and saves images of pins of board.
-    :param board: board;
+    :param image: board image;
+    :param pins_info: list with information about pins required for report;
     :param dir_name: name of directory where images should be saved.
     """
 
-    height = board.image.height
-    width = board.image.width
-    for element_index, element in enumerate(board.elements):
-        for pin_index, pin in enumerate(element.pins):
-            pin_type = _get_pin_type(pin)
-            left, right = _get_pin_borders(pin.x, width)
-            upper, lower = _get_pin_borders(pin.y, height)
-            pin_image = board.image.crop((left, upper, right, lower))
-            pin_color = PIN_COLORS[pin_type]
-            fig = _draw_circle(pin_image, ([pin.x - left], [pin.y - upper]), pin_color)
-            file_name = f"{element.name}_{element_index}_{pin_index}_pin.png"
-            path = os.path.join(dir_name, file_name)
-            fig.savefig(path)
-            logger.info("Image of pin '%s_%s_%s' was saved to '%s'", element.name, element_index,
-                        pin_index, file_name)
+    height = image.height
+    width = image.width
+    for pin_info in pins_info:
+        element_name, element_index, pin_index, x, y, measurements = pin_info
+        pin_type = _get_pin_type(measurements)
+        left, right = _get_pin_borders(x, width)
+        upper, lower = _get_pin_borders(y, height)
+        pin_image = image.crop((left, upper, right, lower))
+        pin_color = PIN_COLORS[pin_type]
+        fig = _draw_circle(pin_image, ([x - left], [y - upper]), pin_color)
+        file_name = f"{element_name}_{element_index}_{pin_index}_pin.png"
+        path = os.path.join(dir_name, file_name)
+        fig.savefig(path)
+        logger.info("Image of pin '%s_%s_%s' was saved to '%s'", element_name, element_index,
+                    pin_index, file_name)
