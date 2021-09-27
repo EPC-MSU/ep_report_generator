@@ -6,10 +6,11 @@ import logging
 import os
 import shutil
 from enum import Enum
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 from PyQt5.QtCore import QThread
 from epcore.elements import Board
 from epcore.filemanager import load_board_from_ufiv
+from epcore.measurementmanager import IVCComparator
 from . import utils as ut
 from .version import Version
 
@@ -19,7 +20,8 @@ _BOARD_WITH_PINS_IMAGE = "board.png"
 _DEFAULT_REPORT_DIR_NAME = "board_report"
 _IMG_DIR_NAME = "img"
 _STATIC_DIR_NAME = "static"
-_STYLE_FILE_NAME = "style.css"
+_STYLE_FOR_FULL_IMG = "style_for_full_img.css"
+_STYLE_FOR_REPORT = "style.css"
 _STYLES_DIR_NAME = "styles"
 _TEMPLATE_FILE_WITH_FULL_IMAGE = "full_img.html"
 _TEMPLATE_FILE_WITH_REPORT = "report.html"
@@ -31,10 +33,11 @@ class ConfigAttributes(Enum):
     Attributes in config directory.
     """
 
-    BOARD = 0
-    DIRECTORY = 1
-    OBJECTS = 2
-    REQUIREMENTS = 3
+    BOARD_TEST = 0
+    BOARD_REF = 1
+    DIRECTORY = 2
+    OBJECTS = 3
+    THRESHOLD_SCORE = 4
 
 
 class ObjectsForReport(Enum):
@@ -47,39 +50,32 @@ class ObjectsForReport(Enum):
     PIN = 2
 
 
-class RequirementTypes(Enum):
-    """
-    Types of requirements to generate report.
-    """
-
-    DRAW_BOARD = 0
-    DRAW_BOARD_WITH_PINS = 1
-    DRAW_IVC = 2
-    DRAW_PINS = 3
-
-
 class ReportGenerator(QThread):
     """
     Class to generate report for Board object.
     """
 
-    def __init__(self, parent=None, board: Board = None, config: Dict = None):
+    def __init__(self, parent=None, board_test: Optional[Board] = None,
+                 board_ref: Optional[Board] = None, config: Optional[Dict] = None):
         """
         :param parent: parent object;
-        :param board: board for which report should be generated;
+        :param board_test: test board for which report should be generated;
+        :param board_ref: reference board;
         :param config: dictionary with full information about required report.
         """
 
         super().__init__(parent=parent)
-        self._board: Board = board
+        self._board: Board = None
+        self._board_ref: Board = board_ref
+        self._board_test: Board = board_test
         self._config: Dict = config
         self._dir_name: str = self._get_default_dir_name()
         self._pins_info: List = []
         self._required_board: bool = False
         self._required_elements: List = []
         self._required_pins: List = []
-        self._requirements: List = []
         self._static_dir_name: str = None
+        self._threshold_score: float = None
 
     def _create_required_dirs(self):
         """
@@ -112,6 +108,9 @@ class ReportGenerator(QThread):
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_FULL_IMAGE)
         template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME,
                                           _TEMPLATE_FILE_WITH_FULL_IMAGE)
+        style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_FULL_IMG)
+        shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME,
+                                                 _STYLE_FOR_FULL_IMG))
         ut.create_report(template_file_name, report_file_name, pins=self._pins_info)
         logger.info("Report with full image was saved to '%s'", report_file_name)
 
@@ -124,23 +123,23 @@ class ReportGenerator(QThread):
         dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_REPORT)
         template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_REPORT)
-        style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FILE_NAME)
+        style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_REPORT)
         shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME,
-                                                 _STYLE_FILE_NAME))
-        elements_number = len(set([pin_info[1] for pin_info in self._pins_info]))
+                                                 _STYLE_FOR_REPORT))
+        elements_number = len({pin_info[1] for pin_info in self._pins_info})
         data = {"pins": self._pins_info,
-                "pcb_name": self._board.pcb.pcb_name,
-                "mm_per_px": self._board.pcb.image_resolution_ppcm,
+                "pcb_name": self._board_test.pcb.pcb_name,
+                "mm_per_px": self._board_test.pcb.image_resolution_ppcm,
                 "elements_number": elements_number,
                 "pins_number": len(self._pins_info),
-                "board_img_width": self._board.image.width,
+                "board_img_width": self._board_test.image.width,
                 "pin_img_size": 2 * ut.PIN_HALF_WIDTH}
         ut.create_report(template_file_name, report_file_name, **data)
         logger.info("Report was saved to '%s'", report_file_name)
 
     def _draw_board(self):
         """
-        Method draws and saves board image.
+        Method draws and saves board image without pins.
         """
 
         logger.info("Board drawing was started")
@@ -195,13 +194,25 @@ class ReportGenerator(QThread):
         :return: list with information about required pins.
         """
 
+        self._board = ut.create_board(self._board_test, self._board_ref)
+        comparator = IVCComparator()
+        comparator.set_min_ivc(0, 0)
         pins_info = []
+        total_pin_index = 0
         for element_index, element in enumerate(self._board.elements):
             for pin_index, pin in enumerate(element.pins):
                 if (self._required_board or element_index in self._required_elements or
-                        pin_index in self._required_pins):
-                    info = element.name, element_index, pin_index, pin.x, pin.y, pin.measurements
+                        total_pin_index in self._required_pins):
+                    if len(pin.measurements) > 1:
+                        score = comparator.compare_ivc(pin.measurements[0].ivc,
+                                                       pin.measurements[1].ivc)
+                    else:
+                        score = None
+                    pin_type = ut.get_pin_type(pin.measurements, score, self._threshold_score)
+                    info = (element.name, element_index, pin_index, pin.x, pin.y, pin.measurements,
+                            score, pin_type, total_pin_index)
                     pins_info.append(info)
+                total_pin_index += 1
         return pins_info
 
     def _read_config(self, config: Dict):
@@ -211,16 +222,19 @@ class ReportGenerator(QThread):
         """
 
         if not isinstance(config, Dict) and not isinstance(self._config, Dict):
-            config = {ConfigAttributes.BOARD: self._board,
+            config = {ConfigAttributes.BOARD_TEST: self._board_test,
+                      ConfigAttributes.BOARD_REF: self._board_ref,
                       ConfigAttributes.DIRECTORY: self._dir_name,
                       ConfigAttributes.OBJECTS: {},
-                      ConfigAttributes.REQUIREMENTS: []}
+                      ConfigAttributes.THRESHOLD_SCORE: None}
         elif isinstance(self._config, Dict):
             config = self._config
         self._config = config
-        self._board = self._config.get(ConfigAttributes.BOARD, self._board)
+        self._board_ref = self._config.get(ConfigAttributes.BOARD_REF, self._board_ref)
+        self._board_test = self._config.get(ConfigAttributes.BOARD_TEST, self._board_test)
         self._dir_name = self._config.get(ConfigAttributes.DIRECTORY, self._dir_name)
-        self._requirements = self._config.get(ConfigAttributes.REQUIREMENTS, self._requirements)
+        self._threshold_score = self._config.get(ConfigAttributes.THRESHOLD_SCORE,
+                                                 self._threshold_score)
         required_objects = self._config.get(ConfigAttributes.OBJECTS, {})
         if required_objects.get(ObjectsForReport.BOARD):
             self._required_board = True
@@ -233,17 +247,13 @@ class ReportGenerator(QThread):
         Method runs report generation.
         """
 
-        if not isinstance(self._board, Board):
+        if not isinstance(self._board_test, Board) and isinstance(self._board_ref, Board):
             return
         self._create_required_dirs()
         self._pins_info = self._get_info_about_pins()
-        methods = {RequirementTypes.DRAW_BOARD: self._draw_board,
-                   RequirementTypes.DRAW_BOARD_WITH_PINS: self._draw_board_with_pins,
-                   RequirementTypes.DRAW_IVC: self._draw_ivc,
-                   RequirementTypes.DRAW_PINS: self._draw_pins}
-        for requirement, method in methods.items():
-            if requirement in self._requirements:
-                method()
+        methods = self._draw_board_with_pins, self._draw_ivc, self._draw_pins
+        for method in methods:
+            method()
         self._create_report_with_full_image()
         self._create_report()
 
@@ -268,7 +278,7 @@ class ReportGenerator(QThread):
         except Exception as exc:
             logger.error("File '%s' was not read and board was not created: %s", file_name, exc)
             return False
-        self._board = board
+        self._board_test = board
         return True
 
     def run(self, config: Dict):

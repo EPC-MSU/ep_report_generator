@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
     <meta charset="UTF-8">
-    <title>Полный отчет - ${pcb_name}</title>
+    <title>Полный отчет</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="static/styles/style.css">
     <script type="text/javascript">
@@ -38,29 +38,33 @@
         <table id="general_info" cellspacing="0" cellpadding="0">
             <tbody>
 				<tr>
-                    <th colspan="2">
+                    <th>
                         <h2>Общая информация</h2>
                     </th>
                 </tr>
                 <tr>
-                    <td style="vertical-align: top;">
+                    <td class="align_left">
 						<span>Название платы: ${pcb_name}</span><br>
                         <span>Количество элементов: ${elements_number}</span><br>
                         <span>Количество точек тестирования: ${pins_number}</span><br>
-                        <span><a href="full_img.html" target="_blank">Исследовать по изображению</span><br>
+                        <span><a href="full_img.html" target="_blank">Исследовать по изображению</a></span><br>
                     </td>
                 </tr>
                 <tr>
-                    <th colspan="2">
+                    <th>
                         <h2>Карта точек тестирования</h2>
+                    </th>
+                </tr>
+				<tr>
+                    <td>
                         <img id="board" src="static/img/board.png" usemap="#map">
                         <p><map name="map">
-                            % for name, element_index, pin_index, x, y, _ in pins:
+                            % for _, _, _, x, y, _, _, _, _ in pins:
                             <area shape="circle" coords="${x},${y},10" href="#point${x}${y}" alt="">
                             % endfor
                             </map>
                         </p>
-                    </th>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -69,43 +73,50 @@
         <table id="report" cellspacing="0" cellpadding="0">
             <thead>
                 <tr>
-                    <th class="element-name"><span>Имя</span></th>
-                    <th class="element-image"><span>Компонент</span></th>
-                    <th class="element-plot"><span>ВАХ</span></th>
+                    <th class="column_name"><span>Имя</span></th>
+                    <th class="column_image"><span>Компонент</span></th>
+                    <th class="column_plot"><span>ВАХ</span></th>
                 </tr>
             </thead>
             <tbody>
 				<%
 					prev_element_index = None
 				%>
-                % for name, element_index, pin_index, x, y, _ in pins:
+                % for name, element_index, pin_index, x, y, measurements, score, _, total_pin_index in pins:
 				% if element_index != prev_element_index:
 				<%
 					prev_element_index = element_index
 				%>
 				<tr>
-					<td colspan="3">
-						<h2>${"#{} - {}".format(element_index + 1, name)}</h2>
+					<td class="element_name" colspan="3">
+						<h2>${"#{} - {}".format(element_index, name)}</h2>
 					</td>
 				</tr>
 				% endif
                 <tr>
-                    <td class="align_left"><span>${name} (pin ${pin_index + 1})</span><br>
-                        <a class="anchor" id="top" name="point${x}${y}"></a>
+                    <td class="align_left">
+						<a class="anchor" id="top" name="point${x}${y}"></a>
+						<span>#${total_pin_index}</span><br>
+						<span>${name} (pin ${pin_index})</span><br>
                         % if mm_per_px:
                         <span>X = ${"{:.2f}".format(x * mm_per_px) } мм</span><br>
-						<span>Y = ${"{:.2f}".format(y * mm_per_px)} мм</span>
+						<span>Y = ${"{:.2f}".format(y * mm_per_px)} мм</span><br>
                         % else:
                         <span>X = ${"{:.2f}".format(x)} пк</span><br>
-						<span>Y = ${"{:.2f}".format(y)} пк</span>
+						<span>Y = ${"{:.2f}".format(y)} пк</span><br>
                         % endif
+						% if score is None:
+						<span>score = -</span>
+						% else:
+						<span>score = ${"{:.2f}".format(score * 100)}</span>
+						% endif
                     </td>
                     <td>
                         <a class="img_pin">
                             <img src="static/img/${'%s_%s_%s_pin.png'%(name, element_index, pin_index)}" height="${pin_img_size}" />
                             <span>
                                 <img src="static/img/board.png" width="500px" style="position:relative">
-                                <div class="pin" style="position:absolute; top:${y * (500 / board_img_width)}px; left:${x * (500 / board_img_width)}px;">
+                                <div class="pin" style="top:${y * (500 / board_img_width) - 3}px; left:${x * (500 / board_img_width) - 3}px;">
                                 </div>
                                 </img>
                             </span>

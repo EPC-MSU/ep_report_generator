@@ -80,22 +80,33 @@ def _get_pin_borders(center: float, board_width: int) -> Tuple[float, float]:
     return left, right
 
 
-def _get_pin_type(measurements: List["Measurement"]) -> PinTypes:
+def create_board(test_board: Board, ref_board: Board) -> Board:
     """
-    Function determines type of pin.
-    :param measurements: list of measurements in pin.
-    :return: type of pin.
+    Function creates one board from test and reference boards.
+    :param test_board: test board;
+    :param ref_board: reference board.
+    :return: board with test and reference IV-curves in pins.
     """
 
-    pin_type = PinTypes.EMPTY
-    if len(measurements):
-        if measurements[0].is_dynamic:
-            pin_type = PinTypes.DYNAMIC
-        elif measurements[0].is_reference:
-            pin_type = PinTypes.REFERENCE
-        else:
-            pin_type = PinTypes.NORMAL
-    return pin_type
+    board = Board()
+    board.image = test_board.image
+    board.pcb = test_board.pcb
+    for element_index, element in enumerate(test_board.elements):
+        for pin_index, pin in enumerate(element.pins):
+            measurements = pin.measurements
+            if measurements:
+                measurements[0].is_reference = False
+                measurements = [measurements[0]]
+            else:
+                measurements = []
+            if ref_board is not None:
+                ref_measurements = ref_board.elements[element_index].pins[pin_index].measurements
+                if ref_measurements:
+                    ref_measurements[0].is_reference = True
+                    measurements.append(ref_measurements[0])
+            pin.measurements = measurements
+    board.elements = test_board.elements
+    return board
 
 
 def create_report(template_file: str, report_file: str, **kwargs):
@@ -126,8 +137,7 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str):
                PinTypes.NORMAL: [[], []],
                PinTypes.REFERENCE: [[], []]}
     for pin_info in pins_info:
-        _, _, _, x, y, measurements = pin_info
-        pin_type = _get_pin_type(measurements)
+        _, _, _, x, y, _, _, pin_type, _ = pin_info
         pin_xy = pins_xy[pin_type]
         pin_xy[0].append(x)
         pin_xy[1].append(y)
@@ -155,20 +165,34 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str):
 
     viewer = Viewer()
     viewer.resize(*IV_IMAGE_SIZE)
-    curve = viewer.plot.add_curve()
+    test_curve = viewer.plot.add_curve()
+    ref_curve = viewer.plot.add_curve()
     for pin_info in pins_info:
-        element_name, element_index, pin_index, _, _, measurements = pin_info
-        pin_type = _get_pin_type(measurements)
+        element_name, element_index, pin_index, _, _, measurements, _, pin_type, _ = pin_info
         if pin_type is not PinTypes.EMPTY:
-            currents = measurements[0].ivc.currents
-            voltages = measurements[0].ivc.voltages
-            i_max = 1.2 * 1000 * np.amax(np.absolute(currents))
-            v_max = 1.2 * np.amax(np.absolute(voltages))
+            test_currents = measurements[0].ivc.currents
+            test_voltages = measurements[0].ivc.voltages
+            if len(measurements) > 1:
+                ref_currents = measurements[1].ivc.currents
+                ref_voltages = measurements[1].ivc.voltages
+            else:
+                ref_currents = np.array([])
+                ref_voltages = np.array([])
+            i_max = 1.2 * 1000 * np.amax(np.absolute(np.concatenate((test_currents, ref_currents),
+                                                                    axis=0)))
+            v_max = 1.2 * np.amax(np.absolute(np.concatenate((test_voltages, ref_voltages),
+                                                             axis=0)))
             viewer.plot.set_scale(v_max, i_max)
-            curve.set_curve(Curve(voltages, currents))
-            curve.set_curve_params(QColor(PIN_COLORS[pin_type]))
+            test_curve.set_curve(Curve(test_voltages, test_currents))
+            test_curve.set_curve_params(QColor(PIN_COLORS[pin_type]))
+            if len(measurements) > 1:
+                ref_curve.set_curve(Curve(ref_voltages, ref_currents))
+                ref_curve.set_curve_params(QColor(PIN_COLORS[PinTypes.REFERENCE]))
+            else:
+                ref_curve.clear_curve()
         else:
-            curve.clear_curve()
+            test_curve.clear_curve()
+            ref_curve.clear_curve()
         file_name = f"{element_name}_{element_index}_{pin_index}_iv.png"
         path = os.path.join(dir_name, file_name)
         viewer.plot.grab().save(path)
@@ -187,8 +211,7 @@ def draw_pins(image: Image, pins_info: List, dir_name: str):
     height = image.height
     width = image.width
     for pin_info in pins_info:
-        element_name, element_index, pin_index, x, y, measurements = pin_info
-        pin_type = _get_pin_type(measurements)
+        element_name, element_index, pin_index, x, y, _, _, pin_type, _ = pin_info
         left, right = _get_pin_borders(x, width)
         upper, lower = _get_pin_borders(y, height)
         pin_image = image.crop((left, upper, right, lower))
@@ -199,3 +222,26 @@ def draw_pins(image: Image, pins_info: List, dir_name: str):
         fig.savefig(path)
         logger.info("Image of pin '%s_%s_%s' was saved to '%s'", element_name, element_index,
                     pin_index, file_name)
+
+
+def get_pin_type(measurements: List["Measurement"], score: float, threshold_score: float) ->\
+        PinTypes:
+    """
+    Function determines type of pin.
+    :param measurements: list of measurements in pin;
+    :param score: score of test measurement in pin;
+    :param threshold_score: threshold score.
+    :return: type of pin.
+    """
+
+    pin_type = PinTypes.EMPTY
+    if len(measurements):
+        if threshold_score is not None and score is not None and threshold_score <= score:
+            pin_type = PinTypes.HIGH_SCORE
+        elif measurements[0].is_reference:
+            pin_type = PinTypes.REFERENCE
+        elif measurements[0].is_dynamic:
+            pin_type = PinTypes.DYNAMIC
+        else:
+            pin_type = PinTypes.NORMAL
+    return pin_type
