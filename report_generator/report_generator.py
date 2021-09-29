@@ -20,10 +20,10 @@ _BOARD_WITH_PINS_IMAGE = "board.png"
 _DEFAULT_REPORT_DIR_NAME = "board_report"
 _IMG_DIR_NAME = "img"
 _STATIC_DIR_NAME = "static"
-_STYLE_FOR_FULL_IMG = "style_for_full_img.css"
-_STYLE_FOR_REPORT = "style.css"
+_STYLE_FOR_MAP = "style_for_map.css"
+_STYLE_FOR_REPORT = "style_for_report.css"
 _STYLES_DIR_NAME = "styles"
-_TEMPLATE_FILE_WITH_FULL_IMAGE = "full_img.html"
+_TEMPLATE_FILE_WITH_MAP = "map.html"
 _TEMPLATE_FILE_WITH_REPORT = "report.html"
 _TEMPLATES_DIR_NAME = "report_templates"
 
@@ -50,6 +50,31 @@ class ObjectsForReport(Enum):
     PIN = 2
 
 
+class ReportCreationSteps(Enum):
+    """
+    Stages of creating report.
+    """
+
+    DRAW_BOARD = 0
+    DRAW_IV = 1
+    DRAW_PINS = 2
+    CREATE_MAP_REPORT = 3
+    CREATE_REPORT = 4
+
+    @classmethod
+    def get_dict(cls) -> Dict:
+        """
+        Method returns dictionary for results by stages of report creation.
+        :return: dictionary for results by stages.
+        """
+
+        return {cls.DRAW_BOARD: None,
+                cls.DRAW_IV: None,
+                cls.DRAW_PINS: None,
+                cls.CREATE_MAP_REPORT: None,
+                cls.CREATE_REPORT: None}
+
+
 class ReportGenerator(QThread):
     """
     Class to generate report for Board object.
@@ -74,6 +99,7 @@ class ReportGenerator(QThread):
         self._required_board: bool = False
         self._required_elements: List = []
         self._required_pins: List = []
+        self._results_by_steps: Dict = ReportCreationSteps.get_dict()
         self._static_dir_name: str = None
         self._threshold_score: float = None
 
@@ -98,21 +124,23 @@ class ReportGenerator(QThread):
         for dir_path in dir_paths:
             create_dir(dir_path)
 
-    def _create_report_with_full_image(self):
+    def _create_report_with_map(self):
         """
         Method creates report with one big image of board.
         """
 
-        logger.info("Creation of report with full image was started")
+        if not self._results_by_steps[ReportCreationSteps.DRAW_BOARD]:
+            return
+        logger.info("Creation of report with board map was started")
         dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_FULL_IMAGE)
+        report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_MAP)
         template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME,
-                                          _TEMPLATE_FILE_WITH_FULL_IMAGE)
-        style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_FULL_IMG)
+                                          _TEMPLATE_FILE_WITH_MAP)
+        style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_MAP)
         shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME,
-                                                 _STYLE_FOR_FULL_IMG))
+                                                 _STYLE_FOR_MAP))
         ut.create_report(template_file_name, report_file_name, pins=self._pins_info)
-        logger.info("Report with full image was saved to '%s'", report_file_name)
+        logger.info("Report with board map was saved to '%s'", report_file_name)
 
     def _create_report(self):
         """
@@ -127,13 +155,24 @@ class ReportGenerator(QThread):
         shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME,
                                                  _STYLE_FOR_REPORT))
         elements_number = len({pin_info[1] for pin_info in self._pins_info})
+        if self._board.image is None:
+            board_image_width = None
+            pin_img_size = None
+        else:
+            board_image_width = self._board.image.width
+            pin_img_size = 2 * ut.PIN_HALF_WIDTH
+        if self._board.pcb.image_resolution_ppcm is not None:
+            mm_per_px = 10 / self._board.pcb.image_resolution_ppcm
+        else:
+            mm_per_px = None
         data = {"pins": self._pins_info,
-                "pcb_name": self._board_test.pcb.pcb_name,
-                "mm_per_px": self._board_test.pcb.image_resolution_ppcm,
+                "pcb_name": self._board.pcb.pcb_name,
+                "pcb_comment": self._board.pcb.comment,
+                "mm_per_px": mm_per_px,
                 "elements_number": elements_number,
                 "pins_number": len(self._pins_info),
-                "board_img_width": self._board_test.image.width,
-                "pin_img_size": 2 * ut.PIN_HALF_WIDTH}
+                "board_img_width": board_image_width,
+                "pin_img_size": pin_img_size}
         ut.create_report(template_file_name, report_file_name, **data)
         logger.info("Report was saved to '%s'", report_file_name)
 
@@ -147,35 +186,45 @@ class ReportGenerator(QThread):
         self._board.image.save(file_name)
         logger.info("Board image was saved to '%s'", file_name)
 
-    def _draw_board_with_pins(self):
+    def _draw_board_with_pins(self) -> bool:
         """
         Method draws and saves image of board with pins.
+        :return: True if image was drawn and saved.
         """
 
         logger.info("Drawing of board with pins was started")
         file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, _BOARD_WITH_PINS_IMAGE)
-        ut.draw_board_with_pins(self._board.image, self._pins_info, file_name)
-        logger.info("Image of board with pins was saved to '%s'", file_name)
+        if ut.draw_board_with_pins(self._board.image, self._pins_info, file_name):
+            logger.info("Image of board with pins was saved to '%s'", file_name)
+            return True
+        logger.info("Image of board with pins was not drawn")
+        return False
 
-    def _draw_ivc(self):
+    def _draw_ivc(self) -> bool:
         """
         Method draws IV-curves for pins and saves them.
+        :return: True if images were drawn and saved.
         """
 
         logger.info("Drawing of IV-curves was started")
         img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
         ut.draw_ivc_for_pins(self._pins_info, img_dir_path)
         logger.info("Images of IV-curves were saved to directory '%s'", img_dir_path)
+        return True
 
-    def _draw_pins(self):
+    def _draw_pins(self) -> bool:
         """
         Method draws pins images and saves them.
+        :return: True if images were drawn and saved.
         """
 
         logger.info("Drawing of pins was started")
         img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-        ut.draw_pins(self._board.image, self._pins_info, img_dir_path)
-        logger.info("Images of pins were saved to directory '%s'", img_dir_path)
+        if ut.draw_pins(self._board.image, self._pins_info, img_dir_path):
+            logger.info("Images of pins were saved to directory '%s'", img_dir_path)
+            return True
+        logger.info("Images of pins were not drawn")
+        return False
 
     @staticmethod
     def _get_default_dir_name() -> str:
@@ -210,7 +259,7 @@ class ReportGenerator(QThread):
                         score = None
                     pin_type = ut.get_pin_type(pin.measurements, score, self._threshold_score)
                     info = (element.name, element_index, pin_index, pin.x, pin.y, pin.measurements,
-                            score, pin_type, total_pin_index)
+                            score, pin_type, total_pin_index, pin.comment)
                     pins_info.append(info)
                 total_pin_index += 1
         return pins_info
@@ -251,10 +300,12 @@ class ReportGenerator(QThread):
             return
         self._create_required_dirs()
         self._pins_info = self._get_info_about_pins()
-        methods = self._draw_board_with_pins, self._draw_ivc, self._draw_pins
-        for method in methods:
-            method()
-        self._create_report_with_full_image()
+        methods = {ReportCreationSteps.DRAW_BOARD: self._draw_board_with_pins,
+                   ReportCreationSteps.DRAW_IV: self._draw_ivc,
+                   ReportCreationSteps.DRAW_PINS: self._draw_pins}
+        for step, method in methods.items():
+            self._results_by_steps[step] = method()
+        self._create_report_with_map()
         self._create_report()
 
     @classmethod

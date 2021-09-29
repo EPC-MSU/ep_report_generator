@@ -5,7 +5,7 @@ File with  useful functions.
 import logging
 import os
 from enum import Enum
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 from mako.template import Template
@@ -36,6 +36,20 @@ PIN_COLORS = {PinTypes.DYNAMIC: "magenta",
               PinTypes.NORMAL: "blue",
               PinTypes.REFERENCE: "orange"}
 PIN_HALF_WIDTH = 50
+
+
+def _check_for_image_availability(func: Callable):
+    """
+    Decorator checks if there is image.
+    :param func: decorated function.
+    """
+
+    def wrapper(image: Image, *args):
+        if image is None:
+            logger.warning("Board has no image")
+            return False
+        return func(image, *args)
+    return wrapper
 
 
 def _draw_circle(image: Image, circles: Tuple[List[float], List[float]], color: str) -> plt.Figure:
@@ -122,13 +136,15 @@ def create_report(template_file: str, report_file: str, **kwargs):
         file.write(report.render(**kwargs))
 
 
-def draw_board_with_pins(image: Image, pins_info: List, file_name: str):
+@_check_for_image_availability
+def draw_board_with_pins(image: Image, pins_info: List, file_name: str) -> bool:
     """
     Function draws and saves image of board with pins. Function was borrowed
     from https://stackoverflow.com/questions/34768717.
     :param image: board image;
     :param pins_info: list with information about pins required for report;
     :param file_name: name of file where image should be saved.
+    :return: True if image was drawn and saved.
     """
 
     pins_xy = {PinTypes.DYNAMIC: [[], []],
@@ -137,7 +153,7 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str):
                PinTypes.NORMAL: [[], []],
                PinTypes.REFERENCE: [[], []]}
     for pin_info in pins_info:
-        _, _, _, x, y, _, _, pin_type, _ = pin_info
+        _, _, _, x, y, _, _, pin_type, _, _ = pin_info
         pin_xy = pins_xy[pin_type]
         pin_xy[0].append(x)
         pin_xy[1].append(y)
@@ -154,6 +170,7 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str):
         ax.scatter(*x_and_y, s=marker_size, c=PIN_COLORS[pin_type], zorder=1)
     ax.set(xlim=[-0.5, width - 0.5], ylim=[height - 0.5, -0.5], aspect=1)
     fig.savefig(file_name, dpi=dpi, transparent=True)
+    return True
 
 
 def draw_ivc_for_pins(pins_info: List, dir_name: str):
@@ -168,7 +185,7 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str):
     test_curve = viewer.plot.add_curve()
     ref_curve = viewer.plot.add_curve()
     for pin_info in pins_info:
-        element_name, element_index, pin_index, _, _, measurements, _, pin_type, _ = pin_info
+        element_name, element_index, pin_index, _, _, measurements, _, pin_type, _, _ = pin_info
         if pin_type is not PinTypes.EMPTY:
             test_currents = measurements[0].ivc.currents
             test_voltages = measurements[0].ivc.voltages
@@ -200,18 +217,20 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str):
                     pin_index, file_name)
 
 
-def draw_pins(image: Image, pins_info: List, dir_name: str):
+@_check_for_image_availability
+def draw_pins(image: Image, pins_info: List, dir_name: str) -> bool:
     """
     Function draws and saves images of pins of board.
     :param image: board image;
     :param pins_info: list with information about pins required for report;
     :param dir_name: name of directory where images should be saved.
+    :return: True if images were drawn and saved.
     """
 
     height = image.height
     width = image.width
     for pin_info in pins_info:
-        element_name, element_index, pin_index, x, y, _, _, pin_type, _ = pin_info
+        element_name, element_index, pin_index, x, y, _, _, pin_type, _, _ = pin_info
         left, right = _get_pin_borders(x, width)
         upper, lower = _get_pin_borders(y, height)
         pin_image = image.crop((left, upper, right, lower))
@@ -222,6 +241,7 @@ def draw_pins(image: Image, pins_info: List, dir_name: str):
         fig.savefig(path)
         logger.info("Image of pin '%s_%s_%s' was saved to '%s'", element_name, element_index,
                     pin_index, file_name)
+    return True
 
 
 def get_pin_type(measurements: List["Measurement"], score: float, threshold_score: float) ->\

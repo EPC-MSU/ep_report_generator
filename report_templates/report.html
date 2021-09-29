@@ -3,9 +3,9 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Полный отчет</title>
+    <title>Отчет</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="static/styles/style.css">
+    <link rel="stylesheet" href="static/styles/style_for_report.css">
     <script type="text/javascript">
         var flag = false;
 
@@ -13,28 +13,43 @@
          * Function changes size of board image and position of area pins on it.
          */
         function change_size() {
-            if (!flag) {
-                flag = true;
-                const WIDTH = 800;
-                let board_img = document.getElementById("board");
-                let natural_width = board_img.naturalWidth;
-                board_img.width = WIDTH;
-                let pin_areas = document.getElementsByTagName("area");
-                for (let i = 0; i < pin_areas.length; i++) {
-                    let pin = pin_areas[i];
-                    let coords = pin.getAttribute("coords").split(",");
-                    let x = coords[0] * WIDTH / natural_width;
-                    let y = coords[1] * WIDTH / natural_width;
-                    pin.setAttribute("coords", x + "," + y + "," + coords[2]);
-                }
-            }
+            if (flag)
+				return;
+            flag = true;
+			const WIDTH = 800;
+			let board_img = document.getElementById("board");
+			if (board_img == null)
+				return;
+            let natural_width = board_img.naturalWidth;
+			board_img.width = WIDTH;
+			let pin_areas = document.getElementsByTagName("area");
+			for (let i = 0; i < pin_areas.length; i++) {
+				let pin = pin_areas[i];
+				let coords = pin.getAttribute("coords").split(",");
+				let x = coords[0] * WIDTH / natural_width;
+				let y = coords[1] * WIDTH / natural_width;
+				pin.setAttribute("coords", x + "," + y + "," + coords[2]);
+			}
         }
+		
+		/**
+		 * Function handles click on button.
+		 * @param button: button.
+		 */
+		function handle_click(button) {
+			button.classList.toggle("active");
+			let content = button.nextElementSibling;
+			if (content.style.display === "block")
+				content.style.display = "none";
+			else
+				content.style.display = "block";
+		}
     </script>
 </head>
 
 <body onload="change_size()">
     <div id="wrapper">
-        <h1>Полный отчет</h1>
+        <h1>Отчет</h1>
         <table id="general_info" cellspacing="0" cellpadding="0">
             <tbody>
 				<tr>
@@ -44,12 +59,20 @@
                 </tr>
                 <tr>
                     <td class="align_left">
+						% if pcb_name is not None:
 						<span>Название платы: ${pcb_name}</span><br>
+						% endif
                         <span>Количество элементов: ${elements_number}</span><br>
                         <span>Количество точек тестирования: ${pins_number}</span><br>
-                        <span><a href="full_img.html" target="_blank">Исследовать по изображению</a></span><br>
+						% if pcb_comment is not None:
+						<span>Комментарий: ${pcb_comment}</span><br>
+						% endif
+						% if board_img_width is not None:
+                        <span><a href="map.html" target="_blank">Исследовать по изображению</a></span><br>
+						% endif
                     </td>
                 </tr>
+				% if board_img_width is not None:
                 <tr>
                     <th>
                         <h2>Карта точек тестирования</h2>
@@ -59,13 +82,14 @@
                     <td>
                         <img id="board" src="static/img/board.png" usemap="#map">
                         <p><map name="map">
-                            % for _, _, _, x, y, _, _, _, _ in pins:
+                            % for _, _, _, x, y, _, _, _, _, _ in pins:
                             <area shape="circle" coords="${x},${y},10" href="#point${x}${y}" alt="">
                             % endfor
                             </map>
                         </p>
                     </td>
                 </tr>
+				% endif
             </tbody>
         </table>
 
@@ -74,7 +98,9 @@
             <thead>
                 <tr>
                     <th class="column_name"><span>Имя</span></th>
+					% if board_img_width is not None:
                     <th class="column_image"><span>Компонент</span></th>
+					% endif
                     <th class="column_plot"><span>ВАХ</span></th>
                 </tr>
             </thead>
@@ -82,7 +108,7 @@
 				<%
 					prev_element_index = None
 				%>
-                % for name, element_index, pin_index, x, y, measurements, score, _, total_pin_index in pins:
+                % for name, element_index, pin_index, x, y, measurements, score, _, total_pin_index, pin_comment in pins:
 				% if element_index != prev_element_index:
 				<%
 					prev_element_index = element_index
@@ -105,12 +131,35 @@
                         <span>X = ${"{:.2f}".format(x)} пк</span><br>
 						<span>Y = ${"{:.2f}".format(y)} пк</span><br>
                         % endif
-						% if score is None:
-						<span>score = -</span>
-						% else:
-						<span>score = ${"{:.2f}".format(score * 100)}</span>
+						% if score is not None:
+						<span>score = ${"{:.2f}".format(score * 100)}</span><br>
+						% endif
+						% if measurements[0].is_dynamic:
+						<span>Динамическая ВАХ</span><br>
+						% endif
+						% if measurements[0].is_reference:
+						<span>Справочная ВАХ</span><br>
+						% endif
+						<button class="collapsible" onclick="handle_click(this)">Параметры измерения</button>
+						<div class="measurement_settings">
+							<span>Частота = ${measurements[0].settings.probe_signal_frequency} Гц</span><br>
+							<span>Напряжение = ${measurements[0].settings.max_voltage} В</span><br>
+							<span>Внутреннее сопротивление = ${measurements[0].settings.internal_resistance} Ом</span><br>
+						</div><br>
+						% if pin_comment is not None:
+						<button class="collapsible" onclick="handle_click(this)">Комментарий к пину</button>
+						<div class="measurement_settings">
+							<span>${pin_comment}</span>
+						</div><br>
+						% endif
+						% if measurements[0].comment is not None:
+						<button class="collapsible" onclick="handle_click(this)">Комментарий к измерению</button>
+						<div class="measurement_settings">
+							<span>${measurements[0].comment}</span>
+						</div>
 						% endif
                     </td>
+					% if board_img_width is not None:
                     <td>
                         <a class="img_pin">
                             <img src="static/img/${'%s_%s_%s_pin.png'%(name, element_index, pin_index)}" height="${pin_img_size}" />
@@ -121,7 +170,8 @@
                                 </img>
                             </span>
                         </a>
-                    </td>
+                    </td>					
+					% endif
                     <td>
                         <img src="static/img/${'%s_%s_%s_iv.png'%(name, element_index, pin_index)}" height="${pin_img_size}">
                     </td>
