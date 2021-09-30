@@ -82,8 +82,8 @@
         }
 
         window.onresize = function() {
-            let imgs = document.getElementsByTagName("img");
-            for (let i = 1; i < imgs.length; i++) {
+            let imgs = document.getElementsByTagName("figure");
+            for (let i = 0; i < imgs.length; i++) {
                 let pin_iv_img = imgs[i];
                 pin_iv_img.style.width = "20%";
             }
@@ -105,9 +105,24 @@
 			% endfor
 		</map>
 	</p>
-    % for name, element_index, pin_index, x, y, _, _, _, _, _ in pins:
-    <img id="img${x},${y},10" onmouseover="change_position(this);" style="position: fixed; top: 0px; left: 0px; width: 20%; display: none;"
-		src="static/img/${'%s_%s_%s_iv.png'%(name, element_index, pin_index)}" />
+    % for name, element_index, pin_index, x, y, measurements, _, pin_type, _, _ in pins:
+	<figure id="img${x},${y},10" onmouseover="change_position(this);" style="display: none;">
+		<p>
+			<img src="static/img/${'%s_%s_%s_iv.png'%(name, element_index, pin_index)}" alt="Изображение ВАХв точке тестирования">
+		</p>
+		<%
+			legend_for_iv_img = ""
+			if len(measurements) > 1:
+				legend_for_iv_img += "Оранжевый - справочная ВАХ\n"
+			if pin_type.value == 0:
+				legend_for_iv_img += "Пурпурный - тестовая ВАХ (динамическая)"
+			elif pin_type.value == 2:
+				legend_for_iv_img += f"Красный - тестовая ВАХ (score больше порогового значения {threshold_score * 100}%)"
+			elif pin_type.value == 3:
+				legend_for_iv_img += "Синий - тестовая ВАХ"
+		%>
+		<figcaption>${legend_for_iv_img}</figcaption>
+	</figure>
 	% endfor
 </body>
 

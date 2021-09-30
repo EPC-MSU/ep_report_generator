@@ -172,7 +172,8 @@ class ReportGenerator(QThread):
                 "elements_number": elements_number,
                 "pins_number": len(self._pins_info),
                 "board_img_width": board_image_width,
-                "pin_img_size": pin_img_size}
+                "pin_img_size": pin_img_size,
+                "threshold_score": self._threshold_score}
         ut.create_report(template_file_name, report_file_name, **data)
         logger.info("Report was saved to '%s'", report_file_name)
 
@@ -300,6 +301,9 @@ class ReportGenerator(QThread):
             return
         self._create_required_dirs()
         self._pins_info = self._get_info_about_pins()
+        if not self._pins_info:
+            logger.info("There are no objects for which report should be created")
+            return
         methods = {ReportCreationSteps.DRAW_BOARD: self._draw_board_with_pins,
                    ReportCreationSteps.DRAW_IV: self._draw_ivc,
                    ReportCreationSteps.DRAW_PINS: self._draw_pins}

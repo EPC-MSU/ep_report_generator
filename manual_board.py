@@ -6,6 +6,52 @@ import numpy as np
 from epcore.elements import Board, Element, IVCurve, Measurement, MeasurementSettings, PCBInfo, Pin
 
 
+def create_manual_board(test: bool) -> Board:
+    """
+    Function creates board.
+    :param test: if True then test board will be created otherwise reference board
+    will be created.
+    :return: board.
+    """
+
+    parameters_number = 4
+    frequencies = 1, 100, 1000, 100000
+    internal_resistances = 40, 400, 4000, 5000
+    max_voltages = 1, 2, 3, 4
+    errors = 5, 20, 40, 60
+    elements_number = 3
+    pins_number = 3
+    elements = []
+    index = 0
+    for element_index in range(elements_number):
+        element_name = f"Element_name_{element_index}"
+        pins = []
+        for pin_index in range(pins_number):
+            x = element_index * 100 + pin_index * 2
+            y = element_index * 100 + pin_index * 2
+            comment_for_pin = f"This is comment for pin #{pin_index} of element {element_name}"
+            settings = MeasurementSettings(sampling_rate=100 * frequencies[index],
+                                           internal_resistance=internal_resistances[index],
+                                           probe_signal_frequency=frequencies[index],
+                                           max_voltage=max_voltages[index])
+            error = errors[index] if test else 0
+            iv_curve = get_iv_curve(index, error)
+            comment_for_measurement = (f"This is comment for measurement in pin #{pin_index} of "
+                                       f"element {element_name}")
+            is_dynamic = bool(index % 2)
+            measurement = Measurement(settings=settings, ivc=iv_curve,
+                                      comment=comment_for_measurement,
+                                      is_dynamic=is_dynamic)
+            pin = Pin(x=x, y=y, comment=comment_for_pin, measurements=[measurement])
+            pins.append(pin)
+            index = (index + 1) % parameters_number
+        elements.append(Element(name=element_name, pins=pins))
+    board = Board()
+    board.pcb = PCBInfo(pcb_name="Manual board", comment="This board was made by hand for example")
+    board.elements = elements
+    return board
+
+
 def get_circle(max_error: float) -> IVCurve:
     """
     Function returns IV-curve shaped as circle.
@@ -84,49 +130,3 @@ def get_simple_curve(max_error: float) -> IVCurve:
     currents = list(np.cos(3 * t) * errors / 1000)
     voltages = list(np.sin(t))
     return IVCurve(currents=currents, voltages=voltages)
-
-
-def create_manual_board(test: bool) -> Board:
-    """
-    Function creates board.
-    :param test: if True then test board will be created otherwise reference board
-    will be created.
-    :return: board.
-    """
-
-    parameters_number = 4
-    frequencies = 1, 100, 1000, 100000
-    internal_resistances = 40, 400, 4000, 5000
-    max_voltages = 1, 2, 3, 4
-    errors = 5, 20, 40, 60
-    elements_number = 3
-    pins_number = 3
-    elements = []
-    index = 0
-    for element_index in range(elements_number):
-        element_name = f"Element_name_{element_index}"
-        pins = []
-        for pin_index in range(pins_number):
-            x = element_index * 100 + pin_index * 2
-            y = element_index * 100 + pin_index * 2
-            comment_for_pin = f"This is comment for pin #{pin_index} of element {element_name}"
-            settings = MeasurementSettings(sampling_rate=100 * frequencies[index],
-                                           internal_resistance=internal_resistances[index],
-                                           probe_signal_frequency=frequencies[index],
-                                           max_voltage=max_voltages[index])
-            error = errors[index] if test else 0
-            iv_curve = get_iv_curve(index, error)
-            comment_for_measurement = (f"This is comment for measurement in pin #{pin_index} of "
-                                       f"element {element_name}")
-            is_dynamic = bool(index % 2)
-            measurement = Measurement(settings=settings, ivc=iv_curve,
-                                      comment=comment_for_measurement,
-                                      is_dynamic=is_dynamic)
-            pin = Pin(x=x, y=y, comment=comment_for_pin, measurements=[measurement])
-            pins.append(pin)
-            index = (index + 1) % parameters_number
-        elements.append(Element(name=element_name, pins=pins))
-    board = Board()
-    board.pcb = PCBInfo(pcb_name="Manual board", comment="This board was made by hand for example")
-    board.elements = elements
-    return board

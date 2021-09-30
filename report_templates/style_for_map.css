@@ -13,6 +13,28 @@ div, p {
 	padding: 0;
 }
 
+figure {
+	background-color: #f0f0f0;
+	display: block;
+	left: 0px;
+	margin: 0;
+	padding: 0;
+	position: fixed;
+	text-align: center;
+	top: 0px;
+	width: 20%;
+}
+
+figure img {
+	width: 100%;
+}
+
+figcaption {
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size: 1vw;
+	white-space: pre-line;
+}
+
 #pin {
 	background: #cc0000;
 	border-radius: 15px;

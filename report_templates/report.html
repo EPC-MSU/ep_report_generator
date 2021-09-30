@@ -64,6 +64,9 @@
 						% endif
                         <span>Количество элементов: ${elements_number}</span><br>
                         <span>Количество точек тестирования: ${pins_number}</span><br>
+						% if threshold_score is not None:
+						<span>Пороговое значение score: ${"{:.2f}%".format(threshold_score * 100)}</span><br>
+						% endif
 						% if pcb_comment is not None:
 						<span>Комментарий: ${pcb_comment}</span><br>
 						% endif
@@ -80,7 +83,8 @@
                 </tr>
 				<tr>
                     <td>
-                        <img id="board" src="static/img/board.png" usemap="#map">
+                        <img id="board" src="static/img/board.png" usemap="#map" alt="Карта точек тестирования"
+							title="Карта точек тестирования">
                         <p><map name="map">
                             % for _, _, _, x, y, _, _, _, _, _ in pins:
                             <area shape="circle" coords="${x},${y},10" href="#point${x}${y}" alt="">
@@ -108,7 +112,7 @@
 				<%
 					prev_element_index = None
 				%>
-                % for name, element_index, pin_index, x, y, measurements, score, _, total_pin_index, pin_comment in pins:
+                % for name, element_index, pin_index, x, y, measurements, score, pin_type, total_pin_index, pin_comment in pins:
 				% if element_index != prev_element_index:
 				<%
 					prev_element_index = element_index
@@ -123,7 +127,9 @@
                     <td class="align_left">
 						<a class="anchor" id="top" name="point${x}${y}"></a>
 						<span>#${total_pin_index}</span><br>
-						<span>${name} (pin ${pin_index})</span><br>
+						<span>Название элемента: ${name}</span><br>
+						<span>Индекс элемента: ${element_index}</span><br>
+						<span>Индекс пина: ${pin_index}</span><br>
                         % if mm_per_px:
                         <span>X = ${"{:.2f}".format(x * mm_per_px) } мм</span><br>
 						<span>Y = ${"{:.2f}".format(y * mm_per_px)} мм</span><br>
@@ -132,13 +138,7 @@
 						<span>Y = ${"{:.2f}".format(y)} пк</span><br>
                         % endif
 						% if score is not None:
-						<span>score = ${"{:.2f}".format(score * 100)}</span><br>
-						% endif
-						% if measurements[0].is_dynamic:
-						<span>Динамическая ВАХ</span><br>
-						% endif
-						% if measurements[0].is_reference:
-						<span>Справочная ВАХ</span><br>
+						<span>score = ${"{:.2f}%".format(score * 100)}</span><br>
 						% endif
 						<button class="collapsible" onclick="handle_click(this)">Параметры измерения</button>
 						<div class="measurement_settings">
@@ -156,16 +156,44 @@
 						<button class="collapsible" onclick="handle_click(this)">Комментарий к измерению</button>
 						<div class="measurement_settings">
 							<span>${measurements[0].comment}</span>
-						</div>
+						</div><br>
 						% endif
+						<%
+							legend_for_iv_img = ""
+							if len(measurements) > 1:
+								legend_for_iv_img += "Оранжевый - справочная ВАХ\n"
+							if pin_type.value == 0:
+								legend_for_iv_img += "Пурпурный - тестовая ВАХ (динамическая)"
+							elif pin_type.value == 2:
+								legend_for_iv_img += f"Красный - тестовая ВАХ (score больше порогового значения {threshold_score * 100}%)"
+							elif pin_type.value == 3:
+								legend_for_iv_img += "Синий - тестовая ВАХ"
+						%>
+						<button class="collapsible" onclick="handle_click(this)">Легенда ВАХ</button>
+						<div class="measurement_settings">
+							<span style="white-space: pre-line">${legend_for_iv_img}</span>
+						</div>
                     </td>
 					% if board_img_width is not None:
                     <td>
                         <a class="img_pin">
-                            <img src="static/img/${'%s_%s_%s_pin.png'%(name, element_index, pin_index)}" height="${pin_img_size}" />
+                            <img src="static/img/${'%s_%s_%s_pin.png'%(name, element_index, pin_index)}" height="${pin_img_size}"
+								alt="Изображение точки тестирования (пина)", title="Изображение точки тестирования (пина)">
                             <span>
+								<%
+									if pin_type.value == 0:
+										pin_color = "magenta"
+									elif pin_type.value == 1:
+										pin_color = "purple"
+									elif pin_type.value == 2:
+										pin_color = "red"
+									elif pin_type.value == 3:
+										pin_color = "blue"
+									else:
+										pin_color = "orange"
+								%>
                                 <img src="static/img/board.png" width="500px" style="position:relative">
-                                <div class="pin" style="top:${y * (500 / board_img_width) - 3}px; left:${x * (500 / board_img_width) - 3}px;">
+                                <div class="pin" style="top:${y * (500 / board_img_width) - 3}px; left:${x * (500 / board_img_width) - 3}px; background-color:${pin_color}">
                                 </div>
                                 </img>
                             </span>
@@ -173,7 +201,8 @@
                     </td>					
 					% endif
                     <td>
-                        <img src="static/img/${'%s_%s_%s_iv.png'%(name, element_index, pin_index)}" height="${pin_img_size}">
+                        <img src="static/img/${'%s_%s_%s_iv.png'%(name, element_index, pin_index)}" height="${pin_img_size}"
+							alt="Изображение ВАХ" title="${legend_for_iv_img}">
                     </td>
                 </tr>
                 % endfor
