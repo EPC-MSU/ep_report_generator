@@ -161,7 +161,7 @@ class ReportGenerator(QThread):
         else:
             board_image_width = self._board.image.width
             pin_img_size = 2 * ut.PIN_HALF_WIDTH
-        if self._board.pcb.image_resolution_ppcm is not None:
+        if self._board.pcb is not None and self._board.pcb.image_resolution_ppcm is not None:
             mm_per_px = 10 / self._board.pcb.image_resolution_ppcm
         else:
             mm_per_px = None
