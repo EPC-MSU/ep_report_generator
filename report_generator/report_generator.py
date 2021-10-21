@@ -135,6 +135,7 @@ class ReportGenerator(QThread):
         """
 
         if not self._results_by_steps[ReportCreationSteps.DRAW_BOARD]:
+            self.step_done.emit()
             return
         self.step_started.emit("Creation of report with board map")
         logger.info("Creation of report with board map was started")
@@ -245,6 +246,8 @@ class ReportGenerator(QThread):
         if ut.draw_pins(self._board.image, self._pins_info, img_dir_path):
             logger.info("Images of pins were saved to directory '%s'", img_dir_path)
             return True
+        for _ in range(len(self._pins_info)):
+            self.step_done.emit()
         logger.info("Images of pins were not drawn")
         return False
 
