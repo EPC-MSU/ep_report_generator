@@ -17,7 +17,7 @@ setup(name="ep_report_generator",
           "Pillow==8.0.1",
           "PyQt5<=5.15.0",
           "PyQt5-stubs",
-          "epcore @ hg+https://anonymous:anonymous@hg.ximc.ru/eyepoint/epcore@9a86b71afa17#egg=epcore",
+          "epcore @ hg+https://anonymous:anonymous@hg.ximc.ru/eyepoint/epcore@538325ef9e92#egg=epcore",
           "ivviewer @ hg+https://anonymous:anonymous@hg.ximc.ru/eyepoint/ivviewer@Version0.1.8#egg=ivviewer",
       ],
       dependency_links=[
