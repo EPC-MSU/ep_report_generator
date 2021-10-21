@@ -4,5 +4,5 @@ numpy==1.18.1
 Pillow==8.0.1
 PyQt5<=5.15.0
 PyQt5-stubs
-hg+https://hg.ximc.ru/eyepoint/epcore@9a86b71afa17#egg=epcore
+hg+https://hg.ximc.ru/eyepoint/epcore@dev-0.1#egg=epcore
 hg+https://hg.ximc.ru/eyepoint/ivviewer@dev-0.1#egg=ivviewer
