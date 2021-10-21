@@ -2,6 +2,7 @@
 File with  useful functions.
 """
 
+import copy
 import logging
 import os
 from enum import Enum
@@ -10,8 +11,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mako.template import Template
 from PIL.Image import Image
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QColor
-from epcore.elements import Board
+from epcore.elements import Board, Element, Pin
 from ivviewer import Curve, Viewer
 
 logger = logging.getLogger(__name__)
@@ -105,21 +107,26 @@ def create_board(test_board: Board, ref_board: Board) -> Board:
     board = Board()
     board.image = test_board.image
     board.pcb = test_board.pcb
+    board.elements = []
     for element_index, element in enumerate(test_board.elements):
+        board_pins = []
         for pin_index, pin in enumerate(element.pins):
-            measurements = pin.measurements
-            if measurements:
+            if pin.measurements:
+                measurements = [copy.deepcopy(pin.measurements[0])]
                 measurements[0].is_reference = False
-                measurements = [measurements[0]]
             else:
                 measurements = []
             if ref_board is not None:
                 ref_measurements = ref_board.elements[element_index].pins[pin_index].measurements
                 if ref_measurements:
-                    ref_measurements[0].is_reference = True
-                    measurements.append(ref_measurements[0])
-            pin.measurements = measurements
-    board.elements = test_board.elements
+                    measurements.append(copy.deepcopy(ref_measurements[0]))
+                    measurements[-1].is_reference = True
+            board_pins.append(Pin(pin.x, pin.y, measurements, pin.comment))
+        board_element = Element(pins=board_pins, name=element.name, package=element.package,
+                                bounding_zone=element.bounding_zone, rotation=element.rotation,
+                                width=element.width, height=element.height,
+                                set_automatically=element.set_automatically)
+        board.elements.append(board_element)
     return board
 
 
@@ -173,11 +180,12 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str) -> bool:
     return True
 
 
-def draw_ivc_for_pins(pins_info: List, dir_name: str):
+def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal):
     """
     Function draws and saves IV-curves for pins of board.
     :param pins_info: list with information about pins required for report;
-    :param dir_name: name of directory where images should be saved.
+    :param dir_name: name of directory where images should be saved;
+    :param signal: signal.
     """
 
     viewer = Viewer()
@@ -213,17 +221,19 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str):
         file_name = f"{element_name}_{element_index}_{pin_index}_iv.png"
         path = os.path.join(dir_name, file_name)
         viewer.plot.grab().save(path)
+        signal.emit()
         logger.info("IV-curve of pin '%s_%s_%s' was saved to '%s'", element_name, element_index,
                     pin_index, file_name)
 
 
 @_check_for_image_availability
-def draw_pins(image: Image, pins_info: List, dir_name: str) -> bool:
+def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal) -> bool:
     """
     Function draws and saves images of pins of board.
     :param image: board image;
     :param pins_info: list with information about pins required for report;
-    :param dir_name: name of directory where images should be saved.
+    :param dir_name: name of directory where images should be saved;
+    :param signal: signal.
     :return: True if images were drawn and saved.
     """
 
@@ -239,6 +249,7 @@ def draw_pins(image: Image, pins_info: List, dir_name: str) -> bool:
         file_name = f"{element_name}_{element_index}_{pin_index}_pin.png"
         path = os.path.join(dir_name, file_name)
         fig.savefig(path)
+        signal.emit()
         logger.info("Image of pin '%s_%s_%s' was saved to '%s'", element_name, element_index,
                     pin_index, file_name)
     return True

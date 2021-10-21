@@ -7,7 +7,7 @@ import os
 import shutil
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import pyqtSignal, QThread
 from epcore.elements import Board
 from epcore.filemanager import load_board_from_ufiv
 from epcore.measurementmanager import IVCComparator
@@ -80,6 +80,11 @@ class ReportGenerator(QThread):
     Class to generate report for Board object.
     """
 
+    generation_finished = pyqtSignal()
+    step_done = pyqtSignal()
+    step_started = pyqtSignal(str)
+    total_number_of_steps_calculated = pyqtSignal(int)
+
     def __init__(self, parent=None, board_test: Optional[Board] = None,
                  board_ref: Optional[Board] = None, config: Optional[Dict] = None):
         """
@@ -131,6 +136,7 @@ class ReportGenerator(QThread):
 
         if not self._results_by_steps[ReportCreationSteps.DRAW_BOARD]:
             return
+        self.step_started.emit("Creation of report with board map")
         logger.info("Creation of report with board map was started")
         dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_MAP)
@@ -140,6 +146,7 @@ class ReportGenerator(QThread):
         shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME,
                                                  _STYLE_FOR_MAP))
         ut.create_report(template_file_name, report_file_name, pins=self._pins_info)
+        self.step_done.emit()
         logger.info("Report with board map was saved to '%s'", report_file_name)
 
     def _create_report(self):
@@ -147,6 +154,7 @@ class ReportGenerator(QThread):
         Method creates report.
         """
 
+        self.step_started.emit("Creation of report")
         logger.info("Creation of report was started")
         dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_REPORT)
@@ -181,6 +189,7 @@ class ReportGenerator(QThread):
                 "pin_img_size": pin_img_size,
                 "threshold_score": self._threshold_score}
         ut.create_report(template_file_name, report_file_name, **data)
+        self.step_done.emit()
         logger.info("Report was saved to '%s'", report_file_name)
 
     def _draw_board(self):
@@ -188,6 +197,7 @@ class ReportGenerator(QThread):
         Method draws and saves board image without pins.
         """
 
+        self.step_started.emit("Drawing of board")
         logger.info("Board drawing was started")
         file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, _BOARD_IMAGE)
         self._board.image.save(file_name)
@@ -199,11 +209,14 @@ class ReportGenerator(QThread):
         :return: True if image was drawn and saved.
         """
 
+        self.step_started.emit("Drawing of board with pins")
         logger.info("Drawing of board with pins was started")
         file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, _BOARD_WITH_PINS_IMAGE)
         if ut.draw_board_with_pins(self._board.image, self._pins_info, file_name):
+            self.step_done.emit()
             logger.info("Image of board with pins was saved to '%s'", file_name)
             return True
+        self.step_done.emit()
         logger.info("Image of board with pins was not drawn")
         return False
 
@@ -213,9 +226,10 @@ class ReportGenerator(QThread):
         :return: True if images were drawn and saved.
         """
 
+        self.step_started.emit("Drawing of IV-curves")
         logger.info("Drawing of IV-curves was started")
         img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-        ut.draw_ivc_for_pins(self._pins_info, img_dir_path)
+        ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done)
         logger.info("Images of IV-curves were saved to directory '%s'", img_dir_path)
         return True
 
@@ -225,6 +239,7 @@ class ReportGenerator(QThread):
         :return: True if images were drawn and saved.
         """
 
+        self.step_started.emit("Drawing of pins")
         logger.info("Drawing of pins was started")
         img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
         if ut.draw_pins(self._board.image, self._pins_info, img_dir_path):
@@ -269,6 +284,8 @@ class ReportGenerator(QThread):
                             score, pin_type, total_pin_index, pin.comment)
                     pins_info.append(info)
                 total_pin_index += 1
+        pin_number = len(pins_info)
+        self.total_number_of_steps_calculated.emit(3 + pin_number * 2)
         return pins_info
 
     def _read_config(self, config: Dict):
@@ -317,6 +334,7 @@ class ReportGenerator(QThread):
             self._results_by_steps[step] = method()
         self._create_report_with_map()
         self._create_report()
+        self.generation_finished.emit()
 
     @classmethod
     def get_version(cls) -> str:
