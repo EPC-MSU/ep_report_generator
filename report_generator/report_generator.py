@@ -161,13 +161,19 @@ class ReportGenerator(QThread):
         else:
             board_image_width = self._board.image.width
             pin_img_size = 2 * ut.PIN_HALF_WIDTH
-        if self._board.pcb is not None and self._board.pcb.image_resolution_ppcm is not None:
-            mm_per_px = 10 / self._board.pcb.image_resolution_ppcm
-        else:
-            mm_per_px = None
+        pcb_name = None
+        pcb_comment = None
+        mm_per_px = None
+        if self._board.pcb is not None:
+            if self._board.pcb.pcb_name is not None:
+                pcb_name = self._board.pcb.pcb_name
+            if self._board.pcb.comment is not None:
+                pcb_comment = self._board.pcb.comment
+            if self._board.pcb.image_resolution_ppcm is not None:
+                mm_per_px = 10 / self._board.pcb.image_resolution_ppcm
         data = {"pins": self._pins_info,
-                "pcb_name": self._board.pcb.pcb_name,
-                "pcb_comment": self._board.pcb.comment,
+                "pcb_name": pcb_name,
+                "pcb_comment": pcb_comment,
                 "mm_per_px": mm_per_px,
                 "elements_number": elements_number,
                 "pins_number": len(self._pins_info),
