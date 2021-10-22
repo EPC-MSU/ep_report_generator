@@ -245,7 +245,7 @@ class ReportGenerator(QThread):
         self.step_started.emit("Drawing of pins")
         logger.info("Drawing of pins was started")
         img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-        if ut.draw_pins(self._board.image, self._pins_info, img_dir_path):
+        if ut.draw_pins(self._board.image, self._pins_info, img_dir_path, self.step_done):
             logger.info("Images of pins were saved to directory '%s'", img_dir_path)
             return True
         for _ in range(len(self._pins_info)):
