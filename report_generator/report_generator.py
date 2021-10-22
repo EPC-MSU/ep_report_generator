@@ -80,7 +80,8 @@ class ReportGenerator(QThread):
     Class to generate report for Board object.
     """
 
-    generation_finished = pyqtSignal()
+    exception_raised = pyqtSignal(str)
+    generation_finished = pyqtSignal(str)
     step_done = pyqtSignal()
     step_started = pyqtSignal(str)
     total_number_of_steps_calculated = pyqtSignal(int)
@@ -191,6 +192,7 @@ class ReportGenerator(QThread):
                 "threshold_score": self._threshold_score}
         ut.create_report(template_file_name, report_file_name, **data)
         self.step_done.emit()
+        self.generation_finished.emit(report_file_name)
         logger.info("Report was saved to '%s'", report_file_name)
 
     def _draw_board(self):
@@ -337,7 +339,6 @@ class ReportGenerator(QThread):
             self._results_by_steps[step] = method()
         self._create_report_with_map()
         self._create_report()
-        self.generation_finished.emit()
 
     @classmethod
     def get_version(cls) -> str:
@@ -373,4 +374,6 @@ class ReportGenerator(QThread):
         try:
             self._run()
         except Exception as exc:
-            logger.error("Error occurred while generating report: %s", exc)
+            exception_text = f"Error occurred while generating report: {exc}"
+            self.exception_raised.emit(exception_text)
+            logger.error(exception_text)
