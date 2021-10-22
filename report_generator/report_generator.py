@@ -7,7 +7,7 @@ import os
 import shutil
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
-from PyQt5.QtCore import pyqtSignal, QThread
+from PyQt5.QtCore import pyqtSignal, QObject
 from epcore.elements import Board
 from epcore.filemanager import load_board_from_ufiv
 from epcore.measurementmanager import IVCComparator
@@ -75,7 +75,7 @@ class ReportCreationSteps(Enum):
                 cls.CREATE_REPORT: None}
 
 
-class ReportGenerator(QThread):
+class ReportGenerator(QObject):
     """
     Class to generate report for Board object.
     """
