@@ -11,7 +11,7 @@ setup(name="ep_report_generator",
       author_email="info@physlab.ru",
       packages=find_packages(),
       install_requires=[
-          "Mako==1.1.5",
+          "Mako",
           "matplotlib==3.3.4",
           "numpy==1.18.1",
           "Pillow==8.0.1",
