@@ -12,7 +12,7 @@ setup(name="ep_report_generator",
       packages=find_packages(),
       install_requires=[
           "Mako",
-          "matplotlib==3.3.4",
+          "matplotlib",
           "numpy==1.18.1",
           "Pillow==8.0.1",
           "PyQt5<=5.15.0",
