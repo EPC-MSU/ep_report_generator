@@ -6,7 +6,8 @@ import os
 import sys
 from PyQt5.QtWidgets import QApplication
 from epcore.filemanager import load_board_from_ufiv
-from report_generator import ConfigAttributes, ObjectsForReport, ReportGenerator
+from report_generator import (ConfigAttributes, create_test_and_ref_boards, ObjectsForReport,
+                              ReportGenerator)
 from manual_board import create_manual_board
 
 
@@ -20,13 +21,15 @@ if __name__ == "__main__":
     dir_name = os.path.dirname(os.path.abspath(__file__))
     dir_for_report = os.path.join(dir_name, "report_for_p10_board")
     board = load_board_from_ufiv(BOARD_FILE_NAME)
-    config = {ConfigAttributes.BOARD_TEST: board,
+    test_board, ref_board = create_test_and_ref_boards(board)
+    config = {ConfigAttributes.BOARD_TEST: test_board,
+              ConfigAttributes.BOARD_REF: ref_board,
               ConfigAttributes.DIRECTORY: dir_for_report,
               ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True,
                                          ObjectsForReport.ELEMENT: [],
                                          ObjectsForReport.PIN: []},
               ConfigAttributes.THRESHOLD_SCORE: 0.5,
-              }
+              ConfigAttributes.PIN_SIZE: 70}
     report_generator.run(config)
 
     # Report for manual board
@@ -40,6 +43,5 @@ if __name__ == "__main__":
               ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True,
                                          ObjectsForReport.ELEMENT: [],
                                          ObjectsForReport.PIN: []},
-              ConfigAttributes.THRESHOLD_SCORE: 0.2,
-              }
+              ConfigAttributes.THRESHOLD_SCORE: 0.2}
     report_generator.run(config)

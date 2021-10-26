@@ -120,6 +120,8 @@
 				legend_for_iv_img += f"Красный - тестовая ВАХ (score больше порогового значения {threshold_score * 100}%)"
 			elif pin_type.value == 3:
 				legend_for_iv_img += "Синий - тестовая ВАХ"
+			elif pin_type.value == 4:
+				legend_for_iv_img += "Оранжевый - справочная ВАХ\n"
 		%>
 		<figcaption>${legend_for_iv_img}</figcaption>
 	</figure>

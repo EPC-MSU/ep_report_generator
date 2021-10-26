@@ -38,6 +38,7 @@ class ConfigAttributes(Enum):
     DIRECTORY = 2
     OBJECTS = 3
     THRESHOLD_SCORE = 4
+    PIN_SIZE = 5
 
 
 class ObjectsForReport(Enum):
@@ -101,6 +102,7 @@ class ReportGenerator(QObject):
         self._board_test: Board = board_test
         self._config: Dict = config
         self._dir_name: str = self._get_default_dir_name()
+        self._pin_width: int = ut.PIN_WIDTH
         self._pins_info: List = []
         self._required_board: bool = False
         self._required_elements: List = []
@@ -130,27 +132,6 @@ class ReportGenerator(QObject):
         for dir_path in dir_paths:
             create_dir(dir_path)
 
-    def _create_report_with_map(self):
-        """
-        Method creates report with one big image of board.
-        """
-
-        if not self._results_by_steps[ReportCreationSteps.DRAW_BOARD]:
-            self.step_done.emit()
-            return
-        self.step_started.emit("Creation of report with board map")
-        logger.info("Creation of report with board map was started")
-        dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_MAP)
-        template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME,
-                                          _TEMPLATE_FILE_WITH_MAP)
-        style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_MAP)
-        shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME,
-                                                 _STYLE_FOR_MAP))
-        ut.create_report(template_file_name, report_file_name, pins=self._pins_info)
-        self.step_done.emit()
-        logger.info("Report with board map was saved to '%s'", report_file_name)
-
     def _create_report(self):
         """
         Method creates report.
@@ -170,7 +151,7 @@ class ReportGenerator(QObject):
             pin_img_size = None
         else:
             board_image_width = self._board.image.width
-            pin_img_size = 2 * ut.PIN_HALF_WIDTH
+            pin_img_size = 2 * ut.PIN_WIDTH
         pcb_name = None
         pcb_comment = None
         mm_per_px = None
@@ -194,6 +175,28 @@ class ReportGenerator(QObject):
         self.step_done.emit()
         self.generation_finished.emit(report_file_name)
         logger.info("Report was saved to '%s'", report_file_name)
+
+    def _create_report_with_map(self):
+        """
+        Method creates report with one big image of board.
+        """
+
+        if not self._results_by_steps[ReportCreationSteps.DRAW_BOARD]:
+            self.step_done.emit()
+            return
+        self.step_started.emit("Creation of report with board map")
+        logger.info("Creation of report with board map was started")
+        dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_MAP)
+        template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME,
+                                          _TEMPLATE_FILE_WITH_MAP)
+        style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_MAP)
+        shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME,
+                                                 _STYLE_FOR_MAP))
+        ut.create_report(template_file_name, report_file_name, pins=self._pins_info,
+                         threshold_score=self._threshold_score)
+        self.step_done.emit()
+        logger.info("Report with board map was saved to '%s'", report_file_name)
 
     def _draw_board(self):
         """
@@ -245,7 +248,8 @@ class ReportGenerator(QObject):
         self.step_started.emit("Drawing of pins")
         logger.info("Drawing of pins was started")
         img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-        if ut.draw_pins(self._board.image, self._pins_info, img_dir_path, self.step_done):
+        if ut.draw_pins(self._board.image, self._pins_info, img_dir_path, self.step_done,
+                        self._pin_width):
             logger.info("Images of pins were saved to directory '%s'", img_dir_path)
             return True
         for _ in range(len(self._pins_info)):
@@ -303,7 +307,8 @@ class ReportGenerator(QObject):
                       ConfigAttributes.BOARD_REF: self._board_ref,
                       ConfigAttributes.DIRECTORY: self._dir_name,
                       ConfigAttributes.OBJECTS: {},
-                      ConfigAttributes.THRESHOLD_SCORE: None}
+                      ConfigAttributes.THRESHOLD_SCORE: None,
+                      ConfigAttributes.PIN_SIZE: 2 * ut.PIN_WIDTH}
         elif isinstance(self._config, Dict):
             config = self._config
         self._config = config
@@ -313,6 +318,7 @@ class ReportGenerator(QObject):
                                       _DEFAULT_REPORT_DIR_NAME)
         self._threshold_score = self._config.get(ConfigAttributes.THRESHOLD_SCORE,
                                                  self._threshold_score)
+        self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, ut.PIN_WIDTH)
         required_objects = self._config.get(ConfigAttributes.OBJECTS, {})
         if required_objects.get(ObjectsForReport.BOARD):
             self._required_board = True

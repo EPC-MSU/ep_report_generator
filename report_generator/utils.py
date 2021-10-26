@@ -37,7 +37,7 @@ PIN_COLORS = {PinTypes.DYNAMIC: "magenta",
               PinTypes.HIGH_SCORE: "red",
               PinTypes.NORMAL: "blue",
               PinTypes.REFERENCE: "orange"}
-PIN_HALF_WIDTH = 50
+PIN_WIDTH = 100
 
 
 def _check_for_image_availability(func: Callable):
@@ -77,16 +77,17 @@ def _draw_circle(image: Image, circles: Tuple[List[float], List[float]], color: 
     return fig
 
 
-def _get_pin_borders(center: float, board_width: int) -> Tuple[float, float]:
+def _get_pin_borders(center: float, board_width: int, pin_width: int) -> Tuple[float, float]:
     """
     Function defines boundaries of pin rectangle along one of axes.
     :param center: center of pin;
-    :param board_width: width of board along axis.
+    :param board_width: width of board along axis;
+    :param pin_width: width in pixels of pin image.
     :return: boundaries of pin rectangle.
     """
 
-    left = center - PIN_HALF_WIDTH
-    right = center + PIN_HALF_WIDTH
+    left = center - pin_width // 2
+    right = center + pin_width // 2
     if right > board_width:
         left -= right - board_width
         right = board_width
@@ -141,6 +142,45 @@ def create_report(template_file: str, report_file: str, **kwargs):
     report = Template(filename=template_file, input_encoding="utf-8")
     with open(report_file, "w", encoding="utf-8") as file:
         file.write(report.render(**kwargs))
+
+
+def create_test_and_ref_boards(board: Board) -> Tuple[Board, Board]:
+    """
+    Function creates two separate test and reference boards from one.
+    :param board: initial board.
+    :return: test and reference boards.
+    """
+
+    ref_elements = []
+    test_elements = []
+    for element in board.elements:
+        ref_pins = []
+        test_pins = []
+        for pin in element.pins:
+            ref_measurement = None
+            test_measurement = None
+            for measurement in pin.measurements:
+                if measurement.is_reference:
+                    ref_measurement = measurement
+                else:
+                    test_measurement = measurement
+            ref_measurements = [] if ref_measurement is None else [ref_measurement]
+            test_measurements = [] if test_measurement is None else [test_measurement]
+            ref_pins.append(Pin(x=pin.x, y=pin.y, measurements=ref_measurements,
+                                comment=pin.comment))
+            test_pins.append(Pin(x=pin.x, y=pin.y, measurements=test_measurements,
+                                 comment=pin.comment))
+        ref_elements.append(Element(pins=ref_pins, name=element.name, package=element.package,
+                                    bounding_zone=element.bounding_zone, rotation=element.rotation,
+                                    width=element.width, height=element.height,
+                                    set_automatically=element.set_automatically))
+        test_elements.append(Element(pins=test_pins, name=element.name, package=element.package,
+                                     bounding_zone=element.bounding_zone, rotation=element.rotation,
+                                     width=element.width, height=element.height,
+                                     set_automatically=element.set_automatically))
+    ref_board = Board(elements=ref_elements, image=board.image, pcb=board.pcb)
+    test_board = Board(elements=test_elements, image=board.image, pcb=board.pcb)
+    return test_board, ref_board
 
 
 @_check_for_image_availability
@@ -227,13 +267,15 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal):
 
 
 @_check_for_image_availability
-def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal) -> bool:
+def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal, pin_width: int)\
+        -> bool:
     """
     Function draws and saves images of pins of board.
     :param image: board image;
     :param pins_info: list with information about pins required for report;
     :param dir_name: name of directory where images should be saved;
-    :param signal: signal.
+    :param signal: signal;
+    :param pin_width: width in pixels of pins images.
     :return: True if images were drawn and saved.
     """
 
@@ -241,8 +283,8 @@ def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal) 
     width = image.width
     for pin_info in pins_info:
         element_name, element_index, pin_index, x, y, _, _, pin_type, _, _ = pin_info
-        left, right = _get_pin_borders(x, width)
-        upper, lower = _get_pin_borders(y, height)
+        left, right = _get_pin_borders(x, width, pin_width)
+        upper, lower = _get_pin_borders(y, height, pin_width)
         pin_image = image.crop((left, upper, right, lower))
         pin_color = PIN_COLORS[pin_type]
         fig = _draw_circle(pin_image, ([x - left], [y - upper]), pin_color)
