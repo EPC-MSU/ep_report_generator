@@ -17,7 +17,7 @@ from .version import Version
 logger = logging.getLogger(__name__)
 _BOARD_IMAGE = "board_clear.png"
 _BOARD_WITH_PINS_IMAGE = "board.png"
-_DEFAULT_REPORT_DIR_NAME = "board_report"
+_DEFAULT_REPORT_DIR_NAME = "report"
 _IMG_DIR_NAME = "img"
 _STATIC_DIR_NAME = "static"
 _STYLE_FOR_MAP = "style_for_map.css"
@@ -260,8 +260,7 @@ class ReportGenerator(QObject):
         :return: default name for directory.
         """
 
-        parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        return os.path.join(parent_dir, _DEFAULT_REPORT_DIR_NAME)
+        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def _get_info_about_pins(self) -> List[Tuple]:
         """
@@ -310,7 +309,8 @@ class ReportGenerator(QObject):
         self._config = config
         self._board_ref = self._config.get(ConfigAttributes.BOARD_REF, self._board_ref)
         self._board_test = self._config.get(ConfigAttributes.BOARD_TEST, self._board_test)
-        self._dir_name = self._config.get(ConfigAttributes.DIRECTORY, self._dir_name)
+        self._dir_name = os.path.join(self._config.get(ConfigAttributes.DIRECTORY, self._dir_name),
+                                      _DEFAULT_REPORT_DIR_NAME)
         self._threshold_score = self._config.get(ConfigAttributes.THRESHOLD_SCORE,
                                                  self._threshold_score)
         required_objects = self._config.get(ConfigAttributes.OBJECTS, {})
