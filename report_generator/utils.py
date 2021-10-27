@@ -280,12 +280,12 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal):
         else:
             test_curve.clear_curve()
             ref_curve.clear_curve()
-        file_name = f"{element_name}_{element_index}_{pin_index}_iv.png"
+        file_name = f"{element_index}_{pin_index}_iv.png"
         path = os.path.join(dir_name, file_name)
         viewer.plot.grab().save(path)
         signal.emit()
-        logger.info("IV-curve of pin '%s_%s_%s' was saved to '%s'", element_name, element_index,
-                    pin_index, file_name)
+        logger.info("IV-curve of pin '%s_%s' was saved to '%s'", element_index, pin_index,
+                    file_name)
 
 
 @_check_for_image_availability
@@ -310,12 +310,11 @@ def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal, 
         pin_image = image.crop((left, upper, right, lower))
         pin_color = PIN_COLORS[pin_type]
         fig = _draw_circle(pin_image, ([x - left], [y - upper]), pin_color)
-        file_name = f"{element_name}_{element_index}_{pin_index}_pin.png"
+        file_name = f"{element_index}_{pin_index}_pin.png"
         path = os.path.join(dir_name, file_name)
         fig.savefig(path)
         signal.emit()
-        logger.info("Image of pin '%s_%s_%s' was saved to '%s'", element_name, element_index,
-                    pin_index, file_name)
+        logger.info("Image of pin '%s_%s' was saved to '%s'", element_index, pin_index, file_name)
     return True
 
 

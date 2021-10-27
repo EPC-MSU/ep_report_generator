@@ -179,7 +179,7 @@
 					% if board_img_width is not None:
                     <td>
                         <a class="img_pin">
-                            <img src="static/img/${'%s_%s_%s_pin.png'%(name, element_index, pin_index)}" height="${pin_img_size}"
+                            <img src="static/img/${'%s_%s_pin.png'%(element_index, pin_index)}" height="${pin_img_size}"
 								alt="Изображение точки тестирования (пина)", title="Изображение точки тестирования (пина)">
                             <span>
 								<%
@@ -203,7 +203,7 @@
                     </td>					
 					% endif
                     <td>
-                        <img src="static/img/${'%s_%s_%s_iv.png'%(name, element_index, pin_index)}" height="${pin_img_size}"
+                        <img src="static/img/${'%s_%s_iv.png'%(element_index, pin_index)}" height="${pin_img_size}"
 							alt="Изображение ВАХ" title="${legend_for_iv_img}">
                     </td>
                 </tr>

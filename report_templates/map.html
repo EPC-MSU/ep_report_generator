@@ -108,7 +108,7 @@
     % for name, element_index, pin_index, x, y, measurements, _, pin_type, _, _ in pins:
 	<figure id="img${x},${y},10" onmouseover="change_position(this);" style="display: none;">
 		<p>
-			<img src="static/img/${'%s_%s_%s_iv.png'%(name, element_index, pin_index)}" alt="Изображение ВАХв точке тестирования">
+			<img src="static/img/${'%s_%s_iv.png'%(element_index, pin_index)}" alt="Изображение ВАХв точке тестирования">
 		</p>
 		<%
 			legend_for_iv_img = ""
