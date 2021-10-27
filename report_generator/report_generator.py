@@ -7,7 +7,7 @@ import os
 import shutil
 import webbrowser
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 from PyQt5.QtCore import pyqtSignal, QObject
 from epcore.elements import Board
 from epcore.filemanager import load_board_from_ufiv
@@ -79,6 +79,19 @@ class ReportCreationSteps(Enum):
                 cls.CREATE_REPORT: None}
 
 
+def check_stop_operation(func: Callable):
+    """
+    Decorator checks if operation needs to be stopped.
+    :param func: decorated method.
+    """
+
+    def wrapper(self, *args):
+        if self.stop:
+            return
+        return func(self, *args)
+    return wrapper
+
+
 class ReportGenerator(QObject):
     """
     Class to generate report for Board object.
@@ -114,7 +127,9 @@ class ReportGenerator(QObject):
         self._results_by_steps: Dict = ReportCreationSteps.get_dict()
         self._static_dir_name: str = None
         self._threshold_score: float = None
+        self.stop: bool = False
 
+    @check_stop_operation
     def _create_required_dirs(self):
         """
         Method checks existence of required folders and creates them if necessary.
@@ -136,6 +151,7 @@ class ReportGenerator(QObject):
         for dir_path in dir_paths:
             create_dir(dir_path)
 
+    @check_stop_operation
     def _create_report(self) -> str:
         """
         Method creates report.
@@ -182,6 +198,7 @@ class ReportGenerator(QObject):
         logger.info("Report was saved to '%s'", report_file_name)
         return report_file_name
 
+    @check_stop_operation
     def _create_report_with_map(self):
         """
         Method creates report with one big image of board.
@@ -204,6 +221,7 @@ class ReportGenerator(QObject):
         self.step_done.emit()
         logger.info("Report with board map was saved to '%s'", report_file_name)
 
+    @check_stop_operation
     def _draw_board(self):
         """
         Method draws and saves board image without pins.
@@ -215,6 +233,7 @@ class ReportGenerator(QObject):
         self._board.image.save(file_name)
         logger.info("Board image was saved to '%s'", file_name)
 
+    @check_stop_operation
     def _draw_board_with_pins(self) -> bool:
         """
         Method draws and saves image of board with pins.
@@ -232,6 +251,7 @@ class ReportGenerator(QObject):
         logger.info("Image of board with pins was not drawn")
         return False
 
+    @check_stop_operation
     def _draw_ivc(self) -> bool:
         """
         Method draws IV-curves for pins and saves them.
@@ -245,6 +265,7 @@ class ReportGenerator(QObject):
         logger.info("Images of IV-curves were saved to directory '%s'", img_dir_path)
         return True
 
+    @check_stop_operation
     def _draw_pins(self) -> bool:
         """
         Method draws pins images and saves them.
@@ -272,6 +293,7 @@ class ReportGenerator(QObject):
 
         return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+    @check_stop_operation
     def _get_info_about_pins(self) -> List[Tuple]:
         """
         Method returns list with information about pins for which report should
@@ -302,6 +324,7 @@ class ReportGenerator(QObject):
         self.total_number_of_steps_calculated.emit(3 + pin_number * 2)
         return pins_info
 
+    @check_stop_operation
     def _read_config(self, config: Dict):
         """
         Method reads dictionary with full information about required report.
@@ -394,3 +417,11 @@ class ReportGenerator(QObject):
             exception_text = f"Error occurred while generating report: {exc}"
             self.exception_raised.emit(exception_text)
             logger.error(exception_text)
+
+    def stop_process(self):
+        """
+        Method stops generation of report.
+        """
+
+        logger.info("Generation of report was stopped")
+        self.stop = True
