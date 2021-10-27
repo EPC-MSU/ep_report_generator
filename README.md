@@ -3,10 +3,12 @@
 
 ## Применение
 
-1. Установите библиотеку `ep_report_generator`:
+1. Установите библиотеки `ep_report_generator`, `epcore` и `ivviewer`:
 
    ```
+   python -m pip install --upgrade pip
    python -m pip install git+https://github.com/EPC-MSU/ep_report_generator
+   python -m pip install hg+https://hg.ximc.ru/eyepoint/epcore@dev-0.1 hg+https://hg.ximc.ru/eyepoint/ivviewer@dev-0.1
    ```
 
 2. В вашем python-скрипте импортируйте из библиотеки следующие классы:
@@ -31,11 +33,13 @@
    ```
    config = {ConfigAttributes.BOARD_TEST: test_board,
              ConfigAttributes.BOARD_REF: ref_board,
-   		  ConfigAttributes.DIRECTORY: путь_к_папке_в_которой_нужно_сохранить_отчет,
-             ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: нужно_ли_создать_отчет_для_всей_платы_целиком_True_или_False,
-                                        ObjectsForReport.ELEMENT: [индексы_элементов_которые_должны_быть_включены_в_отчет],
-                                        ObjectsForReport.PIN: [индексы_пинов_которые_должны_быть_включены_в_отчет]},
-             ConfigAttributes.THRESHOLD_SCORE: пороговое_значение_score}
+   		  ConfigAttributes.DIRECTORY: путь к папке, в которой нужно сохранить отчет,
+             ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: нужно ли создать отчет для всей платы целиком True или False,
+                                        ObjectsForReport.ELEMENT: [индексы элементов, которые должны быть включены в отчет],
+                                        ObjectsForReport.PIN: [индексы пинов, которые должны быть включены в отчет]},
+             ConfigAttributes.THRESHOLD_SCORE: пороговое значение score,
+             ConfigAttributes.PIN_SIZE: высота изображения пина в пикселях для отчета,
+             ConfigAttributes.OPEN_REPORT_AT_FINISH: если True, то по завершении создания отчета отчет будет открыт}
    ```
 
 6. Создайте объект типа `ReportGenerator` и запустите его, передав в качестве аргумента словарь-конфиг:

@@ -5,6 +5,7 @@ File with class to generate report.
 import logging
 import os
 import shutil
+import webbrowser
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 from PyQt5.QtCore import pyqtSignal, QObject
@@ -26,6 +27,7 @@ _STYLES_DIR_NAME = "styles"
 _TEMPLATE_FILE_WITH_MAP = "map.html"
 _TEMPLATE_FILE_WITH_REPORT = "report.html"
 _TEMPLATES_DIR_NAME = "report_templates"
+_PIN_WIDTH = 100
 
 
 class ConfigAttributes(Enum):
@@ -39,6 +41,7 @@ class ConfigAttributes(Enum):
     OBJECTS = 3
     THRESHOLD_SCORE = 4
     PIN_SIZE = 5
+    OPEN_REPORT_AT_FINISH = 6
 
 
 class ObjectsForReport(Enum):
@@ -102,7 +105,8 @@ class ReportGenerator(QObject):
         self._board_test: Board = board_test
         self._config: Dict = config
         self._dir_name: str = self._get_default_dir_name()
-        self._pin_width: int = ut.PIN_WIDTH
+        self._open_report_at_finish: bool = False
+        self._pin_width: int = _PIN_WIDTH
         self._pins_info: List = []
         self._required_board: bool = False
         self._required_elements: List = []
@@ -132,9 +136,10 @@ class ReportGenerator(QObject):
         for dir_path in dir_paths:
             create_dir(dir_path)
 
-    def _create_report(self):
+    def _create_report(self) -> str:
         """
         Method creates report.
+        :return: name of file with created report.
         """
 
         self.step_started.emit("Creation of report")
@@ -151,7 +156,7 @@ class ReportGenerator(QObject):
             pin_img_size = None
         else:
             board_image_width = self._board.image.width
-            pin_img_size = 2 * ut.PIN_WIDTH
+            pin_img_size = self._pin_width
         pcb_name = None
         pcb_comment = None
         mm_per_px = None
@@ -175,6 +180,7 @@ class ReportGenerator(QObject):
         self.step_done.emit()
         self.generation_finished.emit(report_file_name)
         logger.info("Report was saved to '%s'", report_file_name)
+        return report_file_name
 
     def _create_report_with_map(self):
         """
@@ -308,17 +314,20 @@ class ReportGenerator(QObject):
                       ConfigAttributes.DIRECTORY: self._dir_name,
                       ConfigAttributes.OBJECTS: {},
                       ConfigAttributes.THRESHOLD_SCORE: None,
-                      ConfigAttributes.PIN_SIZE: 2 * ut.PIN_WIDTH}
+                      ConfigAttributes.PIN_SIZE: _PIN_WIDTH,
+                      ConfigAttributes.OPEN_REPORT_AT_FINISH: False}
         elif isinstance(self._config, Dict):
             config = self._config
         self._config = config
         self._board_ref = self._config.get(ConfigAttributes.BOARD_REF, self._board_ref)
         self._board_test = self._config.get(ConfigAttributes.BOARD_TEST, self._board_test)
-        self._dir_name = os.path.join(self._config.get(ConfigAttributes.DIRECTORY, self._dir_name),
-                                      _DEFAULT_REPORT_DIR_NAME)
+        parent_directory = self._config.get(ConfigAttributes.DIRECTORY, self._dir_name)
+        self._dir_name = ut.create_report_directory_name(parent_directory, _DEFAULT_REPORT_DIR_NAME)
         self._threshold_score = self._config.get(ConfigAttributes.THRESHOLD_SCORE,
                                                  self._threshold_score)
-        self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, ut.PIN_WIDTH)
+        self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, _PIN_WIDTH)
+        self._open_report_at_finish = self._config.get(ConfigAttributes.OPEN_REPORT_AT_FINISH,
+                                                       False)
         required_objects = self._config.get(ConfigAttributes.OBJECTS, {})
         if required_objects.get(ObjectsForReport.BOARD):
             self._required_board = True
@@ -344,7 +353,9 @@ class ReportGenerator(QObject):
         for step, method in methods.items():
             self._results_by_steps[step] = method()
         self._create_report_with_map()
-        self._create_report()
+        report_file_name = self._create_report()
+        if self._open_report_at_finish:
+            webbrowser.open(report_file_name, new=2)
 
     @classmethod
     def get_version(cls) -> str:

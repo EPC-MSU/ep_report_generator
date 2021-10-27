@@ -5,6 +5,7 @@ File with  useful functions.
 import copy
 import logging
 import os
+from datetime import datetime
 from enum import Enum
 from typing import Callable, List, Tuple
 import matplotlib.pyplot as plt
@@ -37,7 +38,6 @@ PIN_COLORS = {PinTypes.DYNAMIC: "magenta",
               PinTypes.HIGH_SCORE: "red",
               PinTypes.NORMAL: "blue",
               PinTypes.REFERENCE: "orange"}
-PIN_WIDTH = 100
 
 
 def _check_for_image_availability(func: Callable):
@@ -142,6 +142,28 @@ def create_report(template_file: str, report_file: str, **kwargs):
     report = Template(filename=template_file, input_encoding="utf-8")
     with open(report_file, "w", encoding="utf-8") as file:
         file.write(report.render(**kwargs))
+
+
+def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
+    """
+    Function creates name for directory where report will be saved.
+    :param parent_directory: name of parent directory where directory with
+    report will be placed;
+    :param dir_base: base name for report directory.
+    :return: path to report directory.
+    """
+
+    datetime_now = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+    report_dir_name_with_time = f"{dir_base} {datetime_now}"
+    report_dir_name = report_dir_name_with_time
+    index = 1
+    while True:
+        report_dir_path = os.path.join(parent_directory, report_dir_name)
+        if os.path.exists(report_dir_path):
+            index += 1
+            report_dir_name = f"{report_dir_name_with_time} {index}"
+        else:
+            return report_dir_path
 
 
 def create_test_and_ref_boards(board: Board) -> Tuple[Board, Board]:
