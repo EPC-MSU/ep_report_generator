@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mako.template import Template
 from PIL.Image import Image
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QColor
+from PyQt5.QtCore import pyqtSignal, QRect
+from PyQt5.QtGui import QColor, QFont
 from epcore.elements import Board, Element, Pin
 from ivviewer import Curve, Viewer
 
@@ -250,8 +250,11 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal):
     :param signal: signal.
     """
 
-    viewer = Viewer()
+    viewer = Viewer(axis_font=QFont("Times", 10), title_font=QFont("Times", 15))
     viewer.resize(*IV_IMAGE_SIZE)
+    viewer.plot.set_x_axis_title("Напряжение, В")
+    viewer.plot.set_y_axis_title("Ток, мА")
+    viewer.plot.setStyleSheet("background: white")
     test_curve = viewer.plot.add_curve()
     ref_curve = viewer.plot.add_curve()
     for pin_info in pins_info:
