@@ -29,7 +29,7 @@ if __name__ == "__main__":
                                          ObjectsForReport.ELEMENT: [],
                                          ObjectsForReport.PIN: []},
               ConfigAttributes.THRESHOLD_SCORE: 0.5,
-              ConfigAttributes.PIN_SIZE: 100,
+              ConfigAttributes.PIN_SIZE: 200,
               ConfigAttributes.OPEN_REPORT_AT_FINISH: True}
     report_generator.run(config)
 
