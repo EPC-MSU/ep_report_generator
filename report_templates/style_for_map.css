@@ -16,12 +16,12 @@ div, p {
 figure {
 	background-color: white;
 	display: block;
-	left: 0px;
+	left: 50px;
 	margin: 0;
 	padding: 0;
 	position: fixed;
 	text-align: center;
-	top: 0px;
+	top: 50px;
 	width: 20%;
 }
 
