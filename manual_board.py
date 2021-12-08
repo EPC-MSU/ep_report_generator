@@ -39,8 +39,7 @@ def create_manual_board(test: bool) -> Board:
             comment_for_measurement = (f"This is comment for measurement in pin #{pin_index} of "
                                        f"element {element_name}")
             is_dynamic = bool(index % 2)
-            measurement = Measurement(settings=settings, ivc=iv_curve,
-                                      comment=comment_for_measurement,
+            measurement = Measurement(settings=settings, ivc=iv_curve, comment=comment_for_measurement,
                                       is_dynamic=is_dynamic)
             pin = Pin(x=x, y=y, comment=comment_for_pin, measurements=[measurement])
             pins.append(pin)
@@ -77,8 +76,7 @@ def get_heart(max_error: float) -> IVCurve:
     points_number = 100
     errors = 1 + max_error * np.random.random(points_number) / 100
     t = np.linspace(0, 2 * np.pi, points_number)
-    currents = list((13 * np.cos(t) - 5 * np.cos(2 * t) - 2 * np.cos(3 * t) - np.cos(4 * t)) *
-                    errors / 1000)
+    currents = list((13 * np.cos(t) - 5 * np.cos(2 * t) - 2 * np.cos(3 * t) - np.cos(4 * t)) * errors / 1000)
     voltages = list(16 * np.power(np.sin(t), 3) * errors)
     return IVCurve(currents=currents, voltages=voltages)
 

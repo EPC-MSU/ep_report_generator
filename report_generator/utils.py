@@ -6,13 +6,13 @@ import copy
 import logging
 import os
 from datetime import datetime
-from enum import Enum
-from typing import Callable, List, Tuple
+from enum import auto, Enum
+from typing import Callable, List, Optional, Tuple, Union
 import matplotlib.pyplot as plt
 import numpy as np
 from mako.template import Template
 from PIL.Image import Image
-from PyQt5.QtCore import pyqtSignal, QRect
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QColor, QFont
 from epcore.elements import Board, Element, Pin
 from ivviewer import Curve, Viewer
@@ -25,11 +25,11 @@ class PinTypes(Enum):
     Types of pins.
     """
 
-    DYNAMIC = 0
-    EMPTY = 1
-    HIGH_SCORE = 2
-    NORMAL = 3
-    REFERENCE = 4
+    DYNAMIC = auto()
+    EMPTY = auto()
+    HIGH_SCORE = auto()
+    NORMAL = auto()
+    REFERENCE = auto()
 
 
 IV_IMAGE_SIZE = 300, 200
@@ -124,9 +124,8 @@ def create_board(test_board: Board, ref_board: Board) -> Board:
                     measurements[-1].is_reference = True
             board_pins.append(Pin(pin.x, pin.y, measurements, pin.comment))
         board_element = Element(pins=board_pins, name=element.name, package=element.package,
-                                bounding_zone=element.bounding_zone, rotation=element.rotation,
-                                width=element.width, height=element.height,
-                                set_automatically=element.set_automatically)
+                                bounding_zone=element.bounding_zone, rotation=element.rotation, width=element.width,
+                                height=element.height, set_automatically=element.set_automatically)
         board.elements.append(board_element)
     return board
 
@@ -190,12 +189,10 @@ def create_test_and_ref_boards(board: Board) -> Tuple[Board, Board]:
             test_measurements = [] if test_measurement is None else [test_measurement]
             ref_pins.append(Pin(x=pin.x, y=pin.y, measurements=ref_measurements,
                                 comment=pin.comment))
-            test_pins.append(Pin(x=pin.x, y=pin.y, measurements=test_measurements,
-                                 comment=pin.comment))
+            test_pins.append(Pin(x=pin.x, y=pin.y, measurements=test_measurements, comment=pin.comment))
         ref_elements.append(Element(pins=ref_pins, name=element.name, package=element.package,
-                                    bounding_zone=element.bounding_zone, rotation=element.rotation,
-                                    width=element.width, height=element.height,
-                                    set_automatically=element.set_automatically))
+                                    bounding_zone=element.bounding_zone, rotation=element.rotation, width=element.width,
+                                    height=element.height, set_automatically=element.set_automatically))
         test_elements.append(Element(pins=test_pins, name=element.name, package=element.package,
                                      bounding_zone=element.bounding_zone, rotation=element.rotation,
                                      width=element.width, height=element.height,
@@ -268,10 +265,8 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal):
             else:
                 ref_currents = np.array([])
                 ref_voltages = np.array([])
-            i_max = 1.2 * 1000 * np.amax(np.absolute(np.concatenate((test_currents, ref_currents),
-                                                                    axis=0)))
-            v_max = 1.2 * np.amax(np.absolute(np.concatenate((test_voltages, ref_voltages),
-                                                             axis=0)))
+            i_max = 1.2 * 1000 * np.amax(np.absolute(np.concatenate((test_currents, ref_currents), axis=0)))
+            v_max = 1.2 * np.amax(np.absolute(np.concatenate((test_voltages, ref_voltages), axis=0)))
             viewer.plot.set_scale(v_max, i_max)
             test_curve.set_curve(Curve(test_voltages, test_currents))
             test_curve.set_curve_params(QColor(PIN_COLORS[pin_type]))
@@ -292,8 +287,7 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal):
 
 
 @_check_for_image_availability
-def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal, pin_width: int)\
-        -> bool:
+def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal, pin_width: int) -> bool:
     """
     Function draws and saves images of pins of board.
     :param image: board image;
@@ -321,8 +315,7 @@ def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal, 
     return True
 
 
-def get_pin_type(measurements: List["Measurement"], score: float, threshold_score: float) ->\
-        PinTypes:
+def get_pin_type(measurements: List["Measurement"], score: float, threshold_score: float) -> PinTypes:
     """
     Function determines type of pin.
     :param measurements: list of measurements in pin;
@@ -342,3 +335,15 @@ def get_pin_type(measurements: List["Measurement"], score: float, threshold_scor
         else:
             pin_type = PinTypes.NORMAL
     return pin_type
+
+
+def get_time(time_in_sec: Union[int, float]) -> Optional[str]:
+    """
+    Function returns time in min and sec.
+    :param time_in_sec: time in sec.
+    :return: time in min and sec.
+    """
+
+    if isinstance(time_in_sec, (int, float)):
+        return f"{time_in_sec // 60} мин {time_in_sec % 60} сек"
+    return None

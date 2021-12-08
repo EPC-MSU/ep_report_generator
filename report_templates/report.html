@@ -59,6 +59,22 @@
                 </tr>
                 <tr>
                     <td class="align_left">
+						% if app_name is not None:
+						<span>Диагностическая система: ${app_name}</span><br>
+						% endif
+						% if app_version is not None:
+						<span>Версия: ${app_version}</span><br>
+						% endif
+						<span>Дата: ${date}</span><br>
+						% if computer is not None:
+						<span>Рабочая станция: ${computer}</span><br>
+						% endif
+						% if operating_system is not None:
+						<span>Операционная система: ${operating_system}</span><br>
+						% endif
+						% if test_time is not None:
+						<span>Длительность тестирования: ${test_time}</span><br>
+						% endif
 						% if pcb_name is not None:
 						<span>Название платы: ${pcb_name}</span><br>
 						% endif

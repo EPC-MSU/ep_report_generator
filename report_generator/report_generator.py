@@ -4,9 +4,11 @@ File with class to generate report.
 
 import logging
 import os
+import platform
 import shutil
 import webbrowser
-from enum import Enum
+from datetime import datetime
+from enum import auto, Enum
 from typing import Callable, Dict, List, Optional, Tuple
 from PyQt5.QtCore import pyqtSignal, QObject
 from epcore.elements import Board
@@ -35,13 +37,16 @@ class ConfigAttributes(Enum):
     Attributes in config directory.
     """
 
-    BOARD_TEST = 0
-    BOARD_REF = 1
-    DIRECTORY = 2
-    OBJECTS = 3
-    THRESHOLD_SCORE = 4
-    PIN_SIZE = 5
-    OPEN_REPORT_AT_FINISH = 6
+    APP_NAME = auto()
+    APP_VERSION = auto()
+    BOARD_REF = auto()
+    BOARD_TEST = auto()
+    DIRECTORY = auto()
+    OBJECTS = auto()
+    OPEN_REPORT_AT_FINISH = auto()
+    PIN_SIZE = auto()
+    TEST_TIME = auto()
+    THRESHOLD_SCORE = auto()
 
 
 class ObjectsForReport(Enum):
@@ -49,9 +54,9 @@ class ObjectsForReport(Enum):
     Objects for which report should be created.
     """
 
-    BOARD = 0
-    ELEMENT = 1
-    PIN = 2
+    BOARD = auto()
+    ELEMENT = auto()
+    PIN = auto()
 
 
 class ReportCreationSteps(Enum):
@@ -59,11 +64,11 @@ class ReportCreationSteps(Enum):
     Stages of creating report.
     """
 
-    DRAW_BOARD = 0
-    DRAW_IV = 1
-    DRAW_PINS = 2
-    CREATE_MAP_REPORT = 3
-    CREATE_REPORT = 4
+    DRAW_BOARD = auto()
+    DRAW_IV = auto()
+    DRAW_PINS = auto()
+    CREATE_MAP_REPORT = auto()
+    CREATE_REPORT = auto()
 
     @classmethod
     def get_dict(cls) -> Dict:
@@ -103,8 +108,8 @@ class ReportGenerator(QObject):
     step_started = pyqtSignal(str)
     total_number_of_steps_calculated = pyqtSignal(int)
 
-    def __init__(self, parent=None, board_test: Optional[Board] = None,
-                 board_ref: Optional[Board] = None, config: Optional[Dict] = None):
+    def __init__(self, parent=None, board_test: Optional[Board] = None, board_ref: Optional[Board] = None,
+                 config: Optional[Dict] = None):
         """
         :param parent: parent object;
         :param board_test: test board for which report should be generated;
@@ -113,6 +118,8 @@ class ReportGenerator(QObject):
         """
 
         super().__init__(parent=parent)
+        self._app_name: str = None
+        self._app_version: str = None
         self._board: Board = None
         self._board_ref: Board = board_ref
         self._board_test: Board = board_test
@@ -126,6 +133,7 @@ class ReportGenerator(QObject):
         self._required_pins: List = []
         self._results_by_steps: Dict = ReportCreationSteps.get_dict()
         self._static_dir_name: str = None
+        self._test_time: int = None
         self._threshold_score: float = None
         self.stop: bool = False
 
@@ -164,8 +172,7 @@ class ReportGenerator(QObject):
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_REPORT)
         template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_REPORT)
         style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_REPORT)
-        shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME,
-                                                 _STYLE_FOR_REPORT))
+        shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME, _STYLE_FOR_REPORT))
         elements_number = len({pin_info[1] for pin_info in self._pins_info})
         if self._board.image is None:
             board_image_width = None
@@ -192,6 +199,7 @@ class ReportGenerator(QObject):
                 "board_img_width": board_image_width,
                 "pin_img_size": pin_img_size,
                 "threshold_score": self._threshold_score}
+        data.update(self._get_general_info())
         ut.create_report(template_file_name, report_file_name, **data)
         self.step_done.emit()
         self.generation_finished.emit(report_file_name)
@@ -211,11 +219,9 @@ class ReportGenerator(QObject):
         logger.info("Creation of report with board map was started")
         dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_MAP)
-        template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME,
-                                          _TEMPLATE_FILE_WITH_MAP)
+        template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_MAP)
         style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_MAP)
-        shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME,
-                                                 _STYLE_FOR_MAP))
+        shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME, _STYLE_FOR_MAP))
         ut.create_report(template_file_name, report_file_name, pins=self._pins_info,
                          threshold_score=self._threshold_score)
         self.step_done.emit()
@@ -275,8 +281,7 @@ class ReportGenerator(QObject):
         self.step_started.emit("Drawing of pins")
         logger.info("Drawing of pins was started")
         img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-        if ut.draw_pins(self._board.image, self._pins_info, img_dir_path, self.step_done,
-                        self._pin_width):
+        if ut.draw_pins(self._board.image, self._pins_info, img_dir_path, self.step_done, self._pin_width):
             logger.info("Images of pins were saved to directory '%s'", img_dir_path)
             return True
         for _ in range(len(self._pins_info)):
@@ -292,6 +297,19 @@ class ReportGenerator(QObject):
         """
 
         return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    def _get_general_info(self) -> Dict:
+        """
+        Method returns dictionary with general information.
+        :return: dictionary with general information.
+        """
+
+        return {"date": datetime.strftime(datetime.now(), "%Y.%m.%d %H:%M:%S"),
+                "app_name": self._app_name,
+                "app_version": self._app_version,
+                "computer": os.environ.get("COMPUTERNAME", "Unknown"),
+                "operating_system": f"{platform.system()} {platform.release()} {platform.architecture()[0]}",
+                "test_time": self._test_time}
 
     @check_stop_operation
     def _get_info_about_pins(self) -> List[Tuple]:
@@ -311,13 +329,12 @@ class ReportGenerator(QObject):
                 if (self._required_board or element_index in self._required_elements or
                         total_pin_index in self._required_pins):
                     if len(pin.measurements) > 1:
-                        score = comparator.compare_ivc(pin.measurements[0].ivc,
-                                                       pin.measurements[1].ivc)
+                        score = comparator.compare_ivc(pin.measurements[0].ivc, pin.measurements[1].ivc)
                     else:
                         score = None
                     pin_type = ut.get_pin_type(pin.measurements, score, self._threshold_score)
-                    info = (element.name, element_index, pin_index, pin.x, pin.y, pin.measurements,
-                            score, pin_type, total_pin_index, pin.comment)
+                    info = (element.name, element_index, pin_index, pin.x, pin.y, pin.measurements, score, pin_type,
+                            total_pin_index, pin.comment)
                     pins_info.append(info)
                 total_pin_index += 1
         pin_number = len(pins_info)
@@ -338,19 +355,24 @@ class ReportGenerator(QObject):
                       ConfigAttributes.OBJECTS: {},
                       ConfigAttributes.THRESHOLD_SCORE: None,
                       ConfigAttributes.PIN_SIZE: _PIN_WIDTH,
-                      ConfigAttributes.OPEN_REPORT_AT_FINISH: False}
+                      ConfigAttributes.OPEN_REPORT_AT_FINISH: False,
+                      ConfigAttributes.APP_NAME: self._app_name,
+                      ConfigAttributes.APP_VERSION: self._app_version,
+                      ConfigAttributes.TEST_TIME: self._test_time}
         elif isinstance(self._config, Dict):
             config = self._config
         self._config = config
+        self._app_name = self._config.get(ConfigAttributes.APP_NAME, self._app_name)
+        self._app_version = self._config.get(ConfigAttributes.APP_VERSION, self._app_version)
         self._board_ref = self._config.get(ConfigAttributes.BOARD_REF, self._board_ref)
         self._board_test = self._config.get(ConfigAttributes.BOARD_TEST, self._board_test)
         parent_directory = self._config.get(ConfigAttributes.DIRECTORY, self._dir_name)
         self._dir_name = ut.create_report_directory_name(parent_directory, _DEFAULT_REPORT_DIR_NAME)
-        self._threshold_score = self._config.get(ConfigAttributes.THRESHOLD_SCORE,
-                                                 self._threshold_score)
+        self._test_time = self._config.get(ConfigAttributes.TEST_TIME, self._test_time)
+        self._test_time = ut.get_time(self._test_time)
+        self._threshold_score = self._config.get(ConfigAttributes.THRESHOLD_SCORE, self._threshold_score)
         self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, _PIN_WIDTH)
-        self._open_report_at_finish = self._config.get(ConfigAttributes.OPEN_REPORT_AT_FINISH,
-                                                       False)
+        self._open_report_at_finish = self._config.get(ConfigAttributes.OPEN_REPORT_AT_FINISH, False)
         required_objects = self._config.get(ConfigAttributes.OBJECTS, {})
         if required_objects.get(ObjectsForReport.BOARD):
             self._required_board = True

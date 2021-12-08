@@ -39,7 +39,10 @@
                                         ObjectsForReport.PIN: [индексы пинов, которые должны быть включены в отчет]},
              ConfigAttributes.THRESHOLD_SCORE: пороговое значение score,
              ConfigAttributes.PIN_SIZE: высота изображения пина в пикселях для отчета,
-             ConfigAttributes.OPEN_REPORT_AT_FINISH: если True, то по завершении создания отчета отчет будет открыт}
+             ConfigAttributes.OPEN_REPORT_AT_FINISH: если True, то по завершении создания отчета отчет будет открыт,
+             ConfigAttributes.APP_NAME: название приложения (например, EyePoint P10), которое использует генератор отчета,
+             ConfigAttributes.APP_VERSION: версия приложения, которое использует генератор отчетов,
+             COnfigAttributes.TEST_TIME: длительность тестирования в сек}
    ```
 
 6. Создайте объект типа `ReportGenerator` и запустите его, передав в качестве аргумента словарь-конфиг:
@@ -65,6 +68,8 @@
    ```
    install.bat
    ```
+
+   
 
 3. Запустите пример, выполнив скрипт `run_example.bat`:
 

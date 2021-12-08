@@ -6,8 +6,7 @@ import os
 import sys
 from PyQt5.QtWidgets import QApplication
 from epcore.filemanager import load_board_from_ufiv
-from report_generator import (ConfigAttributes, create_test_and_ref_boards, ObjectsForReport,
-                              ReportGenerator)
+from report_generator import ConfigAttributes, create_test_and_ref_boards, ObjectsForReport, ReportGenerator
 from manual_board import create_manual_board
 
 
@@ -30,7 +29,10 @@ if __name__ == "__main__":
                                          ObjectsForReport.PIN: []},
               ConfigAttributes.THRESHOLD_SCORE: 0.5,
               ConfigAttributes.PIN_SIZE: 200,
-              ConfigAttributes.OPEN_REPORT_AT_FINISH: True}
+              ConfigAttributes.OPEN_REPORT_AT_FINISH: True,
+              ConfigAttributes.APP_NAME: "EyePoint H10",
+              ConfigAttributes.APP_VERSION: "1.2.3",
+              ConfigAttributes.TEST_TIME: 562}
     report_generator.run(config)
 
     # Report for manual board
