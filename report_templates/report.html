@@ -73,7 +73,7 @@
 						<span>Операционная система: ${operating_system}</span><br>
 						% endif
 						% if test_time is not None:
-						<span>Длительность тестирования: ${test_time}</span><br>
+						<span>Длительность тестирования: ${test_duration}</span><br>
 						% endif
 						% if pcb_name is not None:
 						<span>Название платы: ${pcb_name}</span><br>
@@ -86,6 +86,7 @@
 						% if pcb_comment is not None:
 						<span>Комментарий: ${pcb_comment}</span><br>
 						% endif
+						<span>HTML: v4.01</span><br>
 						% if board_img_width is not None:
                         <span><a href="map.html" target="_blank">Исследовать по изображению</a></span><br>
 						% endif

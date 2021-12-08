@@ -45,7 +45,7 @@ class ConfigAttributes(Enum):
     OBJECTS = auto()
     OPEN_REPORT_AT_FINISH = auto()
     PIN_SIZE = auto()
-    TEST_TIME = auto()
+    TEST_DURATION = auto()
     THRESHOLD_SCORE = auto()
 
 
@@ -133,7 +133,7 @@ class ReportGenerator(QObject):
         self._required_pins: List = []
         self._results_by_steps: Dict = ReportCreationSteps.get_dict()
         self._static_dir_name: str = None
-        self._test_time: int = None
+        self._test_duration: int = None
         self._threshold_score: float = None
         self.stop: bool = False
 
@@ -309,7 +309,7 @@ class ReportGenerator(QObject):
                 "app_version": self._app_version,
                 "computer": os.environ.get("COMPUTERNAME", "Unknown"),
                 "operating_system": f"{platform.system()} {platform.release()} {platform.architecture()[0]}",
-                "test_time": self._test_time}
+                "test_duration": self._test_duration}
 
     @check_stop_operation
     def _get_info_about_pins(self) -> List[Tuple]:
@@ -358,7 +358,7 @@ class ReportGenerator(QObject):
                       ConfigAttributes.OPEN_REPORT_AT_FINISH: False,
                       ConfigAttributes.APP_NAME: self._app_name,
                       ConfigAttributes.APP_VERSION: self._app_version,
-                      ConfigAttributes.TEST_TIME: self._test_time}
+                      ConfigAttributes.TEST_DURATION: self._test_duration}
         elif isinstance(self._config, Dict):
             config = self._config
         self._config = config
@@ -368,8 +368,8 @@ class ReportGenerator(QObject):
         self._board_test = self._config.get(ConfigAttributes.BOARD_TEST, self._board_test)
         parent_directory = self._config.get(ConfigAttributes.DIRECTORY, self._dir_name)
         self._dir_name = ut.create_report_directory_name(parent_directory, _DEFAULT_REPORT_DIR_NAME)
-        self._test_time = self._config.get(ConfigAttributes.TEST_TIME, self._test_time)
-        self._test_time = ut.get_time(self._test_time)
+        self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, self._test_duration)
+        self._test_duration = ut.get_time(self._test_duration)
         self._threshold_score = self._config.get(ConfigAttributes.THRESHOLD_SCORE, self._threshold_score)
         self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, _PIN_WIDTH)
         self._open_report_at_finish = self._config.get(ConfigAttributes.OPEN_REPORT_AT_FINISH, False)

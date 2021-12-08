@@ -32,7 +32,7 @@ if __name__ == "__main__":
               ConfigAttributes.OPEN_REPORT_AT_FINISH: True,
               ConfigAttributes.APP_NAME: "EyePoint H10",
               ConfigAttributes.APP_VERSION: "1.2.3",
-              ConfigAttributes.TEST_TIME: 562}
+              ConfigAttributes.TEST_DURATION: 562}
     report_generator.run(config)
 
     # Report for manual board
