@@ -7,7 +7,7 @@ import os
 import platform
 import shutil
 import webbrowser
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import auto, Enum
 from typing import Callable, Dict, List, Optional, Tuple
 from PyQt5.QtCore import pyqtSignal, QObject
@@ -133,7 +133,7 @@ class ReportGenerator(QObject):
         self._required_pins: List = []
         self._results_by_steps: Dict = ReportCreationSteps.get_dict()
         self._static_dir_name: str = None
-        self._test_duration: int = None
+        self._test_duration: timedelta = None
         self._threshold_score: float = None
         self.stop: bool = False
 
@@ -369,7 +369,7 @@ class ReportGenerator(QObject):
         parent_directory = self._config.get(ConfigAttributes.DIRECTORY, self._dir_name)
         self._dir_name = ut.create_report_directory_name(parent_directory, _DEFAULT_REPORT_DIR_NAME)
         self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, self._test_duration)
-        self._test_duration = ut.get_time(self._test_duration)
+        self._test_duration = ut.get_duration_in_str(self._test_duration)
         self._threshold_score = self._config.get(ConfigAttributes.THRESHOLD_SCORE, self._threshold_score)
         self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, _PIN_WIDTH)
         self._open_report_at_finish = self._config.get(ConfigAttributes.OPEN_REPORT_AT_FINISH, False)

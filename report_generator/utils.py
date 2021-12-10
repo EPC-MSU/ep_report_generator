@@ -5,9 +5,9 @@ File with  useful functions.
 import copy
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import auto, Enum
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 from mako.template import Template
@@ -315,6 +315,18 @@ def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal, 
     return True
 
 
+def get_duration_in_str(duration: timedelta) -> Optional[str]:
+    """
+    Function returns duration in min and sec.
+    :param duration: duration.
+    :return: duration in min and sec.
+    """
+
+    if isinstance(duration, timedelta):
+        return f"{duration.total_seconds() // 60} мин {duration.total_seconds() % 60} сек"
+    return None
+
+
 def get_pin_type(measurements: List["Measurement"], score: float, threshold_score: float) -> PinTypes:
     """
     Function determines type of pin.
@@ -335,15 +347,3 @@ def get_pin_type(measurements: List["Measurement"], score: float, threshold_scor
         else:
             pin_type = PinTypes.NORMAL
     return pin_type
-
-
-def get_time(time_in_sec: Union[int, float]) -> Optional[str]:
-    """
-    Function returns time in min and sec.
-    :param time_in_sec: time in sec.
-    :return: time in min and sec.
-    """
-
-    if isinstance(time_in_sec, (int, float)):
-        return f"{time_in_sec // 60} мин {time_in_sec % 60} сек"
-    return None
