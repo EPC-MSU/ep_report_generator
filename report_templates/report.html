@@ -72,7 +72,7 @@
 						% if operating_system is not None:
 						<span>Операционная система: ${operating_system}</span><br>
 						% endif
-						% if test_time is not None:
+						% if test_duration is not None:
 						<span>Длительность тестирования: ${test_duration}</span><br>
 						% endif
 						% if pcb_name is not None:
@@ -176,17 +176,9 @@
 						</div><br>
 						% endif
 						<%
-							legend_for_iv_img = ""
+							legend_for_iv_img = "Красный - тестовая (текущая) ВАХ\n"
 							if len(measurements) > 1:
-								legend_for_iv_img += "Оранжевый - справочная ВАХ\n"
-							if pin_type.value == 0:
-								legend_for_iv_img += "Пурпурный - тестовая ВАХ (динамическая)"
-							elif pin_type.value == 2:
-								legend_for_iv_img += f"Красный - тестовая ВАХ (score больше порогового значения {threshold_score * 100}%)"
-							elif pin_type.value == 3:
-								legend_for_iv_img += "Синий - тестовая ВАХ"
-							elif pin_type.value == 4:
-								legend_for_iv_img += "Оранжевый - справочная ВАХ"
+								legend_for_iv_img += "Синий - ВАХ эталона\n"
 						%>
 						<button class="collapsible" onclick="handle_click(this)">Легенда ВАХ</button>
 						<div class="measurement_settings">
@@ -199,20 +191,8 @@
                             <img src="static/img/${'%s_%s_pin.png'%(element_index, pin_index)}" height="${pin_img_size}"
 								alt="Изображение точки тестирования (пина)", title="Изображение точки тестирования (пина)">
                             <span>
-								<%
-									if pin_type.value == 0:
-										pin_color = "magenta"
-									elif pin_type.value == 1:
-										pin_color = "purple"
-									elif pin_type.value == 2:
-										pin_color = "red"
-									elif pin_type.value == 3:
-										pin_color = "blue"
-									else:
-										pin_color = "orange"
-								%>
                                 <img src="static/img/board.png" width="300px" style="position:fixed; top:50px; left:50px">
-                                <div class="pin" style="top:${50 + y * (300 / board_img_width) - 3}px; left:${50 + x * (300 / board_img_width) - 3}px; background-color:${pin_color}">
+                                <div class="pin" style="top:${50 + y * (300 / board_img_width) - 3}px; left:${50 + x * (300 / board_img_width) - 3}px; background-color:red">
                                 </div>
                                 </img>
                             </span>

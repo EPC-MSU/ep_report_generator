@@ -332,7 +332,7 @@ class ReportGenerator(QObject):
                         score = comparator.compare_ivc(pin.measurements[0].ivc, pin.measurements[1].ivc)
                     else:
                         score = None
-                    pin_type = ut.get_pin_type(pin.measurements, score, self._threshold_score)
+                    pin_type = ut.get_pin_type(score, self._threshold_score)
                     info = (element.name, element_index, pin_index, pin.x, pin.y, pin.measurements, score, pin_type,
                             total_pin_index, pin.comment)
                     pins_info.append(info)

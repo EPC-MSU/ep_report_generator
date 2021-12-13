@@ -6,7 +6,7 @@ import copy
 import logging
 import os
 from datetime import datetime, timedelta
-from enum import auto, Enum
+from enum import Enum
 from typing import Callable, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,19 +25,17 @@ class PinTypes(Enum):
     Types of pins.
     """
 
-    DYNAMIC = auto()
-    EMPTY = auto()
-    HIGH_SCORE = auto()
-    NORMAL = auto()
-    REFERENCE = auto()
+    HIGH_SCORE = 0
+    LOW_SCORE = 1
+    REFERENCE = 2
 
 
 IV_IMAGE_SIZE = 300, 200
-PIN_COLORS = {PinTypes.DYNAMIC: "magenta",
-              PinTypes.EMPTY: "purple",
-              PinTypes.HIGH_SCORE: "red",
-              PinTypes.NORMAL: "blue",
-              PinTypes.REFERENCE: "orange"}
+PIN_COLORS = {PinTypes.HIGH_SCORE: "red",
+              PinTypes.LOW_SCORE: "green",
+              PinTypes.REFERENCE: "purple"}
+REFERENCE_CURVE_COLOR = "blue"
+TEST_CURVE_COLOR = "red"
 
 
 def _check_for_image_availability(func: Callable):
@@ -213,10 +211,8 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str) -> bool:
     :return: True if image was drawn and saved.
     """
 
-    pins_xy = {PinTypes.DYNAMIC: [[], []],
-               PinTypes.EMPTY: [[], []],
-               PinTypes.HIGH_SCORE: [[], []],
-               PinTypes.NORMAL: [[], []],
+    pins_xy = {PinTypes.HIGH_SCORE: [[], []],
+               PinTypes.LOW_SCORE: [[], []],
                PinTypes.REFERENCE: [[], []]}
     for pin_info in pins_info:
         _, _, _, x, y, _, _, pin_type, _, _ = pin_info
@@ -256,34 +252,29 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal):
     ref_curve = viewer.plot.add_curve()
     for pin_info in pins_info:
         element_name, element_index, pin_index, _, _, measurements, _, pin_type, _, _ = pin_info
-        if pin_type is not PinTypes.EMPTY:
-            test_currents = measurements[0].ivc.currents
-            test_voltages = measurements[0].ivc.voltages
-            if len(measurements) > 1:
-                ref_currents = measurements[1].ivc.currents
-                ref_voltages = measurements[1].ivc.voltages
-            else:
-                ref_currents = np.array([])
-                ref_voltages = np.array([])
-            i_max = 1.2 * 1000 * np.amax(np.absolute(np.concatenate((test_currents, ref_currents), axis=0)))
-            v_max = 1.2 * np.amax(np.absolute(np.concatenate((test_voltages, ref_voltages), axis=0)))
-            viewer.plot.set_scale(v_max, i_max)
-            test_curve.set_curve(Curve(test_voltages, test_currents))
-            test_curve.set_curve_params(QColor(PIN_COLORS[pin_type]))
-            if len(measurements) > 1:
-                ref_curve.set_curve(Curve(ref_voltages, ref_currents))
-                ref_curve.set_curve_params(QColor(PIN_COLORS[PinTypes.REFERENCE]))
-            else:
-                ref_curve.clear_curve()
+        test_currents = measurements[0].ivc.currents
+        test_voltages = measurements[0].ivc.voltages
+        if len(measurements) > 1:
+            ref_currents = measurements[1].ivc.currents
+            ref_voltages = measurements[1].ivc.voltages
         else:
-            test_curve.clear_curve()
+            ref_currents = np.array([])
+            ref_voltages = np.array([])
+        i_max = 1.2 * 1000 * np.amax(np.absolute(np.concatenate((test_currents, ref_currents), axis=0)))
+        v_max = 1.2 * np.amax(np.absolute(np.concatenate((test_voltages, ref_voltages), axis=0)))
+        viewer.plot.set_scale(v_max, i_max)
+        test_curve.set_curve(Curve(test_voltages, test_currents))
+        test_curve.set_curve_params(QColor(TEST_CURVE_COLOR))
+        if len(measurements) > 1:
+            ref_curve.set_curve(Curve(ref_voltages, ref_currents))
+            ref_curve.set_curve_params(QColor(REFERENCE_CURVE_COLOR))
+        else:
             ref_curve.clear_curve()
         file_name = f"{element_index}_{pin_index}_iv.png"
         path = os.path.join(dir_name, file_name)
         viewer.plot.grab().save(path)
         signal.emit()
-        logger.info("IV-curve of pin '%s_%s' was saved to '%s'", element_index, pin_index,
-                    file_name)
+        logger.info("IV-curve of pin '%s_%s' was saved to '%s'", element_index, pin_index, file_name)
 
 
 @_check_for_image_availability
@@ -327,23 +318,16 @@ def get_duration_in_str(duration: timedelta) -> Optional[str]:
     return None
 
 
-def get_pin_type(measurements: List["Measurement"], score: float, threshold_score: float) -> PinTypes:
+def get_pin_type(score: float, threshold_score: float) -> PinTypes:
     """
     Function determines type of pin.
-    :param measurements: list of measurements in pin;
     :param score: score of test measurement in pin;
     :param threshold_score: threshold score.
     :return: type of pin.
     """
 
-    pin_type = PinTypes.EMPTY
-    if len(measurements):
-        if threshold_score is not None and score is not None and threshold_score <= score:
-            pin_type = PinTypes.HIGH_SCORE
-        elif measurements[0].is_reference:
-            pin_type = PinTypes.REFERENCE
-        elif measurements[0].is_dynamic:
-            pin_type = PinTypes.DYNAMIC
-        else:
-            pin_type = PinTypes.NORMAL
+    if threshold_score is not None and score is not None:
+        pin_type = PinTypes.HIGH_SCORE if threshold_score <= score else PinTypes.LOW_SCORE
+    else:
+        pin_type = PinTypes.REFERENCE
     return pin_type

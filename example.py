@@ -4,6 +4,7 @@ File with example how to work with report generator.
 
 import os
 import sys
+from datetime import timedelta
 from PyQt5.QtWidgets import QApplication
 from epcore.filemanager import load_board_from_ufiv
 from report_generator import ConfigAttributes, create_test_and_ref_boards, ObjectsForReport, ReportGenerator
@@ -32,7 +33,7 @@ if __name__ == "__main__":
               ConfigAttributes.OPEN_REPORT_AT_FINISH: True,
               ConfigAttributes.APP_NAME: "EyePoint H10",
               ConfigAttributes.APP_VERSION: "1.2.3",
-              ConfigAttributes.TEST_DURATION: 562}
+              ConfigAttributes.TEST_DURATION: timedelta(seconds=562)}
     report_generator.run(config)
 
     # Report for manual board
