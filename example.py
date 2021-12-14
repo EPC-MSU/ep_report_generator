@@ -15,7 +15,6 @@ from manual_board import create_manual_board
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
-    report_generator = ReportGenerator()
     # Report for board from P10 file
     BOARD_FILE_NAME = "example_board/elements.json"
     dir_name = os.path.dirname(os.path.abspath(__file__))
@@ -35,10 +34,10 @@ if __name__ == "__main__":
               ConfigAttributes.APP_VERSION: "1.2.3",
               ConfigAttributes.TEST_DURATION: timedelta(seconds=562),
               ConfigAttributes.SCALING_TYPE: ScalingTypes.EYEPOINT_P10}
+    report_generator = ReportGenerator()
     report_generator.run(config)
 
     # Report for manual board
-    report_generator = ReportGenerator()
     dir_for_report = os.path.join(dir_name, "report_for_manual_board")
     test_board = create_manual_board(True)
     ref_board = create_manual_board(False)
@@ -49,4 +48,5 @@ if __name__ == "__main__":
                                          ObjectsForReport.ELEMENT: [],
                                          ObjectsForReport.PIN: []},
               ConfigAttributes.THRESHOLD_SCORE: 0.2}
+    report_generator = ReportGenerator()
     report_generator.run(config)
