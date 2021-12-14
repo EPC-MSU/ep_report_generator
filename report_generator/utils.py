@@ -95,6 +95,41 @@ def _get_pin_borders(center: float, board_width: int, pin_width: int) -> Tuple[f
     return left, right
 
 
+def calculate_distance(x_1: float, y_1: float, x_2: float, y_2: float) -> float:
+    """
+    Function calculates distance between two points.
+    :param x_1: X coordinate of first point;
+    :param y_1: Y coordinate of first point;
+    :param x_2: X coordinate of second point;
+    :param y_2: Y coordinate of second point.
+    :return: distance between two points.
+    """
+
+    return np.sqrt(np.power(x_1 - x_2, 2) + np.power(y_1 - y_2, 2))
+
+
+def calculate_min_distance(pins: list) -> Optional[float]:
+    """
+    Function calculates min distance between two pins.
+    :param pins: list of pins.
+    :return: min distance between two pins.
+    """
+
+    min_distance = None
+    for pin in pins:
+        pin_x = pin[3]
+        pin_y = pin[4]
+        for another_pin in pins:
+            if pin is another_pin:
+                continue
+            another_pin_x = another_pin[3]
+            another_pin_y = another_pin[4]
+            distance = calculate_distance(pin_x, pin_y, another_pin_x, another_pin_y)
+            if min_distance is None or min_distance > distance:
+                min_distance = distance
+    return min_distance
+
+
 def create_board(test_board: Board, ref_board: Board) -> Board:
     """
     Function creates one board from test and reference boards.
@@ -201,13 +236,14 @@ def create_test_and_ref_boards(board: Board) -> Tuple[Board, Board]:
 
 
 @_check_for_image_availability
-def draw_board_with_pins(image: Image, pins_info: List, file_name: str) -> bool:
+def draw_board_with_pins(image: Image, pins_info: List, file_name: str, marker_size: Optional[int]) -> bool:
     """
     Function draws and saves image of board with pins. Function was borrowed
     from https://stackoverflow.com/questions/34768717.
     :param image: board image;
     :param pins_info: list with information about pins required for report;
-    :param file_name: name of file where image should be saved.
+    :param file_name: name of file where image should be saved;
+    :param marker_size: size of marker to display pin.
     :return: True if image was drawn and saved.
     """
 
@@ -227,7 +263,8 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str) -> bool:
     ax = fig.add_axes([0, 0, 1, 1])
     ax.axis("off")
     ax.imshow(image, interpolation="nearest")
-    marker_size = width // 35
+    if marker_size is None:
+        marker_size = width // 35
     for pin_type, x_and_y in pins_xy.items():
         ax.scatter(*x_and_y, s=marker_size, c=PIN_COLORS[pin_type], zorder=1)
     fig.savefig(file_name, dpi=dpi, transparent=True)
@@ -303,6 +340,23 @@ def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal, 
         signal.emit()
         logger.info("Image of pin '%s_%s' was saved to '%s'", element_index, pin_index, file_name)
     return True
+
+
+def draw_score_histogram(values: list, threshold: float, file_name: str):
+    """
+    Function draws and saves histogram of score values.
+    :param values: score values to draw histogram;
+    :param threshold: score threshold;
+    :param file_name: name of file to save histogram.
+    """
+
+    fig = plt.figure(figsize=(6, 6))
+    plt.hist(values, bins=80, range=([0, 1.0]))
+    plt.axvline(x=threshold, color="red", linewidth=2)
+    plt.yscale("symlog", nonposy="clip")
+    plt.title("Score histogram")
+    fig.savefig(file_name)
+    fig.clear()
 
 
 def get_duration_in_str(duration: timedelta) -> Optional[str]:

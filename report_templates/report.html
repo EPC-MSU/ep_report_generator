@@ -28,7 +28,8 @@
 				let coords = pin.getAttribute("coords").split(",");
 				let x = coords[0] * WIDTH / natural_width;
 				let y = coords[1] * WIDTH / natural_width;
-				pin.setAttribute("coords", x + "," + y + "," + coords[2]);
+				let r = coords[2] * WIDTH / natural_width;
+				pin.setAttribute("coords", x + "," + y + "," + r);
 			}
         }
 		
@@ -53,7 +54,11 @@
         <table id="general_info" cellspacing="0" cellpadding="0">
             <tbody>
 				<tr>
-                    <th>
+                    % if score_histogram:
+					<th colspan="2">
+					% else:
+					<th>
+					% endif
                         <h2>Общая информация</h2>
                     </th>
                 </tr>
@@ -91,19 +96,32 @@
                         <span><a href="map.html" target="_blank">Изображение платы</a></span><br>
 						% endif
                     </td>
+					% if score_histogram:
+					<td>
+						<img src="static/score_histogram.png" width="300px">
+					</td>
+					% endif
                 </tr>
 				% if board_img_width is not None:
                 <tr>
-                    <th>
+					% if score_histogram:
+					<th colspan="2">
+					% else:
+					<th>
+					% endif
                         <h2>Карта точек тестирования</h2>
                     </th>
                 </tr>
 				<tr>
-                    <td>
+					% if score_histogram:
+					<td colspan="2">
+					% else:
+					<td>
+					% endif
                         <img id="board" src="static/img/board.png" usemap="#map" alt="Карта точек тестирования" title="Карта точек тестирования">
                         <p><map name="map">
                             % for _, _, _, x, y, _, _, _, _, _ in pins:
-                            <area shape="circle" coords="${x},${y},10" href="#point${x}${y}" alt="">
+                            <area shape="circle" coords="${x},${y},${pin_radius}" href="#point${x}${y}" alt="">
                             % endfor
                             </map>
                         </p>

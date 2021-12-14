@@ -20,6 +20,7 @@ from .version import Version
 logger = logging.getLogger(__name__)
 _BOARD_IMAGE = "board_clear.png"
 _BOARD_WITH_PINS_IMAGE = "board.png"
+_SCORE_HISTOGRAM_IMAGE = "score_histogram.png"
 _DEFAULT_REPORT_DIR_NAME = "report"
 _IMG_DIR_NAME = "img"
 _STATIC_DIR_NAME = "static"
@@ -68,6 +69,7 @@ class ReportCreationSteps(Enum):
     DRAW_CLEAR_BOARD = auto()
     DRAW_IV = auto()
     DRAW_PINS = auto()
+    DRAW_SCORE_HISTOGRAM = auto()
     CREATE_MAP_REPORT = auto()
     CREATE_REPORT = auto()
 
@@ -127,6 +129,7 @@ class ReportGenerator(QObject):
         self._config: Dict = config
         self._dir_name: str = self._get_default_dir_name()
         self._open_report_at_finish: bool = False
+        self._pin_diameter: int = None
         self._pin_width: int = _PIN_WIDTH
         self._pins_info: List = []
         self._required_board: bool = False
@@ -191,16 +194,14 @@ class ReportGenerator(QObject):
                 pcb_comment = self._board.pcb.comment
             if self._board.pcb.image_resolution_ppcm is not None:
                 mm_per_px = 10 / self._board.pcb.image_resolution_ppcm
-        data = {"pins": self._pins_info,
-                "pcb_name": pcb_name,
+        data = {"pcb_name": pcb_name,
                 "pcb_comment": pcb_comment,
                 "mm_per_px": mm_per_px,
                 "elements_number": elements_number,
-                "pins_number": len(self._pins_info),
                 "board_img_width": board_image_width,
-                "pin_img_size": pin_img_size,
-                "threshold_score": self._threshold_score}
+                "pin_img_size": pin_img_size}
         data.update(self._get_general_info())
+        print("HEre")
         ut.create_report(template_file_name, report_file_name, **data)
         self.step_done.emit()
         self.generation_finished.emit(report_file_name)
@@ -229,9 +230,10 @@ class ReportGenerator(QObject):
         logger.info("Report with board map was saved to '%s'", report_file_name)
 
     @check_stop_operation
-    def _draw_board(self):
+    def _draw_board(self) -> bool:
         """
         Method draws and saves board image without pins.
+        :return: True if image was drawn and saved.
         """
 
         self.step_started.emit("Drawing of board")
@@ -239,6 +241,7 @@ class ReportGenerator(QObject):
         file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, _BOARD_IMAGE)
         if self._board.image:
             self._board.image.save(file_name)
+            self.step_done.emit()
             logger.info("Image of board was saved to '%s'", file_name)
             return True
         self.step_done.emit()
@@ -254,8 +257,9 @@ class ReportGenerator(QObject):
 
         self.step_started.emit("Drawing of board with pins")
         logger.info("Drawing of board with pins was started")
+        self._pin_diameter = self._get_pin_diameter()
         file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, _BOARD_WITH_PINS_IMAGE)
-        if ut.draw_board_with_pins(self._board.image, self._pins_info, file_name):
+        if ut.draw_board_with_pins(self._board.image, self._pins_info, file_name, self._pin_diameter):
             self.step_done.emit()
             logger.info("Image of board with pins was saved to '%s'", file_name)
             return True
@@ -276,6 +280,26 @@ class ReportGenerator(QObject):
         ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done)
         logger.info("Images of IV-curves were saved to directory '%s'", img_dir_path)
         return True
+
+    @check_stop_operation
+    def _draw_score_histogram(self) -> bool:
+        """
+        Method draws histogram for scores of pins.
+        :return: True if histogram was drawn and saved.
+        """
+
+        self.step_started.emit("Drawing of score histogram")
+        logger.info("Drawing of score histogram was started")
+        all_scores = [pin_info[6] for pin_info in self._pins_info if pin_info[6] is not None]
+        if all_scores:
+            img_name = os.path.join(self._static_dir_name, _SCORE_HISTOGRAM_IMAGE)
+            ut.draw_score_histogram(all_scores, self._threshold_score, img_name)
+            self.step_done.emit()
+            logger.info("Score histogram was saved to '%s'", img_name)
+            return True
+        self.step_done.emit()
+        logger.info("Score histogram was not drawn")
+        return False
 
     @check_stop_operation
     def _draw_pins(self) -> bool:
@@ -315,7 +339,12 @@ class ReportGenerator(QObject):
                 "app_version": self._app_version,
                 "computer": os.environ.get("COMPUTERNAME", "Unknown"),
                 "operating_system": f"{platform.system()} {platform.release()} {platform.architecture()[0]}",
-                "test_duration": self._test_duration}
+                "test_duration": self._test_duration,
+                "pins": self._pins_info,
+                "pins_number": len(self._pins_info),
+                "threshold_score": self._threshold_score,
+                "score_histogram": self._results_by_steps[ReportCreationSteps.DRAW_SCORE_HISTOGRAM],
+                "pin_radius": None if self._pin_diameter is None else int(self._pin_diameter / 2)}
 
     @check_stop_operation
     def _get_info_about_pins(self) -> List[Tuple]:
@@ -344,8 +373,23 @@ class ReportGenerator(QObject):
                     pins_info.append(info)
                 total_pin_index += 1
         pin_number = len(pins_info)
-        self.total_number_of_steps_calculated.emit(4 + pin_number * 2)
+        self.total_number_of_steps_calculated.emit(5 + pin_number * 2)
         return pins_info
+
+    @check_stop_operation
+    def _get_pin_diameter(self) -> Optional[int]:
+        """
+        Method determines diameter of pins on image of board with pins.
+        :return: diameter of pins.
+        """
+
+        if not self._board.image:
+            return None
+        min_distance = ut.calculate_min_distance(self._pins_info)
+        logger.info("Minimum distance between pins was calculated: %s", min_distance)
+        pin_diameter = min(self._board.image.width // 35, int(min_distance))
+        logger.info("Pin size on image of board with pins is %s", pin_diameter)
+        return pin_diameter
 
     @check_stop_operation
     def _read_config(self, config: Dict):
@@ -400,6 +444,7 @@ class ReportGenerator(QObject):
             return
         methods = {ReportCreationSteps.DRAW_CLEAR_BOARD: self._draw_board,
                    ReportCreationSteps.DRAW_BOARD: self._draw_board_with_pins,
+                   ReportCreationSteps.DRAW_SCORE_HISTOGRAM: self._draw_score_histogram,
                    ReportCreationSteps.DRAW_IV: self._draw_ivc,
                    ReportCreationSteps.DRAW_PINS: self._draw_pins}
         for step, method in methods.items():
