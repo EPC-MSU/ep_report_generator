@@ -12,7 +12,6 @@ from enum import auto, Enum
 from typing import Callable, Dict, List, Optional, Tuple
 from PyQt5.QtCore import pyqtSignal, QObject
 from epcore.elements import Board
-from epcore.filemanager import load_board_from_ufiv
 from epcore.measurementmanager import IVCComparator
 from . import utils as ut
 from .version import Version
@@ -46,6 +45,7 @@ class ConfigAttributes(Enum):
     OBJECTS = auto()
     OPEN_REPORT_AT_FINISH = auto()
     PIN_SIZE = auto()
+    SCALING_TYPE = auto()
     TEST_DURATION = auto()
     THRESHOLD_SCORE = auto()
 
@@ -136,6 +136,7 @@ class ReportGenerator(QObject):
         self._required_elements: List = []
         self._required_pins: List = []
         self._results_by_steps: Dict = ReportCreationSteps.get_dict()
+        self._scaling_type: ut.ScalingTypes = ut.ScalingTypes.AUTO
         self._static_dir_name: str = None
         self._test_duration: timedelta = None
         self._threshold_score: float = None
@@ -201,7 +202,6 @@ class ReportGenerator(QObject):
                 "board_img_width": board_image_width,
                 "pin_img_size": pin_img_size}
         data.update(self._get_general_info())
-        print("HEre")
         ut.create_report(template_file_name, report_file_name, **data)
         self.step_done.emit()
         self.generation_finished.emit(report_file_name)
@@ -277,7 +277,7 @@ class ReportGenerator(QObject):
         self.step_started.emit("Drawing of IV-curves")
         logger.info("Drawing of IV-curves was started")
         img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-        ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done)
+        ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done, self._scaling_type)
         logger.info("Images of IV-curves were saved to directory '%s'", img_dir_path)
         return True
 
@@ -408,7 +408,8 @@ class ReportGenerator(QObject):
                       ConfigAttributes.OPEN_REPORT_AT_FINISH: False,
                       ConfigAttributes.APP_NAME: self._app_name,
                       ConfigAttributes.APP_VERSION: self._app_version,
-                      ConfigAttributes.TEST_DURATION: self._test_duration}
+                      ConfigAttributes.TEST_DURATION: self._test_duration,
+                      ConfigAttributes.SCALING_TYPE: self._scaling_type}
         elif isinstance(self._config, Dict):
             config = self._config
         self._config = config
@@ -418,11 +419,12 @@ class ReportGenerator(QObject):
         self._board_test = self._config.get(ConfigAttributes.BOARD_TEST, self._board_test)
         parent_directory = self._config.get(ConfigAttributes.DIRECTORY, self._dir_name)
         self._dir_name = ut.create_report_directory_name(parent_directory, _DEFAULT_REPORT_DIR_NAME)
+        self._open_report_at_finish = self._config.get(ConfigAttributes.OPEN_REPORT_AT_FINISH, False)
+        self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, _PIN_WIDTH)
+        self._scaling_type = self._config.get(ConfigAttributes.SCALING_TYPE, self._scaling_type)
         self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, self._test_duration)
         self._test_duration = ut.get_duration_in_str(self._test_duration)
         self._threshold_score = self._config.get(ConfigAttributes.THRESHOLD_SCORE, self._threshold_score)
-        self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, _PIN_WIDTH)
-        self._open_report_at_finish = self._config.get(ConfigAttributes.OPEN_REPORT_AT_FINISH, False)
         required_objects = self._config.get(ConfigAttributes.OBJECTS, {})
         if required_objects.get(ObjectsForReport.BOARD):
             self._required_board = True
@@ -462,21 +464,6 @@ class ReportGenerator(QObject):
         """
 
         return Version.full
-
-    def open_board_file(self, file_name: str) -> bool:
-        """
-        Method reads file with board information (in json or uzf format).
-        :param file_name: name of file.
-        :return: True if file was read otherwise False.
-        """
-
-        try:
-            board = load_board_from_ufiv(file_name, auto_convert_p10=True)
-        except Exception as exc:
-            logger.error("File '%s' was not read and board was not created: %s", file_name, exc)
-            return False
-        self._board_test = board
-        return True
 
     def run(self, config: Dict):
         """

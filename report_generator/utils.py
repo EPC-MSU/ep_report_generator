@@ -6,7 +6,7 @@ import copy
 import logging
 import os
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import auto, Enum
 from typing import Callable, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,6 +28,15 @@ class PinTypes(Enum):
     HIGH_SCORE = 0
     LOW_SCORE = 1
     REFERENCE = 2
+
+
+class ScalingTypes(Enum):
+    """
+    Scaling types for graph with IV-curves.
+    """
+
+    AUTO = auto()
+    EYEPOINT_P10 = auto()
 
 
 IV_IMAGE_SIZE = 300, 200
@@ -271,12 +280,14 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str, marker_s
     return True
 
 
-def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal):
+def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
+                      scaling_type: ScalingTypes = ScalingTypes.AUTO):
     """
     Function draws and saves IV-curves for pins of board.
     :param pins_info: list with information about pins required for report;
     :param dir_name: name of directory where images should be saved;
-    :param signal: signal.
+    :param signal: signal;
+    :param scaling_type: scaling type for graph with IV-curves.
     """
 
     viewer = Viewer(axis_font=QFont("Times", 10), title_font=QFont("Times", 15))
@@ -296,8 +307,12 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal):
         else:
             ref_currents = np.array([])
             ref_voltages = np.array([])
-        i_max = 1.2 * 1000 * np.amax(np.absolute(np.concatenate((test_currents, ref_currents), axis=0)))
-        v_max = 1.2 * np.amax(np.absolute(np.concatenate((test_voltages, ref_voltages), axis=0)))
+        if scaling_type == ScalingTypes.EYEPOINT_P10:
+            v_max = np.ceil(measurements[0].settings.max_voltage)
+            i_max = np.ceil(v_max * 1000 / measurements[0].settings.internal_resistance)
+        else:
+            i_max = 1.2 * 1000 * np.amax(np.absolute(np.concatenate((test_currents, ref_currents), axis=0)))
+            v_max = 1.2 * np.amax(np.absolute(np.concatenate((test_voltages, ref_voltages), axis=0)))
         viewer.plot.set_scale(v_max, i_max)
         test_curve.set_curve(Curve(test_voltages, test_currents))
         test_curve.set_curve_params(QColor(TEST_CURVE_COLOR))
@@ -353,7 +368,7 @@ def draw_score_histogram(values: list, threshold: float, file_name: str):
     fig = plt.figure(figsize=(6, 6))
     plt.hist(values, bins=80, range=([0, 1.0]))
     plt.axvline(x=threshold, color="red", linewidth=2)
-    plt.yscale("symlog", nonposy="clip")
+    plt.yscale("symlog")
     plt.title("Score histogram")
     fig.savefig(file_name)
     fig.clear()

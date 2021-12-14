@@ -7,7 +7,8 @@ import sys
 from datetime import timedelta
 from PyQt5.QtWidgets import QApplication
 from epcore.filemanager import load_board_from_ufiv
-from report_generator import ConfigAttributes, create_test_and_ref_boards, ObjectsForReport, ReportGenerator
+from report_generator import (ConfigAttributes, create_test_and_ref_boards, ObjectsForReport, ReportGenerator,
+                              ScalingTypes)
 from manual_board import create_manual_board
 
 
@@ -17,7 +18,6 @@ if __name__ == "__main__":
     report_generator = ReportGenerator()
     # Report for board from P10 file
     BOARD_FILE_NAME = "example_board/elements.json"
-    # report_generator.open_board_file(BOARD_FILE_NAME)
     dir_name = os.path.dirname(os.path.abspath(__file__))
     dir_for_report = os.path.join(dir_name, "report_for_p10_board")
     board = load_board_from_ufiv(BOARD_FILE_NAME)
@@ -33,7 +33,8 @@ if __name__ == "__main__":
               ConfigAttributes.OPEN_REPORT_AT_FINISH: True,
               ConfigAttributes.APP_NAME: "EyePoint H10",
               ConfigAttributes.APP_VERSION: "1.2.3",
-              ConfigAttributes.TEST_DURATION: timedelta(seconds=562)}
+              ConfigAttributes.TEST_DURATION: timedelta(seconds=562),
+              ConfigAttributes.SCALING_TYPE: ScalingTypes.EYEPOINT_P10}
     report_generator.run(config)
 
     # Report for manual board
