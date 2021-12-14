@@ -65,6 +65,7 @@ class ReportCreationSteps(Enum):
     """
 
     DRAW_BOARD = auto()
+    DRAW_CLEAR_BOARD = auto()
     DRAW_IV = auto()
     DRAW_PINS = auto()
     CREATE_MAP_REPORT = auto()
@@ -234,10 +235,15 @@ class ReportGenerator(QObject):
         """
 
         self.step_started.emit("Drawing of board")
-        logger.info("Board drawing was started")
+        logger.info("Drawing of board was started")
         file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, _BOARD_IMAGE)
-        self._board.image.save(file_name)
-        logger.info("Board image was saved to '%s'", file_name)
+        if self._board.image:
+            self._board.image.save(file_name)
+            logger.info("Image of board was saved to '%s'", file_name)
+            return True
+        self.step_done.emit()
+        logger.info("Image of board was not drawn")
+        return False
 
     @check_stop_operation
     def _draw_board_with_pins(self) -> bool:
@@ -333,12 +339,12 @@ class ReportGenerator(QObject):
                     else:
                         score = None
                     pin_type = ut.get_pin_type(score, self._threshold_score)
-                    info = (element.name, element_index, pin_index, pin.x, pin.y, pin.measurements, score, pin_type,
-                            total_pin_index, pin.comment)
+                    info = (element.name, element_index, pin_index, pin.x, pin.y, pin.measurements, score,
+                            pin_type, total_pin_index, pin.comment)
                     pins_info.append(info)
                 total_pin_index += 1
         pin_number = len(pins_info)
-        self.total_number_of_steps_calculated.emit(3 + pin_number * 2)
+        self.total_number_of_steps_calculated.emit(4 + pin_number * 2)
         return pins_info
 
     @check_stop_operation
@@ -392,7 +398,8 @@ class ReportGenerator(QObject):
         if not self._pins_info:
             logger.info("There are no objects for which report should be created")
             return
-        methods = {ReportCreationSteps.DRAW_BOARD: self._draw_board_with_pins,
+        methods = {ReportCreationSteps.DRAW_CLEAR_BOARD: self._draw_board,
+                   ReportCreationSteps.DRAW_BOARD: self._draw_board_with_pins,
                    ReportCreationSteps.DRAW_IV: self._draw_ivc,
                    ReportCreationSteps.DRAW_PINS: self._draw_pins}
         for step, method in methods.items():

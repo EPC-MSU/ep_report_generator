@@ -100,8 +100,7 @@
                 </tr>
 				<tr>
                     <td>
-                        <img id="board" src="static/img/board.png" usemap="#map" alt="Карта точек тестирования"
-							title="Карта точек тестирования">
+                        <img id="board" src="static/img/board.png" usemap="#map" alt="Карта точек тестирования" title="Карта точек тестирования">
                         <p><map name="map">
                             % for _, _, _, x, y, _, _, _, _, _ in pins:
                             <area shape="circle" coords="${x},${y},10" href="#point${x}${y}" alt="">
@@ -191,10 +190,9 @@
                             <img src="static/img/${'%s_%s_pin.png'%(element_index, pin_index)}" height="${pin_img_size}"
 								alt="Изображение точки тестирования (пина)", title="Изображение точки тестирования (пина)">
                             <span>
-                                <img src="static/img/board.png" width="300px" style="position:fixed; top:50px; left:50px">
-                                <div class="pin" style="top:${50 + y * (300 / board_img_width) - 3}px; left:${50 + x * (300 / board_img_width) - 3}px; background-color:red">
-                                </div>
-                                </img>
+                                <img src="static/img/board_clear.png" width="300px" style="position:fixed; top:50px; left:50px">
+								<div class="pin" style="top:${50 + y * 300 / board_img_width - 2}px; left:${50 + x * 300 / board_img_width - 2}px;"></div>
+								</img>
                             </span>
                         </a>
                     </td>					

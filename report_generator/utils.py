@@ -230,7 +230,6 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str) -> bool:
     marker_size = width // 35
     for pin_type, x_and_y in pins_xy.items():
         ax.scatter(*x_and_y, s=marker_size, c=PIN_COLORS[pin_type], zorder=1)
-    ax.set(xlim=[-0.5, width - 0.5], ylim=[height - 0.5, -0.5], aspect=1)
     fig.savefig(file_name, dpi=dpi, transparent=True)
     return True
 

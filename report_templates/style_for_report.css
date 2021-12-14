@@ -158,17 +158,12 @@ h2 {
 }
 
 .img_pin span {
-	background-color: #3d3d3d;
-	border: 1px solid white;
-	border-radius: 4px 4px 4px 4px;
 	left: 0;
 	padding: 1px;
 	position: fixed;
 	top: 0;
 	visibility: hidden;
 	text-decoration: none;
-	-moz-border-radius: 4px 4px 4px 4px;
-	-webkit-border-radius: 4px 4px 4px 4px;
 }
 
 .img_pin:hover span {
@@ -176,12 +171,11 @@ h2 {
 }
 
 .pin {
-	background: #cc0000;
-	border-radius: 3px;
-	height: 6px;
+	background-color: red;
+	border: 0px solid red;
+	border-radius: 50%;
+	height: 4px;
 	position: absolute;
-	width: 6px;
+	width: 4px;
 	z-index: 60;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
 }
