@@ -287,7 +287,7 @@ class ReportGenerator(QObject):
         self.step_started.emit("Drawing of IV-curves")
         logger.info("Drawing of IV-curves was started")
         img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-        ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done, self._scaling_type)
+        ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done, self._scaling_type, self._english)
         logger.info("Images of IV-curves were saved to directory '%s'", img_dir_path)
         return True
 

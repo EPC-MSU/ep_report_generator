@@ -281,19 +281,22 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str, marker_s
 
 
 def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
-                      scaling_type: ScalingTypes = ScalingTypes.AUTO):
+                      scaling_type: ScalingTypes = ScalingTypes.AUTO, english: bool = False):
     """
     Function draws and saves IV-curves for pins of board.
     :param pins_info: list with information about pins required for report;
     :param dir_name: name of directory where images should be saved;
     :param signal: signal;
-    :param scaling_type: scaling type for graph with IV-curves.
+    :param scaling_type: scaling type for graph with IV-curves;
+    :param english: if True graph labels will be in English.
     """
 
     viewer = Viewer(axis_font=QFont("Times", 10), title_font=QFont("Times", 15))
     viewer.resize(*IV_IMAGE_SIZE)
-    viewer.plot.set_x_axis_title("Напряжение, В")
-    viewer.plot.set_y_axis_title("Ток, мА")
+    x_label = "Voltage, V" if english else "Напряжение, В"
+    viewer.plot.set_x_axis_title(x_label)
+    y_label = "Current, mA" if english else "Ток, мА"
+    viewer.plot.set_y_axis_title(y_label)
     viewer.plot.setStyleSheet("background: white")
     test_curve = viewer.plot.add_curve()
     ref_curve = viewer.plot.add_curve()
