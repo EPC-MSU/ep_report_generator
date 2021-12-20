@@ -33,7 +33,8 @@ if __name__ == "__main__":
               ConfigAttributes.APP_NAME: "EyePoint H10",
               ConfigAttributes.APP_VERSION: "1.2.3",
               ConfigAttributes.TEST_DURATION: timedelta(seconds=562),
-              ConfigAttributes.SCALING_TYPE: ScalingTypes.EYEPOINT_P10}
+              ConfigAttributes.SCALING_TYPE: ScalingTypes.EYEPOINT_P10,
+              ConfigAttributes.ENGLISH: True}
     report_generator = ReportGenerator()
     report_generator.run(config)
 

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 
 <head>
 	<meta charset="UTF-8">
 	<link rel="stylesheet" href="static/styles/style_for_map.css">
-	<title>Карта точек тестирования</title>
+	<title>Test pins map</title>
     <script>
 		const PIN_WIDTH = 30;
 		const COLORS = {0: "red",
@@ -106,12 +106,12 @@
     % for name, element_index, pin_index, x, y, measurements, _, pin_type, _, _ in pins:
 	<figure id="img${x},${y},10" onmouseover="change_position(this);" style="display: none;">
 		<p>
-			<img src="static/img/${'%s_%s_iv.png'%(element_index, pin_index)}" alt="Изображение ВАХ в точке тестирования" title="Изображение ВАХ в точке тестирования">
+			<img src="static/img/${'%s_%s_iv.png'%(element_index, pin_index)}" alt="IVC at test pin" title="IVC at test pin">
 		</p>
 		<%
-			legend_for_iv_img = "Красный - тестовая (текущая) ВАХ\n"
+			legend_for_iv_img = "Red - test (current) IVC\n"
 			if len(measurements) > 1:
-				legend_for_iv_img += "Синий - ВАХ эталона"
+				legend_for_iv_img += "Blue - reference IVC"
 		%>
 		<figcaption>${legend_for_iv_img}</figcaption>
 	</figure>

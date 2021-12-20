@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>Отчет</title>
+    <title>Report</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="static/styles/style_for_report.css">
     <script type="text/javascript">
@@ -50,7 +50,7 @@
 
 <body onload="change_size()">
     <div id="wrapper">
-        <h1>Отчет</h1>
+        <h1>Report</h1>
         <table id="general_info" cellspacing="0" cellpadding="0">
             <tbody>
 				<tr>
@@ -59,46 +59,46 @@
 					% else:
 					<th>
 					% endif
-                        <h2>Общая информация</h2>
+                        <h2>General information</h2>
                     </th>
                 </tr>
                 <tr>
                     <td class="align_left">
 						% if app_name is not None:
-						<span>Диагностическая система: ${app_name}</span><br>
+						<span>Test system: ${app_name}</span><br>
 						% endif
 						% if app_version is not None:
-						<span>Версия: ${app_version}</span><br>
+						<span>Version: ${app_version}</span><br>
 						% endif
-						<span>Дата: ${date}</span><br>
+						<span>Date: ${date}</span><br>
 						% if computer is not None:
-						<span>Рабочая станция: ${computer}</span><br>
+						<span>Computer: ${computer}</span><br>
 						% endif
 						% if operating_system is not None:
-						<span>Операционная система: ${operating_system}</span><br>
+						<span>Operating system: ${operating_system}</span><br>
 						% endif
 						% if test_duration is not None:
-						<span>Длительность тестирования: ${test_duration}</span><br>
+						<span>Duration of the test: ${test_duration}</span><br>
 						% endif
 						% if pcb_name is not None:
-						<span>Название платы: ${pcb_name}</span><br>
+						<span>Sample name: ${pcb_name}</span><br>
 						% endif
-                        <span>Количество элементов: ${elements_number}</span><br>
-                        <span>Количество точек тестирования: ${pins_number}</span><br>
+                        <span>All components: ${elements_number}</span><br>
+                        <span>All test points: ${pins_number}</span><br>
 						% if threshold_score is not None:
-						<span>Пороговое значение score: ${"{:.2f}%".format(threshold_score * 100)}</span><br>
+						<span>Threshold score: ${"{:.2f}%".format(threshold_score * 100)}</span><br>
 						% endif
 						% if pcb_comment is not None:
-						<span>Комментарий: ${pcb_comment}</span><br>
+						<span>Comment: ${pcb_comment}</span><br>
 						% endif
 						<span>HTML: v4.01</span><br>
 						% if board_img_width is not None:
-                        <span><a href="map.html" target="_blank">Изображение платы</a></span><br>
+                        <span><a href="map.html" target="_blank">Image inspect</a></span><br>
 						% endif
                     </td>
 					% if score_histogram:
 					<td>
-						<img src="static/score_histogram.png" alt="Гистограмма значений score" width="300px">
+						<img src="static/score_histogram.png" alt="Histogram of scores" width="300px">
 					</td>
 					% endif
                 </tr>
@@ -109,7 +109,7 @@
 					% else:
 					<th>
 					% endif
-                        <h2>Карта точек тестирования</h2>
+                        <h2>Test points map</h2>
                     </th>
                 </tr>
 				<tr>
@@ -118,7 +118,7 @@
 					% else:
 					<td>
 					% endif
-                        <img id="board" src="static/img/board.png" usemap="#map" alt="Карта точек тестирования" title="Карта точек тестирования">
+                        <img id="board" src="static/img/board.png" usemap="#map" alt="Test points map" title="Test points map">
                         <p><map name="map">
                             % for _, _, _, x, y, _, _, _, _, _ in pins:
                             <area shape="circle" coords="${x},${y},${pin_radius}" href="#point${x}${y}" alt="">
@@ -135,11 +135,11 @@
         <table id="report" cellspacing="0" cellpadding="0">
             <thead>
                 <tr>
-                    <th class="column_name"><span>Имя</span></th>
+                    <th class="column_name"><span>Name</span></th>
 					% if board_img_width is not None:
-                    <th class="column_image"><span>Компонент</span></th>
+                    <th class="column_image"><span>Tested component</span></th>
 					% endif
-                    <th class="column_plot"><span>ВАХ</span></th>
+                    <th class="column_plot"><span>IVC</span></th>
                 </tr>
             </thead>
             <tbody>
@@ -161,43 +161,43 @@
                     <td class="align_left">
 						<a class="anchor" id="top" name="point${x}${y}"></a>
 						<span>#${total_pin_index}</span><br>
-						<span>Название элемента: ${name}</span><br>
-						<span>Индекс элемента: ${element_index}</span><br>
-						<span>Индекс пина: ${pin_index}</span><br>
+						<span>Component name: ${name}</span><br>
+						<span>Component index: ${element_index}</span><br>
+						<span>Pin index: ${pin_index}</span><br>
                         % if mm_per_px:
-                        <span>X = ${"{:.2f}".format(x * mm_per_px) } мм</span><br>
-						<span>Y = ${"{:.2f}".format(y * mm_per_px)} мм</span><br>
+                        <span>X = ${"{:.2f}".format(x * mm_per_px) } mm</span><br>
+						<span>Y = ${"{:.2f}".format(y * mm_per_px)} mm</span><br>
                         % else:
-                        <span>X = ${"{:.2f}".format(x)} пк</span><br>
-						<span>Y = ${"{:.2f}".format(y)} пк</span><br>
+                        <span>X = ${"{:.2f}".format(x)} px</span><br>
+						<span>Y = ${"{:.2f}".format(y)} px</span><br>
                         % endif
 						% if score is not None:
 						<span>score = ${"{:.2f}%".format(score * 100)}</span><br>
 						% endif
-						<button class="collapsible" onclick="handle_click(this)">Параметры измерения</button>
+						<button class="collapsible" onclick="handle_click(this)">Measurement settings</button>
 						<div class="measurement_settings">
-							<span>Частота = ${measurements[0].settings.probe_signal_frequency} Гц</span><br>
-							<span>Напряжение = ${measurements[0].settings.max_voltage} В</span><br>
-							<span>Внутреннее сопротивление = ${measurements[0].settings.internal_resistance} Ом</span><br>
+							<span>Frequency = ${measurements[0].settings.probe_signal_frequency} Hz</span><br>
+							<span>Voltage = ${measurements[0].settings.max_voltage} V</span><br>
+							<span>Internal resistance = ${measurements[0].settings.internal_resistance} Ohm</span><br>
 						</div><br>
 						% if pin_comment is not None:
-						<button class="collapsible" onclick="handle_click(this)">Комментарий к пину</button>
+						<button class="collapsible" onclick="handle_click(this)">Pin comment</button>
 						<div class="measurement_settings">
 							<span>${pin_comment}</span>
 						</div><br>
 						% endif
 						% if measurements[0].comment is not None:
-						<button class="collapsible" onclick="handle_click(this)">Комментарий к измерению</button>
+						<button class="collapsible" onclick="handle_click(this)">Measurement comment</button>
 						<div class="measurement_settings">
 							<span>${measurements[0].comment}</span>
 						</div><br>
 						% endif
 						<%
-							legend_for_iv_img = "Красный - тестовая (текущая) ВАХ\n"
+							legend_for_iv_img = "Red - test (current) IVC\n"
 							if len(measurements) > 1:
-								legend_for_iv_img += "Синий - ВАХ эталона\n"
+								legend_for_iv_img += "Blue - reference IVC\n"
 						%>
-						<button class="collapsible" onclick="handle_click(this)">Легенда ВАХ</button>
+						<button class="collapsible" onclick="handle_click(this)">IVC legend</button>
 						<div class="measurement_settings">
 							<span style="white-space: pre-line">${legend_for_iv_img}</span>
 						</div>
@@ -206,18 +206,18 @@
                     <td>
                         <a class="img_pin">
                             <img src="static/img/${'%s_%s_pin.png'%(element_index, pin_index)}" height="${pin_img_size}"
-								alt="Изображение точки тестирования (пина)", title="Изображение точки тестирования (пина)">
+								alt="Test point image (pin)", title="Test point image (pin)">
                             <span>
                                 <img src="static/img/board_clear.png" width="300px" style="position:fixed; top:50px; left:50px">
 								<div class="pin" style="top:${50 + y * 300 / board_img_width - 2}px; left:${50 + x * 300 / board_img_width - 2}px;"></div>
 								</img>
                             </span>
                         </a>
-                    </td>					
+                    </td>
 					% endif
                     <td>
                         <img src="static/img/${'%s_%s_iv.png'%(element_index, pin_index)}" height="${pin_img_size}"
-							alt="Изображение ВАХ" title="${legend_for_iv_img}">
+							alt="IVC" title="${legend_for_iv_img}">
                     </td>
                 </tr>
                 % endfor

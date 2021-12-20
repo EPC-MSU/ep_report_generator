@@ -27,7 +27,9 @@ _STYLE_FOR_MAP = "style_for_map.css"
 _STYLE_FOR_REPORT = "style_for_report.css"
 _STYLES_DIR_NAME = "styles"
 _TEMPLATE_FILE_WITH_MAP = "map.html"
+_TEMPLATE_FILE_WITH_MAP_EN = "map_en.html"
 _TEMPLATE_FILE_WITH_REPORT = "report.html"
+_TEMPLATE_FILE_WITH_REPORT_EN = "report_en.html"
 _TEMPLATES_DIR_NAME = "report_templates"
 _PIN_WIDTH = 100
 
@@ -42,6 +44,7 @@ class ConfigAttributes(Enum):
     BOARD_REF = auto()
     BOARD_TEST = auto()
     DIRECTORY = auto()
+    ENGLISH = auto()
     OBJECTS = auto()
     OPEN_REPORT_AT_FINISH = auto()
     PIN_SIZE = auto()
@@ -128,6 +131,7 @@ class ReportGenerator(QObject):
         self._board_test: Board = board_test
         self._config: Dict = config
         self._dir_name: str = self._get_default_dir_name()
+        self._english: bool = False
         self._open_report_at_finish: bool = False
         self._pin_diameter: int = None
         self._pin_width: int = _PIN_WIDTH
@@ -175,7 +179,10 @@ class ReportGenerator(QObject):
         logger.info("Creation of report was started")
         dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_REPORT)
-        template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_REPORT)
+        if self._english:
+            template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_REPORT_EN)
+        else:
+            template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_REPORT)
         style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_REPORT)
         shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME, _STYLE_FOR_REPORT))
         elements_number = len({pin_info[1] for pin_info in self._pins_info})
@@ -221,7 +228,10 @@ class ReportGenerator(QObject):
         logger.info("Creation of report with board map was started")
         dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_MAP)
-        template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_MAP)
+        if self._english:
+            template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_MAP_EN)
+        else:
+            template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_MAP)
         style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_MAP)
         shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME, _STYLE_FOR_MAP))
         ut.create_report(template_file_name, report_file_name, pins=self._pins_info,
@@ -399,32 +409,34 @@ class ReportGenerator(QObject):
         """
 
         if not isinstance(config, Dict) and not isinstance(self._config, Dict):
-            config = {ConfigAttributes.BOARD_TEST: self._board_test,
+            config = {ConfigAttributes.APP_NAME: None,
+                      ConfigAttributes.APP_VERSION: None,
                       ConfigAttributes.BOARD_REF: self._board_ref,
+                      ConfigAttributes.BOARD_TEST: self._board_test,
                       ConfigAttributes.DIRECTORY: self._dir_name,
+                      ConfigAttributes.ENGLISH: False,
                       ConfigAttributes.OBJECTS: {},
-                      ConfigAttributes.THRESHOLD_SCORE: None,
-                      ConfigAttributes.PIN_SIZE: _PIN_WIDTH,
                       ConfigAttributes.OPEN_REPORT_AT_FINISH: False,
-                      ConfigAttributes.APP_NAME: self._app_name,
-                      ConfigAttributes.APP_VERSION: self._app_version,
-                      ConfigAttributes.TEST_DURATION: self._test_duration,
-                      ConfigAttributes.SCALING_TYPE: self._scaling_type}
+                      ConfigAttributes.PIN_SIZE: _PIN_WIDTH,
+                      ConfigAttributes.SCALING_TYPE: ut.ScalingTypes.AUTO,
+                      ConfigAttributes.TEST_DURATION: None,
+                      ConfigAttributes.THRESHOLD_SCORE: None}
         elif isinstance(self._config, Dict):
             config = self._config
         self._config = config
-        self._app_name = self._config.get(ConfigAttributes.APP_NAME, self._app_name)
-        self._app_version = self._config.get(ConfigAttributes.APP_VERSION, self._app_version)
+        self._app_name = self._config.get(ConfigAttributes.APP_NAME, None)
+        self._app_version = self._config.get(ConfigAttributes.APP_VERSION, None)
         self._board_ref = self._config.get(ConfigAttributes.BOARD_REF, self._board_ref)
         self._board_test = self._config.get(ConfigAttributes.BOARD_TEST, self._board_test)
         parent_directory = self._config.get(ConfigAttributes.DIRECTORY, self._dir_name)
         self._dir_name = ut.create_report_directory_name(parent_directory, _DEFAULT_REPORT_DIR_NAME)
+        self._english = self._config.get(ConfigAttributes.ENGLISH, False)
         self._open_report_at_finish = self._config.get(ConfigAttributes.OPEN_REPORT_AT_FINISH, False)
         self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, _PIN_WIDTH)
-        self._scaling_type = self._config.get(ConfigAttributes.SCALING_TYPE, self._scaling_type)
-        self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, self._test_duration)
+        self._scaling_type = self._config.get(ConfigAttributes.SCALING_TYPE, ut.ScalingTypes.AUTO)
+        self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, None)
         self._test_duration = ut.get_duration_in_str(self._test_duration)
-        self._threshold_score = self._config.get(ConfigAttributes.THRESHOLD_SCORE, self._threshold_score)
+        self._threshold_score = self._config.get(ConfigAttributes.THRESHOLD_SCORE, None)
         required_objects = self._config.get(ConfigAttributes.OBJECTS, {})
         if required_objects.get(ObjectsForReport.BOARD):
             self._required_board = True
