@@ -281,14 +281,16 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str, marker_s
 
 
 def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
-                      scaling_type: ScalingTypes = ScalingTypes.AUTO, english: bool = False):
+                      scaling_type: ScalingTypes = ScalingTypes.AUTO, english: bool = False,
+                      stop_drawing: Callable = lambda: False):
     """
     Function draws and saves IV-curves for pins of board.
     :param pins_info: list with information about pins required for report;
     :param dir_name: name of directory where images should be saved;
     :param signal: signal;
     :param scaling_type: scaling type for graph with IV-curves;
-    :param english: if True graph labels will be in English.
+    :param english: if True graph labels will be in English;
+    :param stop_drawing: returns True if drawing should be stopped.
     """
 
     viewer = Viewer(axis_font=QFont("Times", 10), title_font=QFont("Times", 15))
@@ -301,6 +303,8 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
     test_curve = viewer.plot.add_curve()
     ref_curve = viewer.plot.add_curve()
     for pin_info in pins_info:
+        if stop_drawing():
+            break
         element_name, element_index, pin_index, _, _, measurements, _, pin_type, _, _ = pin_info
         test_currents = measurements[0].ivc.currents
         test_voltages = measurements[0].ivc.voltages
@@ -332,20 +336,24 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
 
 
 @_check_for_image_availability
-def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal, pin_width: int) -> bool:
+def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal, pin_width: int,
+              stop_drawing: Callable = lambda: False) -> bool:
     """
     Function draws and saves images of pins of board.
     :param image: board image;
     :param pins_info: list with information about pins required for report;
     :param dir_name: name of directory where images should be saved;
     :param signal: signal;
-    :param pin_width: width in pixels of pins images.
+    :param pin_width: width in pixels of pins images;
+    :param stop_drawing: returns True if drawing should be stopped.
     :return: True if images were drawn and saved.
     """
 
     height = image.height
     width = image.width
     for pin_info in pins_info:
+        if stop_drawing():
+            return False
         element_name, element_index, pin_index, x, y, _, _, pin_type, _, _ = pin_info
         left, right = _get_pin_borders(x, width, pin_width)
         upper, lower = _get_pin_borders(y, height, pin_width)

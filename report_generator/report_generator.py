@@ -287,7 +287,8 @@ class ReportGenerator(QObject):
         self.step_started.emit("Drawing of IV-curves")
         logger.info("Drawing of IV-curves was started")
         img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-        ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done, self._scaling_type, self._english)
+        ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done, self._scaling_type, self._english,
+                             lambda: self.stop)
         logger.info("Images of IV-curves were saved to directory '%s'", img_dir_path)
         return True
 
@@ -321,7 +322,8 @@ class ReportGenerator(QObject):
         self.step_started.emit("Drawing of pins")
         logger.info("Drawing of pins was started")
         img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-        if ut.draw_pins(self._board.image, self._pins_info, img_dir_path, self.step_done, self._pin_width):
+        if ut.draw_pins(self._board.image, self._pins_info, img_dir_path, self.step_done, self._pin_width,
+                        lambda: self.stop):
             logger.info("Images of pins were saved to directory '%s'", img_dir_path)
             return True
         for _ in range(len(self._pins_info)):
