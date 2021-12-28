@@ -40,11 +40,11 @@ class ScalingTypes(Enum):
 
 
 IV_IMAGE_SIZE = 300, 200
-PIN_COLORS = {PinTypes.HIGH_SCORE: "red",
-              PinTypes.LOW_SCORE: "green",
-              PinTypes.REFERENCE: "purple"}
-REFERENCE_CURVE_COLOR = "blue"
-TEST_CURVE_COLOR = "red"
+PIN_COLORS = {PinTypes.HIGH_SCORE: "#f00",
+              PinTypes.LOW_SCORE: "#0f0",
+              PinTypes.REFERENCE: "#f0f"}
+REFERENCE_CURVE_COLOR = "#00f"
+TEST_CURVE_COLOR = "#f00"
 
 
 def _check_for_image_availability(func: Callable):

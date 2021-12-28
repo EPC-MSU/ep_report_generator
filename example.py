@@ -30,7 +30,7 @@ if __name__ == "__main__":
               ConfigAttributes.THRESHOLD_SCORE: 0.5,
               ConfigAttributes.PIN_SIZE: 200,
               ConfigAttributes.OPEN_REPORT_AT_FINISH: True,
-              ConfigAttributes.APP_NAME: "EyePoint H10",
+              ConfigAttributes.APP_NAME: "EyePoint P10",
               ConfigAttributes.APP_VERSION: "1.2.3",
               ConfigAttributes.TEST_DURATION: timedelta(seconds=562),
               ConfigAttributes.SCALING_TYPE: ScalingTypes.EYEPOINT_P10,
