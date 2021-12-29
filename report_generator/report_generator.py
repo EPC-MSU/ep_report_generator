@@ -423,7 +423,7 @@ class ReportGenerator(QObject):
                       ConfigAttributes.SCALING_TYPE: ut.ScalingTypes.AUTO,
                       ConfigAttributes.TEST_DURATION: None,
                       ConfigAttributes.THRESHOLD_SCORE: None}
-        elif isinstance(self._config, Dict):
+        elif not isinstance(config, Dict) and isinstance(self._config, Dict):
             config = self._config
         self._config = config
         self._app_name = self._config.get(ConfigAttributes.APP_NAME, None)

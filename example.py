@@ -49,5 +49,4 @@ if __name__ == "__main__":
                                          ObjectsForReport.ELEMENT: [],
                                          ObjectsForReport.PIN: []},
               ConfigAttributes.THRESHOLD_SCORE: 0.2}
-    report_generator = ReportGenerator()
     report_generator.run(config)
