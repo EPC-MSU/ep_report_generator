@@ -14,37 +14,37 @@
          */
         function change_size() {
             if (flag)
-				return;
+                return;
             flag = true;
-			const WIDTH = 800;
-			let board_img = document.getElementById("board");
-			if (board_img == null)
-				return;
+            const WIDTH = 800;
+            let board_img = document.getElementById("board");
+            if (board_img == null)
+                return;
             let natural_width = board_img.naturalWidth;
-			board_img.width = WIDTH;
-			let pin_areas = document.getElementsByTagName("area");
-			for (let i = 0; i < pin_areas.length; i++) {
-				let pin = pin_areas[i];
-				let coords = pin.getAttribute("coords").split(",");
-				let x = coords[0] * WIDTH / natural_width;
-				let y = coords[1] * WIDTH / natural_width;
-				let r = coords[2] * WIDTH / natural_width;
-				pin.setAttribute("coords", x + "," + y + "," + r);
-			}
+            board_img.width = WIDTH;
+            let pin_areas = document.getElementsByTagName("area");
+            for (let i = 0; i < pin_areas.length; i++) {
+                let pin = pin_areas[i];
+                let coords = pin.getAttribute("coords").split(",");
+                let x = coords[0] * WIDTH / natural_width;
+                let y = coords[1] * WIDTH / natural_width;
+                let r = coords[2] * WIDTH / natural_width;
+                pin.setAttribute("coords", x + "," + y + "," + r);
+            }
         }
-		
-		/**
-		 * Function handles click on button.
-		 * @param button: button.
-		 */
-		function handle_click(button) {
-			button.classList.toggle("active");
-			let content = button.nextElementSibling;
-			if (content.style.display === "block")
-				content.style.display = "none";
-			else
-				content.style.display = "block";
-		}
+        
+        /**
+         * Function handles click on button.
+         * @param button: button.
+         */
+        function handle_click(button) {
+            button.classList.toggle("active");
+            let content = button.nextElementSibling;
+            if (content.style.display === "block")
+                content.style.display = "none";
+            else
+                content.style.display = "block";
+        }
     </script>
 </head>
 
@@ -53,71 +53,71 @@
         <h1>Report</h1>
         <table id="general_info" cellspacing="0" cellpadding="0">
             <tbody>
-				<tr>
+                <tr>
                     % if score_histogram:
-					<th colspan="2">
-					% else:
-					<th>
-					% endif
+                    <th colspan="2">
+                    % else:
+                    <th>
+                    % endif
                         <h2>General information</h2>
                     </th>
                 </tr>
                 <tr>
                     <td class="align_left">
-						% if app_name is not None:
-						<span>Test system: ${app_name}</span><br>
-						% endif
-						% if app_version is not None:
-						<span>Version: ${app_version}</span><br>
-						% endif
-						<span>Date: ${date}</span><br>
-						% if computer is not None:
-						<span>Computer: ${computer}</span><br>
-						% endif
-						% if operating_system is not None:
-						<span>Operating system: ${operating_system}</span><br>
-						% endif
-						% if test_duration is not None:
-						<span>Duration of the test: ${test_duration}</span><br>
-						% endif
-						% if pcb_name is not None:
-						<span>Sample name: ${pcb_name}</span><br>
-						% endif
+                        % if app_name is not None:
+                        <span>Test system: ${app_name}</span><br>
+                        % endif
+                        % if app_version is not None:
+                        <span>Version: ${app_version}</span><br>
+                        % endif
+                        <span>Date: ${date}</span><br>
+                        % if computer is not None:
+                        <span>Computer: ${computer}</span><br>
+                        % endif
+                        % if operating_system is not None:
+                        <span>Operating system: ${operating_system}</span><br>
+                        % endif
+                        % if test_duration is not None:
+                        <span>Duration of the test: ${test_duration}</span><br>
+                        % endif
+                        % if pcb_name is not None:
+                        <span>Sample name: ${pcb_name}</span><br>
+                        % endif
                         <span>All components: ${elements_number}</span><br>
                         <span>All test points: ${pins_number}</span><br>
-						% if threshold_score is not None:
-						<span>Threshold score: ${"{:.2f}%".format(threshold_score * 100)}</span><br>
-						% endif
-						% if pcb_comment is not None:
-						<span>Comment: ${pcb_comment}</span><br>
-						% endif
-						<span>HTML: v4.01</span><br>
-						% if board_img_width is not None:
+                        % if threshold_score is not None:
+                        <span>Threshold score: ${"{:.2f}%".format(threshold_score * 100)}</span><br>
+                        % endif
+                        % if pcb_comment is not None:
+                        <span>Comment: ${pcb_comment}</span><br>
+                        % endif
+                        <span>HTML: v4.01</span><br>
+                        % if board_img_width is not None:
                         <span><a href="map.html" target="_blank">Image inspect</a></span><br>
-						% endif
+                        % endif
                     </td>
-					% if score_histogram:
-					<td>
-						<img src="static/score_histogram.png" alt="Histogram of scores" width="300px">
-					</td>
-					% endif
+                    % if score_histogram:
+                    <td>
+                        <img src="static/score_histogram.png" alt="Histogram of scores" width="300px">
+                    </td>
+                    % endif
                 </tr>
-				% if board_img_width is not None:
+                % if board_img_width is not None:
                 <tr>
-					% if score_histogram:
-					<th colspan="2">
-					% else:
-					<th>
-					% endif
+                    % if score_histogram:
+                    <th colspan="2">
+                    % else:
+                    <th>
+                    % endif
                         <h2>Test points map</h2>
                     </th>
                 </tr>
-				<tr>
-					% if score_histogram:
-					<td colspan="2">
-					% else:
-					<td>
-					% endif
+                <tr>
+                    % if score_histogram:
+                    <td colspan="2">
+                    % else:
+                    <td>
+                    % endif
                         <img id="board" src="static/img/board.png" usemap="#map" alt="Test points map" title="Test points map">
                         <p><map name="map">
                             % for _, _, _, x, y, _, _, _, _, _ in pins:
@@ -127,7 +127,7 @@
                         </p>
                     </td>
                 </tr>
-				% endif
+                % endif
             </tbody>
         </table>
 
@@ -136,90 +136,103 @@
             <thead>
                 <tr>
                     <th class="column_name"><span>Name</span></th>
-					% if board_img_width is not None:
+                    % if board_img_width is not None:
                     <th class="column_image"><span>Tested component</span></th>
-					% endif
+                    % endif
                     <th class="column_plot"><span>IVC</span></th>
                 </tr>
             </thead>
             <tbody>
-				<%
-					prev_element_index = None
-				%>
+                <%
+                    prev_element_index = None
+                %>
                 % for name, element_index, pin_index, x, y, measurements, score, pin_type, total_pin_index, pin_comment in pins:
-				% if element_index != prev_element_index:
-				<%
-					prev_element_index = element_index
-				%>
-				<tr>
-					<td class="element_name" colspan="3">
-						<h2>${"#{} - {}".format(element_index, name)}</h2>
-					</td>
-				</tr>
-				% endif
+                % if element_index != prev_element_index:
+                <%
+                    prev_element_index = element_index
+                %>
                 <tr>
+                    <td class="element_name" colspan="3">
+                        <h2>${"#{} - {}".format(element_index, name)}</h2>
+                    </td>
+                </tr>
+                % endif
+                % if measurements or board_img_width is not None:
+                <tr>
+                    <%
+                        legend_for_iv_img = ""
+                    %>
                     <td class="align_left">
-						<a class="anchor" id="top" name="point${x}${y}"></a>
-						<span>#${total_pin_index}</span><br>
-						<span>Component name: ${name}</span><br>
-						<span>Component index: ${element_index}</span><br>
-						<span>Pin index: ${pin_index}</span><br>
+                        <a class="anchor" id="top" name="point${x}${y}"></a>
+                        <span>#${total_pin_index}</span><br>
+                        <span>Component name: ${name}</span><br>
+                        <span>Component index: ${element_index}</span><br>
+                        <span>Pin index: ${pin_index}</span><br>
                         % if mm_per_px:
                         <span>X = ${"{:.2f}".format(x * mm_per_px) } mm</span><br>
-						<span>Y = ${"{:.2f}".format(y * mm_per_px)} mm</span><br>
+                        <span>Y = ${"{:.2f}".format(y * mm_per_px)} mm</span><br>
                         % else:
                         <span>X = ${"{:.2f}".format(x)} px</span><br>
-						<span>Y = ${"{:.2f}".format(y)} px</span><br>
+                        <span>Y = ${"{:.2f}".format(y)} px</span><br>
                         % endif
-						% if score is not None:
-						<span>score = ${"{:.2f}%".format(score * 100)}</span><br>
-						% endif
-						<button class="collapsible" onclick="handle_click(this)">Measurement settings</button>
-						<div class="measurement_settings">
-							<span>Frequency = ${measurements[0].settings.probe_signal_frequency} Hz</span><br>
-							<span>Voltage = ${measurements[0].settings.max_voltage} V</span><br>
-							<span>Internal resistance = ${measurements[0].settings.internal_resistance} Ohm</span><br>
-						</div><br>
-						% if pin_comment is not None:
-						<button class="collapsible" onclick="handle_click(this)">Pin comment</button>
-						<div class="measurement_settings">
-							<span>${pin_comment}</span>
-						</div><br>
-						% endif
-						% if measurements[0].comment is not None:
-						<button class="collapsible" onclick="handle_click(this)">Measurement comment</button>
-						<div class="measurement_settings">
-							<span>${measurements[0].comment}</span>
-						</div><br>
-						% endif
-						<%
-							legend_for_iv_img = "Red - test (current) IVC\n"
-							if len(measurements) > 1:
-								legend_for_iv_img += "Blue - reference IVC\n"
-						%>
-						<button class="collapsible" onclick="handle_click(this)">IVC legend</button>
-						<div class="measurement_settings">
-							<span style="white-space: pre-line">${legend_for_iv_img}</span>
-						</div>
+                        % if score is not None:
+                        <span>score = ${"{:.2f}%".format(score * 100)}</span><br>
+                        % endif
+                        % if measurements:
+                        <button class="collapsible" onclick="handle_click(this)">Measurement settings</button>
+                        <div class="measurement_settings">
+                            <span>Frequency = ${measurements[0].settings.probe_signal_frequency} Hz</span><br>
+                            <span>Voltage = ${measurements[0].settings.max_voltage} V</span><br>
+                            <span>Internal resistance = ${measurements[0].settings.internal_resistance} Ohm</span><br>
+                        </div><br>
+                            % if measurements[0].comment is not None:
+                            <button class="collapsible" onclick="handle_click(this)">Measurement comment</button>
+                            <div class="measurement_settings">
+                                <span>${measurements[0].comment}</span>
+                            </div><br>
+                            % endif
+                        <%
+                            legend_for_iv_img = "Red - test (current) IVC\n"
+                            if len(measurements) > 1:
+                                legend_for_iv_img += "Blue - reference IVC\n"
+                            elif not measurements:
+                                legend_for_iv_img = ""
+                        %>
+                        <button class="collapsible" onclick="handle_click(this)">IVC legend</button>
+                        <div class="measurement_settings">
+                            <span style="white-space: pre-line">${legend_for_iv_img}</span>
+                        </div><br>
+                        % endif
+                        % if pin_comment is not None:
+                        <button class="collapsible" onclick="handle_click(this)">Pin comment</button>
+                        <div class="measurement_settings">
+                            <span>${pin_comment}</span>
+                        </div>
+                        % endif
                     </td>
-					% if board_img_width is not None:
+                    % if board_img_width is not None:
                     <td>
                         <a class="img_pin">
                             <img src="static/img/${'%s_%s_pin.png'%(element_index, pin_index)}" height="${pin_img_size}"
-								alt="Test point image (pin)", title="Test point image (pin)">
+                                alt="Test point image (pin)", title="Test point image (pin)">
                             <span>
                                 <img src="static/img/board_clear.png" width="300px" style="position:fixed; top:50px; left:50px">
-								<div class="pin" style="top:${50 + y * 300 / board_img_width - 2}px; left:${50 + x * 300 / board_img_width - 2}px;"></div>
-								</img>
+                                <div class="pin" style="top:${50 + y * 300 / board_img_width - 2}px; left:${50 + x * 300 / board_img_width - 2}px;"></div>
+                                </img>
                             </span>
                         </a>
                     </td>
-					% endif
+                    % endif
                     <td>
+                    % if measurements:
                         <img src="static/img/${'%s_%s_iv.png'%(element_index, pin_index)}" height="${pin_img_size}"
-							alt="IVC" title="${legend_for_iv_img}">
+                            alt="IVC" title="${legend_for_iv_img}">
+                    % else:
+                        <span>No IVC</span>
+                    % endif
                     </td>
                 </tr>
+                % endif
                 % endfor
             </tbody>
         </table>

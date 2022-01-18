@@ -2,16 +2,16 @@
 <html lang="ru">
 
 <head>
-	<meta charset="UTF-8">
-	<link rel="stylesheet" href="static/styles/style_for_map.css">
-	<title>Карта точек тестирования</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/styles/style_for_map.css">
+    <title>Карта точек тестирования</title>
     <script>
-		var mouse_x, mouse_y;
-		document.addEventListener("mousemove", (event) => {
-			mouse_x = event.clientX;
-			mouse_y = event.clientY;
-		});
-		
+        var mouse_x, mouse_y;
+        document.addEventListener("mousemove", (event) => {
+            mouse_x = event.clientX;
+            mouse_y = event.clientY;
+        });
+        
         /**
          * Function changes position of image of IV-curve for pin.
          * @param pin_iv_img: image of IV-curve for pin.
@@ -19,22 +19,22 @@
         function change_position(pin_iv_img) {
             pin_iv_img.style.top = "60%";
         }
-		
-		/**
-		 * Function checks if mouse is inside image of IV-curve.
-		 * @param object: image of IV-curve.
-		 * @return: true if mouse is inside image of IV-curve.
-		 */
-		function check_point_inside(object) {
-			const PERCENT = 0.2;
-			let body = document.getElementsByTagName("body")[0];
-			let body_width = body.getBoundingClientRect().width;
-			let img_width = PERCENT * body_width;
-			let img_height = object.naturalHeight * img_width / object.naturalWidth;
-			if (0 <= mouse_x && mouse_x <= img_width && 0 <= mouse_y && mouse_y <= img_height)
-				return true;
-			return false;
-		}
+        
+        /**
+         * Function checks if mouse is inside image of IV-curve.
+         * @param object: image of IV-curve.
+         * @return: true if mouse is inside image of IV-curve.
+         */
+        function check_point_inside(object) {
+            const PERCENT = 0.2;
+            let body = document.getElementsByTagName("body")[0];
+            let body_width = body.getBoundingClientRect().width;
+            let img_width = PERCENT * body_width;
+            let img_height = object.naturalHeight * img_width / object.naturalWidth;
+            if (0 <= mouse_x && mouse_x <= img_width && 0 <= mouse_y && mouse_y <= img_height)
+                return true;
+            return false;
+        }
 
         /**
          * Function hides or shows image of IV-curve for pin.
@@ -42,16 +42,16 @@
          * @param show: if false image is hidden.
          */
         function hide_or_show_img(pin, show) {
-			let coords = pin.getAttribute("coords");
+            let coords = pin.getAttribute("coords");
             let pin_iv_img = document.getElementById("img" + coords);
-			let board_x = document.getElementById("board_img").getBoundingClientRect().x;
-			if (board_x < 0)
-				board_x = 0;
+            let board_x = document.getElementById("board_img").getBoundingClientRect().x;
+            if (board_x < 0)
+                board_x = 0;
             if (show) {
-				if (check_point_inside(pin_iv_img))
-					change_position(pin_iv_img);
+                if (check_point_inside(pin_iv_img))
+                    change_position(pin_iv_img);
                 pin_iv_img.style.display = "block";
-			}
+            }
             else {
                 pin_iv_img.style.display = "none";
                 pin_iv_img.style.top = "50px";
@@ -70,28 +70,28 @@
 
 <body>
     <center>
-		<img id="board_img" src="static/img/board.png" alt="Изображение платы с пинами" usemap="#map"></img>
-	</center>
+        <img id="board_img" src="static/img/board.png" alt="Изображение платы с пинами" usemap="#map"></img>
+    </center>
     <p>
-		<map name="map">
-			% for name, element_index, pin_index, x, y, _, _, _, _, _ in pins:
-			<area onmouseover="hide_or_show_img(this, true);" onmouseout="hide_or_show_img(this, false);" shape="circle" coords="${x},${y},6" href="#point${x}${y}" alt="">
-			% endfor
-		</map>
-	</p>
+        <map name="map">
+            % for name, element_index, pin_index, x, y, _, _, _, _, _ in pins:
+            <area onmouseover="hide_or_show_img(this, true);" onmouseout="hide_or_show_img(this, false);" shape="circle" coords="${x},${y},6" href="#point${x}${y}" alt="">
+            % endfor
+        </map>
+    </p>
     % for name, element_index, pin_index, x, y, measurements, _, _, _, _ in pins:
-	<figure id="img${x},${y},6" onmouseover="change_position(this);" style="display: none;">
-		<p>
-			<img src="static/img/${'%s_%s_iv.png'%(element_index, pin_index)}" alt="Изображение ВАХ в точке тестирования" title="Изображение ВАХ в точке тестирования">
-		</p>
-		<%
-			legend_for_iv_img = "Красная - тестовая (текущая) ВАХ\n"
-			if len(measurements) > 1:
-				legend_for_iv_img += "Синяя - ВАХ эталона"
-		%>
-		<figcaption>${legend_for_iv_img}</figcaption>
-	</figure>
-	% endfor
+    <figure id="img${x},${y},6" onmouseover="change_position(this);" style="display: none;">
+        <p>
+            <img src="static/img/${'%s_%s_iv.png'%(element_index, pin_index)}" alt="Изображение ВАХ в точке тестирования" title="Изображение ВАХ в точке тестирования">
+        </p>
+        <%
+            legend_for_iv_img = "Красная - тестовая (текущая) ВАХ\n"
+            if len(measurements) > 1:
+                legend_for_iv_img += "Синяя - ВАХ эталона"
+        %>
+        <figcaption>${legend_for_iv_img}</figcaption>
+    </figure>
+    % endfor
 </body>
 
 </html>

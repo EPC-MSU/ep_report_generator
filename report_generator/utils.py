@@ -306,6 +306,10 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
         if stop_drawing():
             break
         element_name, element_index, pin_index, _, _, measurements, _, pin_type, _, _ = pin_info
+        if not measurements:
+            signal.emit()
+            logger.info("Pin '%s_%s' has no measurements", element_index, pin_index)
+            continue
         test_currents = measurements[0].ivc.currents
         test_voltages = measurements[0].ivc.voltages
         if len(measurements) > 1:
