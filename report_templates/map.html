@@ -6,11 +6,6 @@
 	<link rel="stylesheet" href="static/styles/style_for_map.css">
 	<title>Карта точек тестирования</title>
     <script>
-		const PIN_WIDTH = 30;
-		const COLORS = {0: "#f00",
-						1: "#0f0",
-						2: "#f0f"};
-		var hovered_pin_type;
 		var mouse_x, mouse_y;
 		document.addEventListener("mousemove", (event) => {
 			mouse_x = event.clientX;
@@ -44,18 +39,10 @@
         /**
          * Function hides or shows image of IV-curve for pin.
          * @param pin: area on big image of board that represents pin;
-         * @param show: if false image is hidden;
-		 * @param pin_type: type of pin.
+         * @param show: if false image is hidden.
          */
-        function hide_or_show_img(pin, show, pin_type = null) {
-			let hovered_pin = document.getElementById("pin");
+        function hide_or_show_img(pin, show) {
 			let coords = pin.getAttribute("coords");
-			if (pin != hovered_pin && show) {
-				hovered_pin_type = pin_type;
-				hovered_pin.setAttribute("coords", coords);
-			}
-			else if (!show)
-				hovered_pin.setAttribute("coords", "0,0,15");
             let pin_iv_img = document.getElementById("img" + coords);
 			let board_x = document.getElementById("board_img").getBoundingClientRect().x;
 			if (board_x < 0)
@@ -64,18 +51,10 @@
 				if (check_point_inside(pin_iv_img))
 					change_position(pin_iv_img);
                 pin_iv_img.style.display = "block";
-				let coords_array = coords.split(",");
-				hovered_pin.style.backgroundColor = COLORS[hovered_pin_type];
-				hovered_pin.style.left = parseFloat(coords_array[0]) + board_x - PIN_WIDTH / 2 + "px";
-				hovered_pin.style.top = parseFloat(coords_array[1]) - PIN_WIDTH / 2 + "px";
-				hovered_pin.style.visibility = "visible";
 			}
             else {
                 pin_iv_img.style.display = "none";
                 pin_iv_img.style.top = "50px";
-				hovered_pin.style.left = "0px";
-				hovered_pin.style.top = "0px";
-				hovered_pin.style.visibility = "hidden";
             }
         }
 
@@ -91,20 +70,17 @@
 
 <body>
     <center>
-		<img id="board_img" src="static/img/board.png" usemap="#map">
-			<div id="pin" onmouseover="hide_or_show_img(this, true);" onmouseout="hide_or_show_img(this, false);" coords="0,0,15">
-			</div>
-		</img>
+		<img id="board_img" src="static/img/board.png" alt="Изображение платы с пинами" usemap="#map"></img>
 	</center>
     <p>
 		<map name="map">
-			% for name, element_index, pin_index, x, y, _, _, pin_type, _, _ in pins:
-			<area onmouseover="hide_or_show_img(this, true, ${pin_type.value});" shape="circle" coords="${x},${y},10" href="#point${x}${y}" alt="">
+			% for name, element_index, pin_index, x, y, _, _, _, _, _ in pins:
+			<area onmouseover="hide_or_show_img(this, true);" onmouseout="hide_or_show_img(this, false);" shape="circle" coords="${x},${y},6" href="#point${x}${y}" alt="">
 			% endfor
 		</map>
 	</p>
-    % for name, element_index, pin_index, x, y, measurements, _, pin_type, _, _ in pins:
-	<figure id="img${x},${y},10" onmouseover="change_position(this);" style="display: none;">
+    % for name, element_index, pin_index, x, y, measurements, _, _, _, _ in pins:
+	<figure id="img${x},${y},6" onmouseover="change_position(this);" style="display: none;">
 		<p>
 			<img src="static/img/${'%s_%s_iv.png'%(element_index, pin_index)}" alt="Изображение ВАХ в точке тестирования" title="Изображение ВАХ в точке тестирования">
 		</p>

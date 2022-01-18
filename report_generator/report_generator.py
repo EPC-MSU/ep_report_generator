@@ -31,6 +31,7 @@ _TEMPLATE_FILE_WITH_MAP_EN = "map_en.html"
 _TEMPLATE_FILE_WITH_REPORT = "report.html"
 _TEMPLATE_FILE_WITH_REPORT_EN = "report_en.html"
 _TEMPLATES_DIR_NAME = "report_templates"
+_PIN_RADIUS = 6
 _PIN_WIDTH = 100
 
 
@@ -234,8 +235,7 @@ class ReportGenerator(QObject):
             template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_MAP)
         style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_MAP)
         shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME, _STYLE_FOR_MAP))
-        ut.create_report(template_file_name, report_file_name, pins=self._pins_info,
-                         threshold_score=self._threshold_score)
+        ut.create_report(template_file_name, report_file_name, pins=self._pins_info)
         self.step_done.emit()
         logger.info("Report with board map was saved to '%s'", report_file_name)
 
@@ -356,7 +356,7 @@ class ReportGenerator(QObject):
                 "pins_number": len(self._pins_info),
                 "threshold_score": self._threshold_score,
                 "score_histogram": self._results_by_steps[ReportCreationSteps.DRAW_SCORE_HISTOGRAM],
-                "pin_radius": None if self._pin_diameter is None else int(self._pin_diameter / 2)}
+                "pin_radius": _PIN_RADIUS if self._pin_diameter is None else int(self._pin_diameter / 2)}
 
     @check_stop_operation
     def _get_info_about_pins(self) -> List[Tuple]:

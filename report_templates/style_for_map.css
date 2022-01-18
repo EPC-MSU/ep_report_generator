@@ -34,16 +34,3 @@ figcaption {
 	font-size: 1vw;
 	white-space: pre-line;
 }
-
-#pin {
-	background: #cc0000;
-	border-radius: 15px;
-	height: 30px;
-	left: 0;
-	position: absolute;
-	top: 0;
-	visibility: hidden;
-	width: 30px;
-	-moz-border-radius: 15px;
-	-webkit-border-radius: 15px;
-}
