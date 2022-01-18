@@ -85,9 +85,9 @@
 			<img src="static/img/${'%s_%s_iv.png'%(element_index, pin_index)}" alt="Изображение ВАХ в точке тестирования" title="Изображение ВАХ в точке тестирования">
 		</p>
 		<%
-			legend_for_iv_img = "Красный - тестовая (текущая) ВАХ\n"
+			legend_for_iv_img = "Красная - тестовая (текущая) ВАХ\n"
 			if len(measurements) > 1:
-				legend_for_iv_img += "Синий - ВАХ эталона"
+				legend_for_iv_img += "Синяя - ВАХ эталона"
 		%>
 		<figcaption>${legend_for_iv_img}</figcaption>
 	</figure>

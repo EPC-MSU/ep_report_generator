@@ -129,7 +129,7 @@ def calculate_min_distance(pins: list) -> Optional[float]:
         pin_x = pin[3]
         pin_y = pin[4]
         for another_pin in pins:
-            if pin is another_pin:
+            if pin == another_pin:
                 continue
             another_pin_x = another_pin[3]
             another_pin_y = another_pin[4]
@@ -273,7 +273,7 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str, marker_s
     ax.axis("off")
     ax.imshow(image, interpolation="nearest")
     if marker_size is None:
-        marker_size = width // 35
+        marker_size = width // 38
     for pin_type, x_and_y in pins_xy.items():
         ax.scatter(*x_and_y, s=marker_size, c=PIN_COLORS[pin_type], zorder=1)
     fig.savefig(file_name, dpi=dpi, transparent=True)
@@ -385,15 +385,19 @@ def draw_score_histogram(values: list, threshold: float, file_name: str):
     fig.clear()
 
 
-def get_duration_in_str(duration: timedelta) -> Optional[str]:
+def get_duration_in_str(duration: timedelta, english: bool) -> Optional[str]:
     """
     Function returns duration in min and sec.
-    :param duration: duration.
+    :param duration: duration;
+    :param english: if True then duration will be in English.
     :return: duration in min and sec.
     """
 
+    duration_format = "{} min {} sec" if english else "{} мин {} сек"
     if isinstance(duration, timedelta):
-        return f"{duration.total_seconds() // 60} мин {duration.total_seconds() % 60} сек"
+        minutes = int(duration.total_seconds() // 60)
+        seconds = int(duration.total_seconds() % 60)
+        return duration_format.format(minutes, seconds)
     return None
 
 

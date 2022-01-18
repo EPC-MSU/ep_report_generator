@@ -397,10 +397,11 @@ class ReportGenerator(QObject):
 
         if not self._board.image:
             return None
-        min_distance = ut.calculate_min_distance(self._pins_info)
-        logger.info("Minimum distance between pins was calculated: %s", min_distance)
-        pin_diameter = min(self._board.image.width // 35, int(min_distance))
-        logger.info("Pin size on image of board with pins is %s", pin_diameter)
+        # min_distance = ut.calculate_min_distance(self._pins_info)
+        # logger.info("Minimum distance between pins was calculated: %s", min_distance)
+        # pin_diameter = min(self._board.image.width // 38, int(min_distance))
+        # logger.info("Pin size on image of board with pins is %s", pin_diameter)
+        pin_diameter = self._board.image.width // 38
         return pin_diameter
 
     @check_stop_operation
@@ -437,7 +438,7 @@ class ReportGenerator(QObject):
         self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, _PIN_WIDTH)
         self._scaling_type = self._config.get(ConfigAttributes.SCALING_TYPE, ut.ScalingTypes.AUTO)
         self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, None)
-        self._test_duration = ut.get_duration_in_str(self._test_duration)
+        self._test_duration = ut.get_duration_in_str(self._test_duration, self._english)
         self._threshold_score = self._config.get(ConfigAttributes.THRESHOLD_SCORE, None)
         required_objects = self._config.get(ConfigAttributes.OBJECTS, {})
         if required_objects.get(ObjectsForReport.BOARD):
