@@ -291,7 +291,8 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
     :param signal: signal;
     :param scaling_type: scaling type for graph with IV-curves;
     :param english: if True graph labels will be in English;
-    :param stop_drawing: returns True if drawing should be stopped.
+    :param stop_drawing: returns True if drawing should be stopped;
+    :param user_defined_scales: list with user defined scales.
     """
 
     viewer = Viewer(axis_font=QFont("Times", 10), title_font=QFont("Times", 15))
@@ -323,7 +324,8 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
             v_max = np.ceil(measurements[0].settings.max_voltage)
             i_max = np.ceil(v_max * 1000 / measurements[0].settings.internal_resistance)
         elif (scaling_type == ScalingTypes.USER_DEFINED and isinstance(user_defined_scales, (list, tuple)) and
-              index < len(user_defined_scales)):
+              index < len(user_defined_scales) and isinstance(user_defined_scales[index], (list, tuple)) and
+              len(user_defined_scales[index]) == 2):
             v_max, i_max = user_defined_scales[index]
             i_max *= 1000
         else:
