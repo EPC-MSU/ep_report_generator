@@ -44,6 +44,7 @@
              ConfigAttributes.APP_VERSION: версия приложения, которое использует генератор отчетов,
              ConfigAttributes.TEST_DURATION: длительность тестирования (тип значения datetime.timedelta),
              ConfigAttributes.SCALING_TYPE: тип масштабирования графиков ВАХ (например, ScalingTypes.EYEPOINT_P10),
+             ConfigAttributes.USER_DEFINED_SCALES: список с масштабами графиков ВАХ, если ConfigAttributes.SCALING_TYPE == ScalingTypes.USER_DEFINED,
              ConfigAttributes.ENGLISH: если True, то отчет будет создан на английском языке}
    ```
 
