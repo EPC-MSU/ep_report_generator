@@ -52,6 +52,7 @@ class ConfigAttributes(Enum):
     SCALING_TYPE = auto()
     TEST_DURATION = auto()
     THRESHOLD_SCORE = auto()
+    USER_DEFINED_SCALES = auto()
 
 
 class ObjectsForReport(Enum):
@@ -145,6 +146,7 @@ class ReportGenerator(QObject):
         self._static_dir_name: str = None
         self._test_duration: timedelta = None
         self._threshold_score: float = None
+        self._user_defined_scales: list = None
         self.stop: bool = False
 
     @check_stop_operation
@@ -288,7 +290,7 @@ class ReportGenerator(QObject):
         logger.info("Drawing of IV-curves was started")
         img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
         ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done, self._scaling_type, self._english,
-                             lambda: self.stop)
+                             lambda: self.stop, self._user_defined_scales)
         logger.info("Images of IV-curves were saved to directory '%s'", img_dir_path)
         return True
 
@@ -423,7 +425,8 @@ class ReportGenerator(QObject):
                       ConfigAttributes.PIN_SIZE: _PIN_WIDTH,
                       ConfigAttributes.SCALING_TYPE: ut.ScalingTypes.AUTO,
                       ConfigAttributes.TEST_DURATION: None,
-                      ConfigAttributes.THRESHOLD_SCORE: None}
+                      ConfigAttributes.THRESHOLD_SCORE: None,
+                      ConfigAttributes.USER_DEFINED_SCALES: None}
         elif not isinstance(config, Dict) and isinstance(self._config, Dict):
             config = self._config
         self._config = config
@@ -440,6 +443,7 @@ class ReportGenerator(QObject):
         self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, None)
         self._test_duration = ut.get_duration_in_str(self._test_duration, self._english)
         self._threshold_score = self._config.get(ConfigAttributes.THRESHOLD_SCORE, None)
+        self._user_defined_scales = self._config.get(ConfigAttributes.USER_DEFINED_SCALES, None)
         required_objects = self._config.get(ConfigAttributes.OBJECTS, {})
         if required_objects.get(ObjectsForReport.BOARD):
             self._required_board = True

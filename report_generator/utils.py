@@ -37,6 +37,7 @@ class ScalingTypes(Enum):
 
     AUTO = auto()
     EYEPOINT_P10 = auto()
+    USER_DEFINED = auto()
 
 
 IV_IMAGE_SIZE = 300, 200
@@ -282,7 +283,7 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str, marker_s
 
 def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
                       scaling_type: ScalingTypes = ScalingTypes.AUTO, english: bool = False,
-                      stop_drawing: Callable = lambda: False):
+                      stop_drawing: Callable = lambda: False, user_defined_scales: List = None):
     """
     Function draws and saves IV-curves for pins of board.
     :param pins_info: list with information about pins required for report;
@@ -302,7 +303,7 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
     viewer.plot.setStyleSheet("background: white")
     test_curve = viewer.plot.add_curve()
     ref_curve = viewer.plot.add_curve()
-    for pin_info in pins_info:
+    for index, pin_info in enumerate(pins_info):
         if stop_drawing():
             break
         element_name, element_index, pin_index, _, _, measurements, _, pin_type, _, _ = pin_info
@@ -321,6 +322,10 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
         if scaling_type == ScalingTypes.EYEPOINT_P10:
             v_max = np.ceil(measurements[0].settings.max_voltage)
             i_max = np.ceil(v_max * 1000 / measurements[0].settings.internal_resistance)
+        elif (scaling_type == ScalingTypes.USER_DEFINED and isinstance(user_defined_scales, (list, tuple)) and
+              index < len(user_defined_scales)):
+            v_max, i_max = user_defined_scales[index]
+            i_max *= 1000
         else:
             i_max = 1.2 * 1000 * np.amax(np.absolute(np.concatenate((test_currents, ref_currents), axis=0)))
             v_max = 1.2 * np.amax(np.absolute(np.concatenate((test_voltages, ref_voltages), axis=0)))

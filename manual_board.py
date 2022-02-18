@@ -35,7 +35,7 @@ def create_manual_board(test: bool) -> Board:
                                            probe_signal_frequency=frequencies[index],
                                            max_voltage=max_voltages[index])
             error = errors[index] if test else 0
-            iv_curve = get_iv_curve(index, error)
+            iv_curve = get_iv_curve(index, error, settings)
             comment_for_measurement = (f"This is comment for measurement in pin #{pin_index} of "
                                        f"element {element_name}")
             is_dynamic = bool(index % 2)
@@ -81,23 +81,26 @@ def get_heart(max_error: float) -> IVCurve:
     return IVCurve(currents=currents, voltages=voltages)
 
 
-def get_iv_curve(index: int, error: float) -> IVCurve:
+def get_iv_curve(index: int, error: float, settings: MeasurementSettings) -> IVCurve:
     """
     Function returns IV-curve for different indices.
     :param index: index for curve;
-    :param error: max error for curve in percent.
+    :param error: max error for curve in percent;
+    :param settings: measurement settings.
     :return: IV-curve.
     """
 
     max_index = 4
     index = index % max_index
     if index == 0:
-        return get_heart(error)
-    if index == 1:
-        return get_shamrock(error)
-    if index == 2:
-        return get_simple_curve(error)
-    return get_circle(error)
+        curve = get_heart(error)
+    elif index == 1:
+        curve = get_shamrock(error)
+    elif index == 2:
+        curve = get_simple_curve(error)
+    else:
+        curve = get_circle(error)
+    return scale_iv_curve(curve, settings)
 
 
 def get_shamrock(max_error: float) -> IVCurve:
@@ -128,3 +131,22 @@ def get_simple_curve(max_error: float) -> IVCurve:
     currents = list(np.cos(3 * t) * errors / 1000)
     voltages = list(np.sin(t))
     return IVCurve(currents=currents, voltages=voltages)
+
+
+def scale_iv_curve(curve: IVCurve, settings: MeasurementSettings) -> IVCurve:
+    """
+    Function returns rescaled IV-curve for given settings.
+    :param curve: IV-curve to rescale;
+    :param settings: measurement settings.
+    :return: rescaled measurement settings.
+    """
+
+    currents = np.array(curve.currents)
+    voltages = np.array(curve.voltages)
+    max_current = np.amax(np.absolute(currents))
+    max_voltage = np.amax(np.absolute(voltages))
+    required_max_voltage = settings.max_voltage
+    required_max_current = required_max_voltage / settings.internal_resistance
+    currents = required_max_current / max_current * currents
+    voltages = required_max_voltage / max_voltage * voltages
+    return IVCurve(currents=list(currents), voltages=list(voltages))

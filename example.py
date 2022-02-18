@@ -50,3 +50,25 @@ if __name__ == "__main__":
                                          ObjectsForReport.PIN: []},
               ConfigAttributes.THRESHOLD_SCORE: 0.2}
     report_generator.run(config)
+
+    # Report for manual board with user defined scales
+    dir_for_report = os.path.join(dir_name, "report_for_manual_board_with_user_defined_scales")
+    test_board = create_manual_board(True)
+    ref_board = create_manual_board(False)
+    # Define scales for each pin
+    user_defined_scales = []
+    for element in test_board.elements:
+        for pin in element.pins:
+            max_voltage = pin.measurements[0].settings.max_voltage
+            internal_resistance = pin.measurements[0].settings.internal_resistance
+            user_defined_scales.append((1.6 * max_voltage, 1.6 * max_voltage / internal_resistance))
+    config = {ConfigAttributes.BOARD_TEST: test_board,
+              ConfigAttributes.BOARD_REF: ref_board,
+              ConfigAttributes.DIRECTORY: dir_for_report,
+              ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True,
+                                         ObjectsForReport.ELEMENT: [],
+                                         ObjectsForReport.PIN: []},
+              ConfigAttributes.SCALING_TYPE: ScalingTypes.USER_DEFINED,
+              ConfigAttributes.THRESHOLD_SCORE: 0.2,
+              ConfigAttributes.USER_DEFINED_SCALES: user_defined_scales}
+    report_generator.run(config)
