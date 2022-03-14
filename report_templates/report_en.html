@@ -83,8 +83,12 @@
                         % if pcb_name:
                         <span>Sample name: ${pcb_name}</span><br>
                         % endif
-                        <span>All components: ${elements_number}</span><br>
-                        <span>All test points: ${pins_number}</span><br>
+                        % if bad_pins_number:
+                        <span>Number of faulty components/number of all components: ${bad_elements_number}/${elements_number}</span><br>
+                        <span>Percentage of faulty components: ${"{:.2f}%".format(bad_elements_number / elements_number * 100)}</span><br>
+                        <span>Number of faulty test points/number of all test points: ${bad_pins_number}/${pins_number}</span><br>
+                        <span>Percentage of faulty test points: ${"{:.2f}%".format(bad_pins_number / pins_number * 100)}</span><br>
+                        % endif
                         % if threshold_score:
                         <span>Threshold score: ${"{:.2f}%".format(threshold_score * 100)}</span><br>
                         % endif
@@ -92,6 +96,7 @@
                         <span>Comment: ${pcb_comment}</span><br>
                         % endif
                         <span>HTML: v4.01</span><br>
+                        <span><a href="report_full.html" target="_blank">View full report</a></span><br>
                         % if board_img_width:
                         <span><a href="map.html" target="_blank">Image inspect</a></span><br>
                         % endif
@@ -146,7 +151,7 @@
                 <%
                     prev_element_index = None
                 %>
-                % for name, element_index, pin_index, x, y, measurements, score, pin_type, total_pin_index, pin_comment in pins:
+                % for name, element_index, pin_index, x, y, measurements, score, pin_type, total_pin_index, pin_comment in bad_pins:
                 % if element_index != prev_element_index:
                 <%
                     prev_element_index = element_index

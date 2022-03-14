@@ -18,6 +18,7 @@ from .version import Version
 
 logger = logging.getLogger(__name__)
 _BOARD_IMAGE = "board_clear.png"
+_BOARD_WITH_BAD_PINS_IMAGE = "board_with_bad_pins.png"
 _BOARD_WITH_PINS_IMAGE = "board.png"
 _SCORE_HISTOGRAM_IMAGE = "score_histogram.png"
 _DEFAULT_REPORT_DIR_NAME = "report"
@@ -26,8 +27,10 @@ _STATIC_DIR_NAME = "static"
 _STYLE_FOR_MAP = "style_for_map.css"
 _STYLE_FOR_REPORT = "style_for_report.css"
 _STYLES_DIR_NAME = "styles"
-_TEMPLATE_FILE_WITH_MAP = "map.html"
-_TEMPLATE_FILE_WITH_MAP_EN = "map_en.html"
+_TEMPLATE_FILE_WITH_FULL_REPORT = "report_full.html"
+_TEMPLATE_FILE_WITH_FULL_REPORT_EN = "report_full_en.html"
+_TEMPLATE_FILE_WITH_MAP = "full_img.html"
+_TEMPLATE_FILE_WITH_MAP_EN = "full_img_en.html"
 _TEMPLATE_FILE_WITH_REPORT = "report.html"
 _TEMPLATE_FILE_WITH_REPORT_EN = "report_en.html"
 _TEMPLATES_DIR_NAME = "report_templates"
@@ -71,6 +74,7 @@ class ReportCreationSteps(Enum):
     """
 
     DRAW_BOARD = auto()
+    DRAW_BOARD_WITH_BAD_PINS = auto()
     DRAW_CLEAR_BOARD = auto()
     DRAW_IV = auto()
     DRAW_PINS = auto()
@@ -128,6 +132,7 @@ class ReportGenerator(QObject):
         super().__init__(parent=parent)
         self._app_name: str = None
         self._app_version: str = None
+        self._bad_pins_info: List = []
         self._board: Board = None
         self._board_ref: Board = board_ref
         self._board_test: Board = board_test
@@ -148,6 +153,53 @@ class ReportGenerator(QObject):
         self._threshold_score: float = None
         self._user_defined_scales: list = None
         self.stop: bool = False
+
+    @check_stop_operation
+    def _create_full_report(self) -> str:
+        """
+        Method creates full report.
+        :return: name of file with created report.
+        """
+
+        self.step_started.emit("Creation of full report")
+        logger.info("Creation of full report was started")
+        dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_FULL_REPORT)
+        if self._english:
+            template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_FULL_REPORT_EN)
+        else:
+            template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_FULL_REPORT)
+        style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_REPORT)
+        shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME, _STYLE_FOR_REPORT))
+        elements_number = len({pin_info[1] for pin_info in self._pins_info})
+        if self._board.image is None:
+            board_image_width = None
+            pin_img_size = None
+        else:
+            board_image_width = self._board.image.width
+            pin_img_size = self._pin_width
+        pcb_name = None
+        pcb_comment = None
+        mm_per_px = None
+        if self._board.pcb is not None:
+            if self._board.pcb.pcb_name is not None:
+                pcb_name = self._board.pcb.pcb_name
+            if self._board.pcb.comment is not None:
+                pcb_comment = self._board.pcb.comment
+            if self._board.pcb.image_resolution_ppcm is not None:
+                mm_per_px = 10 / self._board.pcb.image_resolution_ppcm
+        data = {"pcb_name": pcb_name,
+                "pcb_comment": pcb_comment,
+                "mm_per_px": mm_per_px,
+                "elements_number": elements_number,
+                "board_img_width": board_image_width,
+                "pin_img_size": pin_img_size}
+        data.update(self._get_general_info())
+        ut.create_report(template_file_name, report_file_name, **data)
+        self.step_done.emit()
+        self.generation_finished.emit(report_file_name)
+        logger.info("Full report was saved to '%s'", report_file_name)
+        return report_file_name
 
     @check_stop_operation
     def _create_required_dirs(self):
@@ -174,7 +226,7 @@ class ReportGenerator(QObject):
     @check_stop_operation
     def _create_report(self) -> str:
         """
-        Method creates report.
+        Method creates short report. This report contains pins that do not match.
         :return: name of file with created report.
         """
 
@@ -212,6 +264,7 @@ class ReportGenerator(QObject):
                 "board_img_width": board_image_width,
                 "pin_img_size": pin_img_size}
         data.update(self._get_general_info())
+        data.update(self._get_info_about_bad_elements_and_pins())
         ut.create_report(template_file_name, report_file_name, **data)
         self.step_done.emit()
         self.generation_finished.emit(report_file_name)
@@ -261,22 +314,31 @@ class ReportGenerator(QObject):
         return False
 
     @check_stop_operation
-    def _draw_board_with_pins(self) -> bool:
+    def _draw_board_with_pins(self, bad_pins: bool = False) -> bool:
         """
         Method draws and saves image of board with pins.
+        :param bad_pins: if True then board will be drawn with only bad pins.
         :return: True if image was drawn and saved.
         """
 
-        self.step_started.emit("Drawing of board with pins")
-        logger.info("Drawing of board with pins was started")
+        if bad_pins:
+            pins_name = "bad pins"
+            board_file_name = _BOARD_WITH_BAD_PINS_IMAGE
+            pins = self._bad_pins_info
+        else:
+            pins_name = "pins"
+            board_file_name = _BOARD_WITH_PINS_IMAGE
+            pins = self._pins_info
+        self.step_started.emit("Drawing of board with %s", pins_name)
+        logger.info("Drawing of board with %s was started", pins_name)
         self._pin_diameter = self._get_pin_diameter()
-        file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, _BOARD_WITH_PINS_IMAGE)
-        if ut.draw_board_with_pins(self._board.image, self._pins_info, file_name, self._pin_diameter):
+        file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, board_file_name)
+        if ut.draw_board_with_pins(self._board.image, pins, file_name, self._pin_diameter):
             self.step_done.emit()
-            logger.info("Image of board with pins was saved to '%s'", file_name)
+            logger.info("Image of board with %s was saved to '%s'", pins_name, file_name)
             return True
         self.step_done.emit()
-        logger.info("Image of board with pins was not drawn")
+        logger.info("Image of board with %s was not drawn", pins_name)
         return False
 
     @check_stop_operation
@@ -333,6 +395,20 @@ class ReportGenerator(QObject):
         logger.info("Images of pins were not drawn")
         return False
 
+    def _get_bad_pins(self) -> List:
+        """
+        Method returns bad pins with score greater than threshold score.
+        :return: list with bad pins.
+        """
+
+        bad_pins = []
+        if self._threshold_score is not None:
+            for pin_info in self._pins_info:
+                _, _, _, _, _, _, score, _, _, _ = pin_info
+                if score is not None and score > self._threshold_score:
+                    bad_pins.append(pin_info)
+        return bad_pins
+
     @staticmethod
     def _get_default_dir_name() -> str:
         """
@@ -359,6 +435,22 @@ class ReportGenerator(QObject):
                 "threshold_score": self._threshold_score,
                 "score_histogram": self._results_by_steps[ReportCreationSteps.DRAW_SCORE_HISTOGRAM],
                 "pin_radius": _PIN_RADIUS if self._pin_diameter is None else int(self._pin_diameter / 2)}
+
+    def _get_info_about_bad_elements_and_pins(self) -> Dict:
+        """
+        Method returns dictionary with information about bad elements and pins.
+        Bad pin is pin with score greater than threshold score. Bad element has
+        at least one bad pin.
+        :return: dictionary with information about bad elements and pins.
+        """
+
+        bad_element_names = set()
+        for pin_info in self._bad_pins_info:
+            element_name, _, _, _, _, _, score, _, _, _ = pin_info
+            bad_element_names.add(element_name)
+        return {"bad_elements_number": len(bad_element_names),
+                "bad_pins_number": len(self._bad_pins_info),
+                "bad_pins": self._bad_pins_info}
 
     @check_stop_operation
     def _get_info_about_pins(self) -> List[Tuple]:
@@ -387,7 +479,7 @@ class ReportGenerator(QObject):
                     pins_info.append(info)
                 total_pin_index += 1
         pin_number = len(pins_info)
-        self.total_number_of_steps_calculated.emit(5 + pin_number * 2)
+        self.total_number_of_steps_calculated.emit(self._get_total_number_of_steps(pin_number))
         return pins_info
 
     @check_stop_operation
@@ -405,6 +497,19 @@ class ReportGenerator(QObject):
         # logger.info("Pin size on image of board with pins is %s", pin_diameter)
         pin_diameter = self._board.image.width // 38
         return pin_diameter
+
+    def _get_total_number_of_steps(self, pin_number: int) -> int:
+        """
+        Method returns total number of steps to generate all reports.
+        :param pin_number: number of pins on board.
+        :return: total number of steps.
+        """
+
+        processes = (self._draw_board, self._draw_board_with_pins, self._draw_board_with_pins,
+                     self._draw_score_histogram, self._create_report_with_map, self._create_full_report,
+                     self._create_report_with_map)
+        processes_for_pins = self._draw_pins, self._draw_ivc
+        return len(processes) + len(processes_for_pins) * pin_number
 
     @check_stop_operation
     def _read_config(self, config: Dict):
@@ -460,17 +565,20 @@ class ReportGenerator(QObject):
             return
         self._create_required_dirs()
         self._pins_info = self._get_info_about_pins()
+        self._bad_pins_info = self._get_bad_pins()
         if not self._pins_info:
             logger.info("There are no objects for which report should be created")
             return
         methods = {ReportCreationSteps.DRAW_CLEAR_BOARD: self._draw_board,
                    ReportCreationSteps.DRAW_BOARD: self._draw_board_with_pins,
+                   ReportCreationSteps.DRAW_BOARD_WITH_BAD_PINS: (lambda: self._draw_board_with_pins(True)),
                    ReportCreationSteps.DRAW_SCORE_HISTOGRAM: self._draw_score_histogram,
                    ReportCreationSteps.DRAW_IV: self._draw_ivc,
                    ReportCreationSteps.DRAW_PINS: self._draw_pins}
         for step, method in methods.items():
             self._results_by_steps[step] = method()
         self._create_report_with_map()
+        self._create_full_report()
         report_file_name = self._create_report()
         if self._open_report_at_finish:
             webbrowser.open(report_file_name, new=2)
