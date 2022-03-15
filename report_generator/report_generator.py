@@ -329,7 +329,7 @@ class ReportGenerator(QObject):
             pins_name = "pins"
             board_file_name = _BOARD_WITH_PINS_IMAGE
             pins = self._pins_info
-        self.step_started.emit("Drawing of board with %s", pins_name)
+        self.step_started.emit(f"Drawing of board with {pins_name}")
         logger.info("Drawing of board with %s was started", pins_name)
         self._pin_diameter = self._get_pin_diameter()
         file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, board_file_name)

@@ -123,7 +123,7 @@
                     % else:
                     <td>
                     % endif
-                        <img id="board" src="static/img/board.png" usemap="#map" alt="Карта точек тестирования" title="Карта точек тестирования">
+                        <img id="board" src="static/img/board_with_bad_pins.png" usemap="#map" alt="Карта точек тестирования" title="Карта точек тестирования">
                         <p><map name="map">
                             % for _, _, _, x, y, _, _, _, _, _ in pins:
                             <area shape="circle" coords="${x},${y},${pin_radius}" href="#point${x}${y}" alt="">
@@ -136,7 +136,7 @@
             </tbody>
         </table>
 
-        % if len(pins) > 0:
+        % if len(bad_pins) > 0:
         <table id="report" cellspacing="0" cellpadding="0">
             <thead>
                 <tr>
