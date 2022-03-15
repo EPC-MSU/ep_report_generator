@@ -83,12 +83,10 @@
                         % if pcb_name:
                         <span>Название платы: ${pcb_name}</span><br>
                         % endif
-                        % if bad_pins_number:
                         <span>Количество неисправных компонентов/количество компонентов: ${bad_elements_number}/${elements_number}</span><br>
                         <span>Доля неисправных компонентов: ${"{:.2f}%".format(bad_elements_number / elements_number * 100)}</span><br>
                         <span>Количество неисправных точек тестирования/количество точек тестирования: ${bad_pins_number}/${pins_number}</span><br>
                         <span>Доля неисправных точек тестирования: ${"{:.2f}%".format(bad_pins_number / pins_number * 100)}</span><br>
-                        % endif
                         % if threshold_score:
                         <span>Пороговое значение score: ${"{:.2f}%".format(threshold_score * 100)}</span><br>
                         % endif
@@ -96,7 +94,7 @@
                         <span>Комментарий: ${pcb_comment}</span><br>
                         % endif
                         <span>HTML: v4.01</span><br>
-                        <span><a href="report.html" target="_blank">Полный отчет</a></span><br>
+                        <span><a href="report_full.html" target="_blank">Полный отчет</a></span><br>
                         % if board_img_width:
                         <span><a href="full_img.html" target="_blank">Изображение платы</a></span><br>
                         % endif
@@ -114,7 +112,7 @@
                     % else:
                     <th>
                     % endif
-                        <h2>Карта точек тестирования</h2>
+                        <h2>Карта неисправных точек тестирования</h2>
                     </th>
                 </tr>
                 <tr>
@@ -123,7 +121,7 @@
                     % else:
                     <td>
                     % endif
-                        <img id="board" src="static/img/board_with_bad_pins.png" usemap="#map" alt="Карта точек тестирования" title="Карта точек тестирования">
+                        <img id="board" src="static/img/board_with_bad_pins.png" usemap="#map" alt="Карта неисправных точек тестирования" title="Карта неисправных точек тестирования">
                         <p><map name="map">
                             % for _, _, _, x, y, _, _, _, _, _ in pins:
                             <area shape="circle" coords="${x},${y},${pin_radius}" href="#point${x}${y}" alt="">

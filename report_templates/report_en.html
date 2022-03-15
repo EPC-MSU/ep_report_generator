@@ -83,12 +83,10 @@
                         % if pcb_name:
                         <span>Sample name: ${pcb_name}</span><br>
                         % endif
-                        % if bad_pins_number:
                         <span>Number of faulty components/number of all components: ${bad_elements_number}/${elements_number}</span><br>
                         <span>Percentage of faulty components: ${"{:.2f}%".format(bad_elements_number / elements_number * 100)}</span><br>
                         <span>Number of faulty test points/number of all test points: ${bad_pins_number}/${pins_number}</span><br>
                         <span>Percentage of faulty test points: ${"{:.2f}%".format(bad_pins_number / pins_number * 100)}</span><br>
-                        % endif
                         % if threshold_score:
                         <span>Threshold score: ${"{:.2f}%".format(threshold_score * 100)}</span><br>
                         % endif
@@ -98,7 +96,7 @@
                         <span>HTML: v4.01</span><br>
                         <span><a href="report_full.html" target="_blank">View full report</a></span><br>
                         % if board_img_width:
-                        <span><a href="map.html" target="_blank">Image inspect</a></span><br>
+                        <span><a href="full_img.html" target="_blank">Image inspect</a></span><br>
                         % endif
                     </td>
                     % if score_histogram:
@@ -114,7 +112,7 @@
                     % else:
                     <th>
                     % endif
-                        <h2>Test points map</h2>
+                        <h2>Map of faulty test points</h2>
                     </th>
                 </tr>
                 <tr>
@@ -123,7 +121,7 @@
                     % else:
                     <td>
                     % endif
-                        <img id="board" src="static/img/board_with_bad_pins.png" usemap="#map" alt="Test points map" title="Test points map">
+                        <img id="board" src="static/img/board_with_bad_pins.png" usemap="#map" alt="Map of faulty test points" title="Map of faulty test points">
                         <p><map name="map">
                             % for _, _, _, x, y, _, _, _, _, _ in pins:
                             <area shape="circle" coords="${x},${y},${pin_radius}" href="#point${x}${y}" alt="">
