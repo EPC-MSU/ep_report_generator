@@ -197,7 +197,6 @@ class ReportGenerator(QObject):
         data.update(self._get_general_info())
         ut.create_report(template_file_name, report_file_name, **data)
         self.step_done.emit()
-        self.generation_finished.emit(report_file_name)
         logger.info("Full report was saved to '%s'", report_file_name)
         return report_file_name
 
