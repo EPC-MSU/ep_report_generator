@@ -558,7 +558,8 @@ class ReportGenerator(QObject):
         self._english = self._config.get(ConfigAttributes.ENGLISH, False)
         self._open_report_at_finish = self._config.get(ConfigAttributes.OPEN_REPORT_AT_FINISH, False)
         self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, _PIN_WIDTH)
-        self._reports_to_open = self._config.get(ConfigAttributes.REPORTS_TO_OPEN, [ReportTypes.SHORT_REPORT])
+        self._reports_to_open = list(set(self._config.get(ConfigAttributes.REPORTS_TO_OPEN,
+                                                          [ReportTypes.SHORT_REPORT])))
         self._scaling_type = self._config.get(ConfigAttributes.SCALING_TYPE, ut.ScalingTypes.AUTO)
         self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, None)
         self._test_duration = ut.get_duration_in_str(self._test_duration, self._english)
