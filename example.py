@@ -8,7 +8,7 @@ from datetime import timedelta
 from PyQt5.QtWidgets import QApplication
 from epcore.filemanager import load_board_from_ufiv
 from report_generator import (ConfigAttributes, create_test_and_ref_boards, ObjectsForReport, ReportGenerator,
-                              ScalingTypes)
+                              ReportTypes, ScalingTypes)
 from manual_board import create_manual_board
 
 
@@ -48,7 +48,9 @@ if __name__ == "__main__":
               ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True,
                                          ObjectsForReport.ELEMENT: [],
                                          ObjectsForReport.PIN: []},
-              ConfigAttributes.THRESHOLD_SCORE: 0.2}
+              ConfigAttributes.THRESHOLD_SCORE: 0.2,
+              ConfigAttributes.OPEN_REPORT_AT_FINISH: True,
+              ConfigAttributes.REPORTS_TO_OPEN: [ReportTypes.FULL_REPORT, ReportTypes.SHORT_REPORT]}
     report_generator.run(config)
 
     # Report for manual board with user defined scales

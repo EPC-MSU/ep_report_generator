@@ -52,6 +52,7 @@ class ConfigAttributes(Enum):
     OBJECTS = auto()
     OPEN_REPORT_AT_FINISH = auto()
     PIN_SIZE = auto()
+    REPORTS_TO_OPEN = auto()
     SCALING_TYPE = auto()
     TEST_DURATION = auto()
     THRESHOLD_SCORE = auto()
@@ -94,6 +95,16 @@ class ReportCreationSteps(Enum):
                 cls.DRAW_PINS: None,
                 cls.CREATE_MAP_REPORT: None,
                 cls.CREATE_REPORT: None}
+
+
+class ReportTypes(Enum):
+    """
+    Types of report.
+    """
+
+    FULL_REPORT = auto()
+    MAP_REPORT = auto()
+    SHORT_REPORT = auto()
 
 
 def check_stop_operation(func: Callable):
@@ -143,6 +154,7 @@ class ReportGenerator(QObject):
         self._pin_diameter: int = None
         self._pin_width: int = _PIN_WIDTH
         self._pins_info: List = []
+        self._reports_to_open: List = []
         self._required_board: bool = False
         self._required_elements: List = []
         self._required_pins: List = []
@@ -271,9 +283,10 @@ class ReportGenerator(QObject):
         return report_file_name
 
     @check_stop_operation
-    def _create_report_with_map(self):
+    def _create_report_with_map(self) -> Optional[str]:
         """
         Method creates report with one big image of board.
+        :return: name of file with created report.
         """
 
         if not self._results_by_steps[ReportCreationSteps.DRAW_BOARD]:
@@ -292,6 +305,7 @@ class ReportGenerator(QObject):
         ut.create_report(template_file_name, report_file_name, pins=self._pins_info)
         self.step_done.emit()
         logger.info("Report with board map was saved to '%s'", report_file_name)
+        return report_file_name
 
     @check_stop_operation
     def _draw_board(self) -> bool:
@@ -527,6 +541,7 @@ class ReportGenerator(QObject):
                       ConfigAttributes.OBJECTS: {},
                       ConfigAttributes.OPEN_REPORT_AT_FINISH: False,
                       ConfigAttributes.PIN_SIZE: _PIN_WIDTH,
+                      ConfigAttributes.REPORTS_TO_OPEN: [ReportTypes.SHORT_REPORT],
                       ConfigAttributes.SCALING_TYPE: ut.ScalingTypes.AUTO,
                       ConfigAttributes.TEST_DURATION: None,
                       ConfigAttributes.THRESHOLD_SCORE: None,
@@ -543,6 +558,7 @@ class ReportGenerator(QObject):
         self._english = self._config.get(ConfigAttributes.ENGLISH, False)
         self._open_report_at_finish = self._config.get(ConfigAttributes.OPEN_REPORT_AT_FINISH, False)
         self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, _PIN_WIDTH)
+        self._reports_to_open = self._config.get(ConfigAttributes.REPORTS_TO_OPEN, [ReportTypes.SHORT_REPORT])
         self._scaling_type = self._config.get(ConfigAttributes.SCALING_TYPE, ut.ScalingTypes.AUTO)
         self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, None)
         self._test_duration = ut.get_duration_in_str(self._test_duration, self._english)
@@ -576,11 +592,14 @@ class ReportGenerator(QObject):
                    ReportCreationSteps.DRAW_PINS: self._draw_pins}
         for step, method in methods.items():
             self._results_by_steps[step] = method()
-        self._create_report_with_map()
-        self._create_full_report()
-        report_file_name = self._create_report()
+        created_reports = {ReportTypes.MAP_REPORT: self._create_report_with_map(),
+                           ReportTypes.FULL_REPORT: self._create_full_report(),
+                           ReportTypes.SHORT_REPORT: self._create_report()}
         if self._open_report_at_finish:
-            webbrowser.open(report_file_name, new=2)
+            for report_to_open in self._reports_to_open:
+                report_file_name = created_reports.get(report_to_open, None)
+                if report_file_name:
+                    webbrowser.open(report_file_name, new=2)
 
     @classmethod
     def get_version(cls) -> str:
