@@ -278,7 +278,7 @@ class ReportGenerator(QObject):
         data.update(self._get_info_about_bad_elements_and_pins())
         ut.create_report(template_file_name, report_file_name, **data)
         self.step_done.emit()
-        self.generation_finished.emit(report_file_name)
+        self.generation_finished.emit(os.path.dirname(report_file_name))
         logger.info("Report was saved to '%s'", report_file_name)
         return report_file_name
 
