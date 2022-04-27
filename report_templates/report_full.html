@@ -190,10 +190,10 @@
                         <%
                             legend_for_iv_img = ""
                             for measurement in measurements:
-                                if not measurement.is_reference:
-                                    legend_for_iv_img += "Красная - тестовая (текущая) ВАХ\n"
-                                else:
+                                if measurement.is_reference:
                                     legend_for_iv_img += "Синяя - ВАХ эталона\n"
+                                else:
+                                    legend_for_iv_img += "Красная - тестовая (текущая) ВАХ\n"
                         %>
                         <button class="collapsible" onclick="handle_click(this)">Легенда ВАХ</button>
                         <div class="measurement_settings">

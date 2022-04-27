@@ -88,10 +88,10 @@
         <%
             legend_for_iv_img = ""
             for measurement in measurements:
-                if not measurement.is_reference:
-                    legend_for_iv_img += "Красная - тестовая (текущая) ВАХ\n"
+                if measurement.is_reference:
+                    legend_for_iv_img += "Синяя - ВАХ эталона\n"
                 else:
-                    legend_for_iv_img += "Синяя - ВАХ эталона"
+                    legend_for_iv_img += "Красная - тестовая (текущая) ВАХ\n"
         %>
         <figcaption>${legend_for_iv_img}</figcaption>
     </figure>

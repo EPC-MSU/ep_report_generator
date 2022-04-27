@@ -311,14 +311,17 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
             signal.emit()
             logger.info("Pin '%s_%s' has no measurements", element_index, pin_index)
             continue
-        test_currents = measurements[0].ivc.currents
-        test_voltages = measurements[0].ivc.voltages
-        if len(measurements) > 1:
-            ref_currents = measurements[1].ivc.currents
-            ref_voltages = measurements[1].ivc.voltages
-        else:
-            ref_currents = np.array([])
-            ref_voltages = np.array([])
+        ref_currents = np.array([])
+        ref_voltages = np.array([])
+        test_currents = np.array([])
+        test_voltages = np.array([])
+        for measurement in measurements:
+            if measurement.is_reference:
+                ref_currents = measurement.ivc.currents
+                ref_voltages = measurement.ivc.voltages
+            else:
+                test_currents = measurement.ivc.currents
+                test_voltages = measurement.ivc.voltages
         if scaling_type == ScalingTypes.EYEPOINT_P10:
             v_max = np.ceil(measurements[0].settings.max_voltage)
             i_max = np.ceil(v_max * 1000 / measurements[0].settings.internal_resistance)
@@ -331,13 +334,16 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
             i_max = 1.2 * 1000 * np.amax(np.absolute(np.concatenate((test_currents, ref_currents), axis=0)))
             v_max = 1.2 * np.amax(np.absolute(np.concatenate((test_voltages, ref_voltages), axis=0)))
         viewer.plot.set_scale(v_max, i_max)
-        test_curve.set_curve(Curve(test_voltages, test_currents))
-        test_curve.set_curve_params(QColor(TEST_CURVE_COLOR))
-        if len(measurements) > 1:
+        if ref_currents and ref_voltages:
             ref_curve.set_curve(Curve(ref_voltages, ref_currents))
             ref_curve.set_curve_params(QColor(REFERENCE_CURVE_COLOR))
         else:
             ref_curve.clear_curve()
+        if test_currents and test_voltages:
+            test_curve.set_curve(Curve(test_voltages, test_currents))
+            test_curve.set_curve_params(QColor(TEST_CURVE_COLOR))
+        else:
+            test_curve.clear_curve()
         file_name = f"{element_index}_{pin_index}_iv.png"
         path = os.path.join(dir_name, file_name)
         viewer.plot.grab().save(path)

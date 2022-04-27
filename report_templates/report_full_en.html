@@ -190,10 +190,10 @@
                         <%
                             legend_for_iv_img = ""
                             for measurement in measurements:
-                                if not measurement.is_reference:
-                                    legend_for_iv_img += "Red - test (current) IVC\n"
-                                else:
+                                if measurement.is_reference:
                                     legend_for_iv_img += "Blue - reference IVC\n"
+                                else:
+                                    legend_for_iv_img += "Red - test (current) IVC\n"
                         %>
                         <button class="collapsible" onclick="handle_click(this)">IVC legend</button>
                         <div class="measurement_settings">
