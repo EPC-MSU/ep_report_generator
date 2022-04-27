@@ -10,7 +10,7 @@ from .version import Version
 __all__ = ["ConfigAttributes", "create_test_and_ref_boards", "ObjectsForReport", "ReportGenerator", "ReportTypes",
            "ScalingTypes", "Version"]
 
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(message)s")
+formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s - %(message)s")
 handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 handler.setLevel(logging.INFO)

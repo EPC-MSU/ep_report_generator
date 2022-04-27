@@ -61,6 +61,8 @@ if __name__ == "__main__":
     user_defined_scales = []
     for element in test_board.elements:
         for pin in element.pins:
+            if not pin.measurements:
+                continue
             max_voltage = pin.measurements[0].settings.max_voltage
             internal_resistance = pin.measurements[0].settings.internal_resistance
             user_defined_scales.append((1.6 * max_voltage, 1.6 * max_voltage / internal_resistance))

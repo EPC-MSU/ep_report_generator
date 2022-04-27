@@ -157,11 +157,7 @@
                     </td>
                 </tr>
                 % endif
-                % if measurements or board_img_width is not None:
                 <tr>
-                    <%
-                        legend_for_iv_img = ""
-                    %>
                     <td class="align_left">
                         <a class="anchor" id="top" name="point${x}${y}"></a>
                         <span>#${total_pin_index}</span><br>
@@ -192,9 +188,12 @@
                             </div><br>
                             % endif
                         <%
-                            legend_for_iv_img = "Красная - тестовая (текущая) ВАХ\n"
-                            if len(measurements) > 1:
-                                legend_for_iv_img += "Синяя - ВАХ эталона\n"
+                            legend_for_iv_img = ""
+                            for measurement in measurements:
+                                if not measurement.is_reference:
+                                    legend_for_iv_img += "Красная - тестовая (текущая) ВАХ\n"
+                                else:
+                                    legend_for_iv_img += "Синяя - ВАХ эталона\n"
                         %>
                         <button class="collapsible" onclick="handle_click(this)">Легенда ВАХ</button>
                         <div class="measurement_settings">
@@ -230,7 +229,6 @@
                         % endif
                     </td>
                 </tr>
-                % endif
                 % endfor
             </tbody>
         </table>

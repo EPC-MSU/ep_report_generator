@@ -165,7 +165,7 @@ def create_board(test_board: Board, ref_board: Board) -> Board:
                 if ref_measurements:
                     measurements.append(copy.deepcopy(ref_measurements[0]))
                     measurements[-1].is_reference = True
-            board_pins.append(Pin(pin.x, pin.y, measurements, pin.comment))
+            board_pins.append(Pin(x=pin.x, y=pin.y, measurements=measurements, comment=pin.comment))
         board_element = Element(pins=board_pins, name=element.name, package=element.package,
                                 bounding_zone=element.bounding_zone, rotation=element.rotation, width=element.width,
                                 height=element.height, set_automatically=element.set_automatically)
@@ -230,8 +230,7 @@ def create_test_and_ref_boards(board: Board) -> Tuple[Board, Board]:
                     test_measurement = measurement
             ref_measurements = [] if ref_measurement is None else [ref_measurement]
             test_measurements = [] if test_measurement is None else [test_measurement]
-            ref_pins.append(Pin(x=pin.x, y=pin.y, measurements=ref_measurements,
-                                comment=pin.comment))
+            ref_pins.append(Pin(x=pin.x, y=pin.y, measurements=ref_measurements, comment=pin.comment))
             test_pins.append(Pin(x=pin.x, y=pin.y, measurements=test_measurements, comment=pin.comment))
         ref_elements.append(Element(pins=ref_pins, name=element.name, package=element.package,
                                     bounding_zone=element.bounding_zone, rotation=element.rotation, width=element.width,

@@ -40,8 +40,11 @@ def create_manual_board(test: bool) -> Board:
                                        f"element {element_name}")
             is_dynamic = bool(index % 2)
             measurement = Measurement(settings=settings, ivc=iv_curve, comment=comment_for_measurement,
-                                      is_dynamic=is_dynamic)
-            pin = Pin(x=x, y=y, comment=comment_for_pin, measurements=[measurement])
+                                      is_dynamic=is_dynamic, is_reference=not test)
+            if pin_index == 1:
+                pin = Pin(x=x, y=y, comment=comment_for_pin, measurements=[])
+            else:
+                pin = Pin(x=x, y=y, comment=comment_for_pin, measurements=[measurement])
             pins.append(pin)
             index = (index + 1) % parameters_number
         elements.append(Element(name=element_name, pins=pins))
