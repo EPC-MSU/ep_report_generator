@@ -28,7 +28,7 @@
                 let coords = pin.getAttribute("coords").split(",");
                 let x = coords[0] * WIDTH / natural_width;
                 let y = coords[1] * WIDTH / natural_width;
-                let r = coords[2] * WIDTH / natural_width;
+                let r = coords[2] * WIDTH / natural_width / 5;
                 pin.setAttribute("coords", x + "," + y + "," + r);
             }
         }
@@ -123,7 +123,7 @@
                     % endif
                         <img id="board" src="static/img/board_with_bad_pins.png" usemap="#map" alt="Map of faulty test points" title="Map of faulty test points">
                         <p><map name="map">
-                            % for _, _, _, x, y, _, _, _, _, _ in pins:
+                            % for _, _, _, x, y, _, _, _, _, _ in bad_pins:
                             <area shape="circle" coords="${x},${y},${pin_radius}" href="#point${x}${y}" alt="">
                             % endfor
                             </map>
