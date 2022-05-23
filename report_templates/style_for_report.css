@@ -128,7 +128,7 @@ h2 {
 	background-color: #ccc;
 }
 
-.measurement_settings {
+.hidden_options {
 	background-color: #f1f1f1;
 	display: none;
 	overflow: hidden;

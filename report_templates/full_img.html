@@ -74,12 +74,12 @@
     </center>
     <p>
         <map name="map">
-            % for name, element_index, pin_index, x, y, _, _, _, _, _ in pins:
+            % for name, element_index, pin_index, x, y, _, _, _, _, _, _ in pins:
             <area onmouseover="hide_or_show_img(this, true);" onmouseout="hide_or_show_img(this, false);" shape="circle" coords="${x},${y},6" href="#point${x}${y}" alt="">
             % endfor
         </map>
     </p>
-    % for name, element_index, pin_index, x, y, measurements, _, _, _, _ in pins:
+    % for name, element_index, pin_index, x, y, measurements, _, _, _, _, _ in pins:
     % if measurements:
     <figure id="img${x},${y},6" onmouseover="change_position(this);" style="display: none;">
         <p>

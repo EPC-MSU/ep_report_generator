@@ -149,7 +149,7 @@
                 <%
                     prev_element_index = None
                 %>
-                % for name, element_index, pin_index, x, y, measurements, score, pin_type, total_pin_index, pin_comment in bad_pins:
+                % for name, element_index, pin_index, x, y, measurements, score, pin_type, total_pin_index, pin_comment, mux_output in bad_pins:
                 % if element_index != prev_element_index:
                 <%
                     prev_element_index = element_index
@@ -178,16 +178,23 @@
                         % if score is not None:
                         <span>score = ${"{:.2f}%".format(score * 100)}</span><br>
                         % endif
+                        % if mux_output:
+                        <button class="collapsible" onclick="handle_click(this)">Выход мультиплексора</button>
+                        <div class="hidden_options">
+                            <span>Номер модуля = ${mux_output.module_number}</span><br>
+                            <span>Номер канала = ${mux_output.channel_number}</span><br>
+                        </div><br>
+                        % endif
                         % if measurements:
                         <button class="collapsible" onclick="handle_click(this)">Параметры измерения</button>
-                        <div class="measurement_settings">
+                        <div class="hidden_options">
                             <span>Частота = ${measurements[0].settings.probe_signal_frequency} Гц</span><br>
                             <span>Напряжение = ${measurements[0].settings.max_voltage} В</span><br>
                             <span>Внутреннее сопротивление = ${measurements[0].settings.internal_resistance} Ом</span><br>
                         </div><br>
                             % if measurements[0].comment is not None:
                             <button class="collapsible" onclick="handle_click(this)">Комментарий к измерению</button>
-                            <div class="measurement_settings">
+                            <div class="hidden_options">
                                 <span>${measurements[0].comment}</span>
                             </div><br>
                             % endif
@@ -200,13 +207,13 @@
                                     legend_for_iv_img += "Красная - тестовая (текущая) ВАХ\n"
                         %>
                         <button class="collapsible" onclick="handle_click(this)">Легенда ВАХ</button>
-                        <div class="measurement_settings">
+                        <div class="hidden_options">
                             <span style="white-space: pre-line">${legend_for_iv_img}</span>
                         </div><br>
                         % endif
                         % if pin_comment:
                         <button class="collapsible" onclick="handle_click(this)">Комментарий к пину</button>
-                        <div class="measurement_settings">
+                        <div class="hidden_options">
                             <span>${pin_comment}</span>
                         </div>
                         % endif

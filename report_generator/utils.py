@@ -165,7 +165,8 @@ def create_board(test_board: Board, ref_board: Board) -> Board:
                 if ref_measurements:
                     measurements.append(copy.deepcopy(ref_measurements[0]))
                     measurements[-1].is_reference = True
-            board_pins.append(Pin(x=pin.x, y=pin.y, measurements=measurements, comment=pin.comment))
+            board_pins.append(Pin(x=pin.x, y=pin.y, measurements=measurements, comment=pin.comment,
+                                  multiplexer_output=pin.multiplexer_output))
         board_element = Element(pins=board_pins, name=element.name, package=element.package,
                                 bounding_zone=element.bounding_zone, rotation=element.rotation, width=element.width,
                                 height=element.height, set_automatically=element.set_automatically)
@@ -230,8 +231,10 @@ def create_test_and_ref_boards(board: Board) -> Tuple[Board, Board]:
                     test_measurement = measurement
             ref_measurements = [] if ref_measurement is None else [ref_measurement]
             test_measurements = [] if test_measurement is None else [test_measurement]
-            ref_pins.append(Pin(x=pin.x, y=pin.y, measurements=ref_measurements, comment=pin.comment))
-            test_pins.append(Pin(x=pin.x, y=pin.y, measurements=test_measurements, comment=pin.comment))
+            ref_pins.append(Pin(x=pin.x, y=pin.y, measurements=ref_measurements, comment=pin.comment,
+                                multiplexer_output=pin.multiplexer_output))
+            test_pins.append(Pin(x=pin.x, y=pin.y, measurements=test_measurements, comment=pin.comment,
+                                 multiplexer_output=pin.multiplexer_output))
         ref_elements.append(Element(pins=ref_pins, name=element.name, package=element.package,
                                     bounding_zone=element.bounding_zone, rotation=element.rotation, width=element.width,
                                     height=element.height, set_automatically=element.set_automatically))
@@ -260,7 +263,7 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str, marker_s
                PinTypes.LOW_SCORE: [[], []],
                PinTypes.REFERENCE: [[], []]}
     for pin_info in pins_info:
-        _, _, _, x, y, _, _, pin_type, _, _ = pin_info
+        _, _, _, x, y, _, _, pin_type, _, _, _ = pin_info
         pin_xy = pins_xy[pin_type]
         pin_xy[0].append(x)
         pin_xy[1].append(y)
@@ -306,7 +309,7 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
     for index, pin_info in enumerate(pins_info):
         if stop_drawing():
             break
-        element_name, element_index, pin_index, _, _, measurements, _, pin_type, _, _ = pin_info
+        element_name, element_index, pin_index, _, _, measurements, _, pin_type, _, _, _ = pin_info
         if not measurements:
             signal.emit()
             logger.info("Pin '%s_%s' has no measurements", element_index, pin_index)
@@ -370,7 +373,7 @@ def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal, 
     for pin_info in pins_info:
         if stop_drawing():
             return False
-        element_name, element_index, pin_index, x, y, _, _, pin_type, _, _ = pin_info
+        element_name, element_index, pin_index, x, y, _, _, pin_type, _, _, _ = pin_info
         left, right = _get_pin_borders(x, width, pin_width)
         upper, lower = _get_pin_borders(y, height, pin_width)
         pin_image = image.crop((left, upper, right, lower))

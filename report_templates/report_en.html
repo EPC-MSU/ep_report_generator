@@ -149,7 +149,7 @@
                 <%
                     prev_element_index = None
                 %>
-                % for name, element_index, pin_index, x, y, measurements, score, pin_type, total_pin_index, pin_comment in bad_pins:
+                % for name, element_index, pin_index, x, y, measurements, score, pin_type, total_pin_index, pin_comment, mux_output in bad_pins:
                 % if element_index != prev_element_index:
                 <%
                     prev_element_index = element_index
@@ -178,16 +178,23 @@
                         % if score is not None:
                         <span>score = ${"{:.2f}%".format(score * 100)}</span><br>
                         % endif
+                        % if mux_output:
+                        <button class="collapsible" onclick="handle_click(this)">Multiplexer output</button>
+                        <div class="hidden_options">
+                            <span>Module number = ${mux_output.module_number}</span><br>
+                            <span>Channel number = ${mux_output.channel_number}</span><br>
+                        </div><br>
+                        % endif
                         % if measurements:
                         <button class="collapsible" onclick="handle_click(this)">Measurement settings</button>
-                        <div class="measurement_settings">
+                        <div class="hidden_options">
                             <span>Frequency = ${measurements[0].settings.probe_signal_frequency} Hz</span><br>
                             <span>Voltage = ${measurements[0].settings.max_voltage} V</span><br>
                             <span>Internal resistance = ${measurements[0].settings.internal_resistance} Ohm</span><br>
                         </div><br>
                             % if measurements[0].comment is not None:
                             <button class="collapsible" onclick="handle_click(this)">Measurement comment</button>
-                            <div class="measurement_settings">
+                            <div class="hidden_options">
                                 <span>${measurements[0].comment}</span>
                             </div><br>
                             % endif
@@ -200,13 +207,13 @@
                                     legend_for_iv_img += "Red - test (current) IVC\n"
                         %>
                         <button class="collapsible" onclick="handle_click(this)">IVC legend</button>
-                        <div class="measurement_settings">
+                        <div class="hidden_options">
                             <span style="white-space: pre-line">${legend_for_iv_img}</span>
                         </div><br>
                         % endif
                         % if pin_comment:
                         <button class="collapsible" onclick="handle_click(this)">Pin comment</button>
-                        <div class="measurement_settings">
+                        <div class="hidden_options">
                             <span>${pin_comment}</span>
                         </div>
                         % endif
