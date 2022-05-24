@@ -489,7 +489,6 @@ class ReportGenerator(QObject):
                     pin_type = ut.get_pin_type(score, self._threshold_score)
                     info = (element.name, element_index, pin_index, pin.x, pin.y, pin.measurements, score,
                             pin_type, total_pin_index, pin.comment, pin.multiplexer_output)
-                    print(pin.multiplexer_output)
                     pins_info.append(info)
                 total_pin_index += 1
         pin_number = len(pins_info)
