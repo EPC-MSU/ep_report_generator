@@ -123,7 +123,7 @@
                     % endif
                         <img id="board" src="static/img/board_with_bad_pins.png" usemap="#map" alt="Map of faulty test points" title="Map of faulty test points">
                         <p><map name="map">
-                            % for _, _, _, x, y, _, _, _, _, _ in bad_pins:
+                            % for _, _, _, x, y, _, _, _, _, _, _ in bad_pins:
                             <area shape="circle" coords="${x},${y},${pin_radius}" href="#point${x}${y}" alt="">
                             % endfor
                             </map>

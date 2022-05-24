@@ -121,7 +121,7 @@
                     % endif
                         <img id="board" src="static/img/board.png" usemap="#map" alt="Карта точек тестирования" title="Карта точек тестирования">
                         <p><map name="map">
-                            % for _, _, _, x, y, _, _, _, _, _ in pins:
+                            % for _, _, _, x, y, _, _, _, _, _, _ in pins:
                             <area shape="circle" coords="${x},${y},${pin_radius}" href="#point${x}${y}" alt="">
                             % endfor
                             </map>
