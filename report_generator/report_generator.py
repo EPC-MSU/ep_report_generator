@@ -127,6 +127,7 @@ class ReportGenerator(QObject):
 
     exception_raised = pyqtSignal(str)
     generation_finished = pyqtSignal(str)
+    generation_stopped = pyqtSignal()
     step_done = pyqtSignal()
     step_started = pyqtSignal(str)
     total_number_of_steps_calculated = pyqtSignal(int)
@@ -620,6 +621,8 @@ class ReportGenerator(QObject):
         self._read_config(config)
         try:
             self._run()
+            if self.stop:
+                self.generation_stopped.emit()
         except Exception as exc:
             exception_text = f"Error occurred while generating report: {exc}"
             self.exception_raised.emit(exception_text)
