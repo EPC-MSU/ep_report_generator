@@ -476,14 +476,21 @@ class ReportGenerator(QObject):
 
         self._board = ut.create_board(self._board_test, self._board_ref)
         comparator = IVCComparator()
-        comparator.set_min_ivc(0, 0)
         pins_info = []
+        accounted_pin_index = 0
         total_pin_index = 0
         for element_index, element in enumerate(self._board.elements):
             for pin_index, pin in enumerate(element.pins):
                 if (self._required_board or element_index in self._required_elements or
                         total_pin_index in self._required_pins):
                     if len(pin.measurements) > 1:
+                        if isinstance(self._user_defined_scales, (list, tuple)) and\
+                             len(self._user_defined_scales) > accounted_pin_index and\
+                             len(self._user_defined_scales[accounted_pin_index]) == 2:
+                            voltage_scale, current_scale = self._user_defined_scales[accounted_pin_index]
+                            comparator.set_min_ivc(0.03 * voltage_scale, 0.03 * current_scale * 1000)
+                        else:
+                            comparator.set_min_ivc(0, 0)
                         score = comparator.compare_ivc(pin.measurements[0].ivc, pin.measurements[1].ivc)
                     else:
                         score = None
