@@ -498,6 +498,7 @@ class ReportGenerator(QObject):
                     info = (element.name, element_index, pin_index, pin.x, pin.y, pin.measurements, score,
                             pin_type, total_pin_index, pin.comment, pin.multiplexer_output)
                     pins_info.append(info)
+                    accounted_pin_index += 1
                 total_pin_index += 1
         pin_number = len(pins_info)
         self.total_number_of_steps_calculated.emit(self._get_total_number_of_steps(pin_number))
