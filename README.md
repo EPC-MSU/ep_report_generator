@@ -5,7 +5,7 @@
 
 1. Установите библиотеки `ep_report_generator`, `epcore` и `ivviewer`:
 
-   ```
+   ```bash
    python -m pip install --upgrade pip
    python -m pip install git+https://github.com/EPC-MSU/ep_report_generator
    python -m pip install hg+https://hg.ximc.ru/eyepoint/epcore@dev-0.1 hg+https://hg.ximc.ru/eyepoint/ivviewer@dev-0.1
@@ -13,13 +13,13 @@
 
 2. В вашем python-скрипте импортируйте из библиотеки следующие классы:
 
-   ```
+   ```bash
    from report_generator import ConfigAttributes, ObjectsForReport, ReportGenerator, ScalingTypes
    ```
 
 3. С помощью библиотеки `epcore.elements` создайте тестовую плату типа `Board`, для которой будет сгенерирован отчет. Если необходимо, чтобы в отчете была информация о `score`  ВАХ тестовой платы, создайте справочную плату:
 
-   ```
+   ```bash
    test_board = функция_которая_каким-то_образом_создает_тестовую_плату()
    ref_board = функция_которая_каким-то_образом_создает_справочную_плату()
    ```
@@ -30,7 +30,7 @@
 
 5. Создайте словарь-конфиг, по которому будет создан отчет. Для задания полей словаря-конфига используйте класс `ConfigAttributes`. Для задания объектов, которые должны быть включены в отчет, используйте класс `ObjectsForReport`. Для выбора типа масштабирования графиков ВАХ используйте класс `ScalingTypes`. Пример словаря-конфига:
 
-   ```
+   ```bash
    config = {ConfigAttributes.BOARD_TEST: test_board,
              ConfigAttributes.BOARD_REF: ref_board,
    		  ConfigAttributes.DIRECTORY: путь к папке, в которой нужно сохранить отчет,
@@ -44,6 +44,7 @@
              ConfigAttributes.APP_NAME: название приложения (например, EyePoint P10), которое использует генератор отчета,
              ConfigAttributes.APP_VERSION: версия приложения, которое использует генератор отчетов,
              ConfigAttributes.TEST_DURATION: длительность тестирования (тип значения datetime.timedelta),
+             ConfigAttributes.NOISE_AMPLITUDES: список с амлитудами шумов графиков ВАХ,
              ConfigAttributes.SCALING_TYPE: тип масштабирования графиков ВАХ (например, ScalingTypes.EYEPOINT_P10),
              ConfigAttributes.USER_DEFINED_SCALES: список с масштабами графиков ВАХ, если ConfigAttributes.SCALING_TYPE == ScalingTypes.USER_DEFINED,
              ConfigAttributes.ENGLISH: если True, то отчет будет создан на английском языке}
@@ -51,7 +52,7 @@
 
 6. Создайте объект типа `ReportGenerator` и запустите его, передав в качестве аргумента словарь-конфиг:
 
-   ```
+   ```bash
    report_generator = ReportGenerator()
    report_generator.run(config)
    ```
@@ -62,20 +63,20 @@
 
 1. Склонируйте репозиторий и перейдите в папку репозитория `ep_report_generator`:
 
-   ```
+   ```bash
    git clone https://github.com/EPC-MSU/ep_report_generator
    cd ep_report_generator
    ```
 
 2. Установите необходимые зависимости, выполнив скрипт `install.bat`:
 
-   ```
+   ```bash
    install.bat
    ```
 
 3. Запустите пример, выполнив скрипт `run_example.bat`:
 
-   ```
+   ```bash
    run_example.bat
    ```
 
@@ -85,20 +86,20 @@
 
 1. Склонируйте репозиторий и перейдите в папку репозитория `ep_report_generator`:
 
-   ```
+   ```bash
    git clone https://github.com/EPC-MSU/ep_report_generator
    cd ep_report_generator
    ```
 
 2. Установите необходимые зависимости, выполнив скрипт `install.sh`:
 
-   ```
+   ```bash
    bash install.sh
    ```
 
 3. Запустите пример, выполнив скрипт `run_example.sh`:
 
-   ```
+   ```bash
    bash run_example.sh
    ```
 
