@@ -49,6 +49,7 @@ class ConfigAttributes(Enum):
     BOARD_TEST = auto()
     DIRECTORY = auto()
     ENGLISH = auto()
+    NOISE_AMPLITUDES = auto()
     OBJECTS = auto()
     OPEN_REPORT_AT_FINISH = auto()
     PIN_SIZE = auto()
@@ -151,6 +152,7 @@ class ReportGenerator(QObject):
         self._config: Dict = config
         self._dir_name: str = self._get_default_dir_name()
         self._english: bool = False
+        self._noise_amplitudes: list = None
         self._open_report_at_finish: bool = False
         self._pin_diameter: int = None
         self._pin_width: int = _PIN_WIDTH
@@ -484,13 +486,17 @@ class ReportGenerator(QObject):
                 if (self._required_board or element_index in self._required_elements or
                         total_pin_index in self._required_pins):
                     if len(pin.measurements) > 1:
-                        if isinstance(self._user_defined_scales, (list, tuple)) and\
-                             len(self._user_defined_scales) > accounted_pin_index and\
-                             len(self._user_defined_scales[accounted_pin_index]) == 2:
-                            voltage_scale, current_scale = self._user_defined_scales[accounted_pin_index]
-                            comparator.set_min_ivc(0.03 * voltage_scale, 0.03 * current_scale * 1000)
-                        else:
-                            comparator.set_min_ivc(0, 0)
+                        voltage_noise, current_noise = 0, 0
+                        if isinstance(self._noise_amplitudes, (list, tuple)) and\
+                                len(self._noise_amplitudes) > accounted_pin_index and\
+                                len(self._noise_amplitudes[accounted_pin_index]) == 2:
+                            voltage_noise, current_noise = self._noise_amplitudes[accounted_pin_index]
+                        elif isinstance(self._user_defined_scales, (list, tuple)) and\
+                                len(self._user_defined_scales) > accounted_pin_index and\
+                                len(self._user_defined_scales[accounted_pin_index]) == 2:
+                            voltage_noise = 0.03 * self._user_defined_scales[accounted_pin_index][0]
+                            current_noise = 0.03 * 1000 * self._user_defined_scales[accounted_pin_index][1]
+                        comparator.set_min_ivc(voltage_noise, current_noise)
                         score = comparator.compare_ivc(pin.measurements[0].ivc, pin.measurements[1].ivc)
                     else:
                         score = None
@@ -547,6 +553,7 @@ class ReportGenerator(QObject):
                       ConfigAttributes.BOARD_TEST: self._board_test,
                       ConfigAttributes.DIRECTORY: self._dir_name,
                       ConfigAttributes.ENGLISH: False,
+                      ConfigAttributes.NOISE_AMPLITUDES: None,
                       ConfigAttributes.OBJECTS: {},
                       ConfigAttributes.OPEN_REPORT_AT_FINISH: False,
                       ConfigAttributes.PIN_SIZE: _PIN_WIDTH,
@@ -565,6 +572,7 @@ class ReportGenerator(QObject):
         parent_directory = self._config.get(ConfigAttributes.DIRECTORY, self._dir_name)
         self._dir_name = ut.create_report_directory_name(parent_directory, _DEFAULT_REPORT_DIR_NAME)
         self._english = self._config.get(ConfigAttributes.ENGLISH, False)
+        self._noise_amplitudes = self._config.get(ConfigAttributes.NOISE_AMPLITUDES, None)
         self._open_report_at_finish = self._config.get(ConfigAttributes.OPEN_REPORT_AT_FINISH, False)
         self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, _PIN_WIDTH)
         self._reports_to_open = list(set(self._config.get(ConfigAttributes.REPORTS_TO_OPEN,
