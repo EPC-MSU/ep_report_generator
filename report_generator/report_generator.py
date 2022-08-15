@@ -23,6 +23,8 @@ _BOARD_WITH_PINS_IMAGE = "board.png"
 _SCORE_HISTOGRAM_IMAGE = "score_histogram.png"
 _DEFAULT_REPORT_DIR_NAME = "report"
 _IMG_DIR_NAME = "img"
+_FAVICON_16_FOR_REPORT = "favicon-16x16.png"
+_FAVICON_32_FOR_REPORT = "favicon-32x32.png"
 _STATIC_DIR_NAME = "static"
 _STYLE_FOR_MAP = "style_for_map.css"
 _STYLE_FOR_REPORT = "style_for_report.css"
@@ -151,6 +153,8 @@ class ReportGenerator(QObject):
         self._board_test: Board = board_test
         self._config: Dict = config
         self._dir_name: str = self._get_default_dir_name()
+        self._dir_template: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                               _TEMPLATES_DIR_NAME)
         self._english: bool = False
         self._noise_amplitudes: list = None
         self._open_report_at_finish: bool = False
@@ -170,6 +174,19 @@ class ReportGenerator(QObject):
         self.stop: bool = False
 
     @check_stop_operation
+    def _copy_favicon_and_styles(self):
+        """
+        Method copies favicons and style files to directory with created report.
+        """
+
+        for style_name in (_STYLE_FOR_MAP, _STYLE_FOR_REPORT):
+            style_file = os.path.join(self._dir_template, style_name)
+            shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME, style_name))
+        for favicon_name in (_FAVICON_16_FOR_REPORT, _FAVICON_32_FOR_REPORT):
+            favicon_file = os.path.join(self._dir_template, favicon_name)
+            shutil.copyfile(favicon_file, os.path.join(self._static_dir_name, _IMG_DIR_NAME, favicon_name))
+
+    @check_stop_operation
     def _create_full_report(self) -> str:
         """
         Method creates full report.
@@ -178,14 +195,11 @@ class ReportGenerator(QObject):
 
         self.step_started.emit("Creation of full report")
         logger.info("Creation of full report was started")
-        dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_FULL_REPORT)
         if self._english:
-            template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_FULL_REPORT_EN)
+            template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_FULL_REPORT_EN)
         else:
-            template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_FULL_REPORT)
-        style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_REPORT)
-        shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME, _STYLE_FOR_REPORT))
+            template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_FULL_REPORT)
         elements_number = len({pin_info[1] for pin_info in self._pins_info})
         if self._board.image is None:
             board_image_width = None
@@ -246,14 +260,11 @@ class ReportGenerator(QObject):
 
         self.step_started.emit("Creation of report")
         logger.info("Creation of report was started")
-        dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_REPORT)
         if self._english:
-            template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_REPORT_EN)
+            template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_REPORT_EN)
         else:
-            template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_REPORT)
-        style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_REPORT)
-        shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME, _STYLE_FOR_REPORT))
+            template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_REPORT)
         elements_number = len({pin_info[1] for pin_info in self._pins_info})
         if self._board.image is None:
             board_image_width = None
@@ -297,14 +308,11 @@ class ReportGenerator(QObject):
             return
         self.step_started.emit("Creation of report with board map")
         logger.info("Creation of report with board map was started")
-        dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_MAP)
         if self._english:
-            template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_MAP_EN)
+            template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_MAP_EN)
         else:
-            template_file_name = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _TEMPLATE_FILE_WITH_MAP)
-        style_file = os.path.join(dir_name, _TEMPLATES_DIR_NAME, _STYLE_FOR_MAP)
-        shutil.copyfile(style_file, os.path.join(self._static_dir_name, _STYLES_DIR_NAME, _STYLE_FOR_MAP))
+            template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_MAP)
         ut.create_report(template_file_name, report_file_name, pins=self._pins_info)
         self.step_done.emit()
         logger.info("Report with board map was saved to '%s'", report_file_name)
@@ -610,6 +618,7 @@ class ReportGenerator(QObject):
                    ReportCreationSteps.DRAW_PINS: self._draw_pins}
         for step, method in methods.items():
             self._results_by_steps[step] = method()
+        self._copy_favicon_and_styles()
         created_reports = {ReportTypes.MAP_REPORT: self._create_report_with_map(),
                            ReportTypes.FULL_REPORT: self._create_full_report(),
                            ReportTypes.SHORT_REPORT: self._create_report()}
