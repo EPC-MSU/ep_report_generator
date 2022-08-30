@@ -12,5 +12,5 @@ class Version:
 
     major = 0
     minor = 1
-    release = 3
+    release = 6
     full = f"{major}.{minor}.{release}"
