@@ -10,11 +10,11 @@ from .version import Version
 __all__ = ["ConfigAttributes", "create_test_and_ref_boards", "ObjectsForReport", "ReportGenerator", "ReportTypes",
            "ScalingTypes", "Version"]
 
-formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s - %(message)s")
+formatter = logging.Formatter("%(asctime)s %(name)s.%(funcName)s %(levelname)s - %(message)s")
 handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 handler.setLevel(logging.INFO)
-package_logger = logging.getLogger(__name__.split(".")[0])
+package_logger = logging.getLogger("report_generator")
 package_logger.setLevel(logging.INFO)
 package_logger.addHandler(handler)
 package_logger.propagate = False

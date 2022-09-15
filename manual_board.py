@@ -9,8 +9,7 @@ from epcore.elements import Board, Element, IVCurve, Measurement, MeasurementSet
 def create_manual_board(test: bool) -> Board:
     """
     Function creates board.
-    :param test: if True then test board will be created otherwise reference board
-    will be created.
+    :param test: if True then test board will be created otherwise reference board will be created.
     :return: board.
     """
 

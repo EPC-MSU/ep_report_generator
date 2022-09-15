@@ -9,14 +9,14 @@ import shutil
 import webbrowser
 from datetime import datetime, timedelta
 from enum import auto, Enum
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 from PyQt5.QtCore import pyqtSignal, QObject
-from epcore.elements import Board
+from epcore.elements import Board, Measurement, MultiplexerOutput
 from epcore.measurementmanager import IVCComparator
-from . import utils as ut
-from .version import Version
+from report_generator import utils as ut
+from report_generator.version import Version
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("report_generator")
 _BOARD_IMAGE = "board_clear.png"
 _BOARD_WITH_BAD_PINS_IMAGE = "board_with_bad_pins.png"
 _BOARD_WITH_PINS_IMAGE = "board.png"
@@ -87,7 +87,7 @@ class ReportCreationSteps(Enum):
     CREATE_REPORT = auto()
 
     @classmethod
-    def get_dict(cls) -> Dict:
+    def get_dict(cls) -> Dict["ReportCreationSteps", Optional[bool]]:
         """
         Method returns dictionary for results by stages of report creation.
         :return: dictionary for results by stages.
@@ -110,7 +110,7 @@ class ReportTypes(Enum):
     SHORT_REPORT = auto()
 
 
-def check_stop_operation(func: Callable):
+def check_stop_operation(func: Callable) -> Callable:
     """
     Decorator checks if operation needs to be stopped.
     :param func: decorated method.
@@ -136,7 +136,7 @@ class ReportGenerator(QObject):
     total_number_of_steps_calculated = pyqtSignal(int)
 
     def __init__(self, parent=None, board_test: Optional[Board] = None, board_ref: Optional[Board] = None,
-                 config: Optional[Dict] = None):
+                 config: Optional[Dict] = None) -> None:
         """
         :param parent: parent object;
         :param board_test: test board for which report should be generated;
@@ -147,7 +147,8 @@ class ReportGenerator(QObject):
         super().__init__(parent=parent)
         self._app_name: str = None
         self._app_version: str = None
-        self._bad_pins_info: List = []
+        self._bad_pins_info: List[Tuple[str, int, int, float, float, List[Measurement], float, ut.PinTypes, int, str,
+                                        MultiplexerOutput]] = []
         self._board: Board = None
         self._board_ref: Board = board_ref
         self._board_test: Board = board_test
@@ -160,7 +161,8 @@ class ReportGenerator(QObject):
         self._open_report_at_finish: bool = False
         self._pin_diameter: int = None
         self._pin_width: int = _PIN_WIDTH
-        self._pins_info: List = []
+        self._pins_info: List[Tuple[str, int, int, float, float, List[Measurement], float, ut.PinTypes, int, str,
+                                    MultiplexerOutput]] = []
         self._reports_to_open: List = []
         self._required_board: bool = False
         self._required_elements: List = []
@@ -169,12 +171,12 @@ class ReportGenerator(QObject):
         self._scaling_type: ut.ScalingTypes = ut.ScalingTypes.AUTO
         self._static_dir_name: str = None
         self._test_duration: timedelta = None
-        self._threshold_score: float = None
-        self._user_defined_scales: list = None
+        self._threshold_score: Optional[float] = None
+        self._user_defined_scales: Optional[List[Tuple[float, float]]] = None
         self.stop: bool = False
 
     @check_stop_operation
-    def _copy_favicon_and_styles(self):
+    def _copy_favicon_and_styles(self) -> None:
         """
         Method copies favicons and style files to directory with created report.
         """
@@ -230,12 +232,12 @@ class ReportGenerator(QObject):
         return report_file_name
 
     @check_stop_operation
-    def _create_required_dirs(self):
+    def _create_required_dirs(self) -> None:
         """
         Method checks existence of required folders and creates them if necessary.
         """
 
-        def create_dir(path: str):
+        def create_dir(path: str) -> None:
             """
             Function creates directory if necessary.
             :param path: path to directory.
@@ -419,7 +421,8 @@ class ReportGenerator(QObject):
         logger.info("Images of pins were not drawn")
         return False
 
-    def _get_bad_pins(self) -> List:
+    def _get_bad_pins(self) -> List[Tuple[str, int, int, float, float, List[Measurement], float, ut.PinTypes, int, str,
+                                          MultiplexerOutput]]:
         """
         Method returns bad pins with score greater than threshold score.
         :return: list with bad pins.
@@ -442,7 +445,7 @@ class ReportGenerator(QObject):
 
         return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    def _get_general_info(self) -> Dict:
+    def _get_general_info(self) -> Dict[str, Any]:
         """
         Method returns dictionary with general information.
         :return: dictionary with general information.
@@ -460,7 +463,7 @@ class ReportGenerator(QObject):
                 "score_histogram": self._results_by_steps[ReportCreationSteps.DRAW_SCORE_HISTOGRAM],
                 "pin_radius": _PIN_RADIUS if self._pin_diameter is None else int(self._pin_diameter / 2)}
 
-    def _get_info_about_bad_elements_and_pins(self) -> Dict:
+    def _get_info_about_bad_elements_and_pins(self) -> Dict[str, Any]:
         """
         Method returns dictionary with information about bad elements and pins.
         Bad pin is pin with score greater than threshold score. Bad element has
@@ -477,10 +480,10 @@ class ReportGenerator(QObject):
                 "bad_pins": self._bad_pins_info}
 
     @check_stop_operation
-    def _get_info_about_pins(self) -> List[Tuple]:
+    def _get_info_about_pins(self) -> List[Tuple[str, int, int, float, float, List[Measurement], float, ut.PinTypes,
+                                                 int, str, MultiplexerOutput]]:
         """
-        Method returns list with information about pins for which report should
-        be generated.
+        Method returns list with information about pins for which report should be generated.
         :return: list with information about required pins.
         """
 
@@ -494,21 +497,17 @@ class ReportGenerator(QObject):
                 if (self._required_board or element_index in self._required_elements or
                         total_pin_index in self._required_pins):
                     if len(pin.measurements) > 1:
-                        voltage_noise, current_noise = 0, 0
                         if isinstance(self._noise_amplitudes, (list, tuple)) and\
                                 len(self._noise_amplitudes) > accounted_pin_index and\
                                 len(self._noise_amplitudes[accounted_pin_index]) == 2:
                             voltage_noise, current_noise = self._noise_amplitudes[accounted_pin_index]
-                        elif isinstance(self._user_defined_scales, (list, tuple)) and\
-                                len(self._user_defined_scales) > accounted_pin_index and\
-                                len(self._user_defined_scales[accounted_pin_index]) == 2:
-                            voltage_noise = 0.03 * self._user_defined_scales[accounted_pin_index][0]
-                            current_noise = 0.03 * 1000 * self._user_defined_scales[accounted_pin_index][1]
+                        else:
+                            voltage_noise, current_noise = ut.get_noise_amplitudes(pin)
                         comparator.set_min_ivc(voltage_noise, current_noise)
                         score = comparator.compare_ivc(pin.measurements[0].ivc, pin.measurements[1].ivc)
                     else:
                         score = None
-                    pin_type = ut.get_pin_type(score, self._threshold_score)
+                    pin_type = ut.get_pin_type(pin, score, self._threshold_score)
                     info = (element.name, element_index, pin_index, pin.x, pin.y, pin.measurements, score,
                             pin_type, total_pin_index, pin.comment, pin.multiplexer_output)
                     pins_info.append(info)
@@ -548,7 +547,7 @@ class ReportGenerator(QObject):
         return len(processes) + len(processes_for_pins) * pin_number
 
     @check_stop_operation
-    def _read_config(self, config: Dict):
+    def _read_config(self, config: Dict[ConfigAttributes, Any]) -> None:
         """
         Method reads dictionary with full information about required report.
         :param config: dictionary with full information about required report.
@@ -597,7 +596,7 @@ class ReportGenerator(QObject):
             self._required_elements = required_objects.get(ObjectsForReport.ELEMENT)
             self._required_pins = required_objects.get(ObjectsForReport.PIN)
 
-    def _run(self):
+    def _run(self) -> None:
         """
         Method runs report generation.
         """
@@ -637,7 +636,7 @@ class ReportGenerator(QObject):
 
         return Version.full
 
-    def run(self, config: Dict):
+    def run(self, config: Dict) -> None:
         """
         Method runs report generation.
         :param config: dictionary with full information about required report.
@@ -653,7 +652,7 @@ class ReportGenerator(QObject):
             self.exception_raised.emit(exception_text)
             logger.error(exception_text)
 
-    def stop_process(self):
+    def stop_process(self) -> None:
         """
         Method stops generation of report.
         """

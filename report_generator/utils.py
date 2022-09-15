@@ -7,7 +7,7 @@ import logging
 import os
 from datetime import datetime, timedelta
 from enum import auto, Enum
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 from mako.template import Template
@@ -17,7 +17,7 @@ from PyQt5.QtGui import QColor, QFont
 from epcore.elements import Board, Element, Pin
 from ivviewer import Curve, Viewer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("report_generator")
 
 
 class PinTypes(Enum):
@@ -27,7 +27,9 @@ class PinTypes(Enum):
 
     HIGH_SCORE = 0
     LOW_SCORE = 1
-    REFERENCE = 2
+    EMPTY = 2
+    LOSS = 3
+    NOT_EMPTY = 4
 
 
 class ScalingTypes(Enum):
@@ -40,15 +42,17 @@ class ScalingTypes(Enum):
     USER_DEFINED = auto()
 
 
-IV_IMAGE_SIZE = 300, 200
-PIN_COLORS = {PinTypes.HIGH_SCORE: "#f00",
-              PinTypes.LOW_SCORE: "#0f0",
-              PinTypes.REFERENCE: "#f0f"}
-REFERENCE_CURVE_COLOR = "#00f"
-TEST_CURVE_COLOR = "#f00"
+IV_IMAGE_SIZE: Tuple[int, int] = (300, 200)
+PIN_COLORS: Dict[PinTypes, str] = {PinTypes.HIGH_SCORE: "#f00",
+                                   PinTypes.LOW_SCORE: "#0f0",
+                                   PinTypes.EMPTY: "#f0f",
+                                   PinTypes.LOSS: "#ff9900",
+                                   PinTypes.NOT_EMPTY: "#0f0"}
+REFERENCE_CURVE_COLOR: str = "#00f"
+TEST_CURVE_COLOR: str = "#f00"
 
 
-def _check_for_image_availability(func: Callable):
+def _check_for_image_availability(func: Callable) -> Callable:
     """
     Decorator checks if there is image.
     :param func: decorated function.
@@ -105,7 +109,7 @@ def _get_pin_borders(center: float, board_width: int, pin_width: int) -> Tuple[f
     return left, right
 
 
-def calculate_distance(x_1: float, y_1: float, x_2: float, y_2: float) -> float:
+def calculate_distance_squared(x_1: float, y_1: float, x_2: float, y_2: float) -> float:
     """
     Function calculates distance between two points.
     :param x_1: X coordinate of first point;
@@ -134,7 +138,7 @@ def calculate_min_distance(pins: list) -> Optional[float]:
                 continue
             another_pin_x = another_pin[3]
             another_pin_y = another_pin[4]
-            distance = calculate_distance(pin_x, pin_y, another_pin_x, another_pin_y)
+            distance = calculate_distance_squared(pin_x, pin_y, another_pin_x, another_pin_y)
             if min_distance is None or min_distance > distance:
                 min_distance = distance
     return min_distance
@@ -155,18 +159,24 @@ def create_board(test_board: Board, ref_board: Board) -> Board:
     for element_index, element in enumerate(test_board.elements):
         board_pins = []
         for pin_index, pin in enumerate(element.pins):
+            pin_is_loss = None
             if pin.measurements:
                 measurements = [copy.deepcopy(pin.measurements[0])]
                 measurements[0].is_reference = False
             else:
                 measurements = []
             if ref_board is not None:
-                ref_measurements = ref_board.elements[element_index].pins[pin_index].measurements
+                ref_pin = ref_board.elements[element_index].pins[pin_index]
+                ref_measurements = ref_pin.measurements
                 if ref_measurements:
                     measurements.append(copy.deepcopy(ref_measurements[0]))
                     measurements[-1].is_reference = True
-            board_pins.append(Pin(x=pin.x, y=pin.y, measurements=measurements, comment=pin.comment,
-                                  multiplexer_output=pin.multiplexer_output))
+                    pin_is_loss = getattr(ref_pin, "is_loss", None)
+            pin_for_board = Pin(x=pin.x, y=pin.y, measurements=measurements, comment=pin.comment,
+                                multiplexer_output=pin.multiplexer_output)
+            if pin.measurements and pin_is_loss:
+                pin_for_board.is_loss = pin_is_loss
+            board_pins.append(pin_for_board)
         board_element = Element(pins=board_pins, name=element.name, package=element.package,
                                 bounding_zone=element.bounding_zone, rotation=element.rotation, width=element.width,
                                 height=element.height, set_automatically=element.set_automatically)
@@ -174,7 +184,7 @@ def create_board(test_board: Board, ref_board: Board) -> Board:
     return board
 
 
-def create_report(template_file: str, report_file: str, **kwargs):
+def create_report(template_file: str, report_file: str, **kwargs) -> None:
     """
     Function creates report.
     :param template_file: name of template file for report;
@@ -261,7 +271,9 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str, marker_s
 
     pins_xy = {PinTypes.HIGH_SCORE: [[], []],
                PinTypes.LOW_SCORE: [[], []],
-               PinTypes.REFERENCE: [[], []]}
+               PinTypes.EMPTY: [[], []],
+               PinTypes.LOSS: [[], []],
+               PinTypes.NOT_EMPTY: [[], []]}
     for pin_info in pins_info:
         _, _, _, x, y, _, _, pin_type, _, _, _ = pin_info
         pin_xy = pins_xy[pin_type]
@@ -387,7 +399,7 @@ def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal, 
     return True
 
 
-def draw_score_histogram(values: list, threshold: float, file_name: str):
+def draw_score_histogram(values: list, threshold: float, file_name: str) -> None:
     """
     Function draws and saves histogram of score values.
     :param values: score values to draw histogram;
@@ -420,16 +432,38 @@ def get_duration_in_str(duration: timedelta, english: bool) -> Optional[str]:
     return None
 
 
-def get_pin_type(score: float, threshold_score: float) -> PinTypes:
+def get_noise_amplitudes(pin: Pin) -> Tuple[float, float]:
+    """
+    Function calculates noise amplitudes for given pin.
+    :param pin: pin.
+    :return: voltage and current noise amplitudes.
+    """
+
+    default_voltage_noise_amplitude = 0.6
+    default_current_noise_amplitude = 0.2
+    if pin.measurements:
+        settings = pin.measurements[0].settings
+        return settings.max_voltage / 20, 1000.0 * settings.max_voltage / (20 * settings.internal_resistance)
+    return default_voltage_noise_amplitude, default_current_noise_amplitude
+
+
+def get_pin_type(pin: Pin, score: Optional[float], threshold_score: Optional[float]) -> PinTypes:
     """
     Function determines type of pin.
+    :param pin: pin;
     :param score: score of test measurement in pin;
     :param threshold_score: threshold score.
     :return: type of pin.
     """
 
-    if threshold_score is not None and score is not None:
-        pin_type = PinTypes.HIGH_SCORE if threshold_score <= score else PinTypes.LOW_SCORE
-    else:
-        pin_type = PinTypes.REFERENCE
-    return pin_type
+    if len(pin.measurements) == 0:
+        return PinTypes.EMPTY
+    if len(pin.measurements) == 1:
+        if getattr(pin, "is_loss", None):
+            return PinTypes.LOSS
+        return PinTypes.NOT_EMPTY
+    if score is not None:
+        if threshold_score is not None:
+            return PinTypes.HIGH_SCORE if threshold_score <= score else PinTypes.LOW_SCORE
+        return PinTypes.LOW_SCORE
+    return PinTypes.HIGH_SCORE
