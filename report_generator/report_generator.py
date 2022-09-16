@@ -51,6 +51,7 @@ class ConfigAttributes(Enum):
     BOARD = auto()
     DIRECTORY = auto()
     ENGLISH = auto()
+    IS_REPORT_FOR_TEST_BOARD = auto()
     NOISE_AMPLITUDES = auto()
     OBJECTS = auto()
     OPEN_REPORT_AT_FINISH = auto()
@@ -154,6 +155,7 @@ class ReportGenerator(QObject):
         self._dir_template: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                                _TEMPLATES_DIR_NAME)
         self._english: bool = False
+        self._is_report_for_test_board: Optional[bool] = None
         self._noise_amplitudes: Optional[List[Optional[Tuple[float, float]]]] = None
         self._open_report_at_finish: bool = False
         self._pin_diameter: int = None
@@ -171,6 +173,22 @@ class ReportGenerator(QObject):
         self._threshold_score: Optional[float] = None
         self._user_defined_scales: Optional[List[Tuple[float, float]]] = None
         self.stop: bool = False
+
+    def _analyze_required_report_type(self) -> None:
+        """
+        Method determines the type of report to be generated
+        (for a test board or for a reference board).
+        """
+
+        if self._is_report_for_test_board is None:
+            self._is_report_for_test_board = False
+            for element in self._board.elements:
+                for pin in element.pins:
+                    if len(pin.measurements) > 0:
+                        for measurement in pin.measurements:
+                            if not measurement.is_reference:
+                                self._is_report_for_test_board = True
+                                break
 
     @check_stop_operation
     def _copy_favicon_and_styles(self) -> None:
@@ -503,7 +521,7 @@ class ReportGenerator(QObject):
                         score = comparator.compare_ivc(pin.measurements[0].ivc, pin.measurements[1].ivc)
                     else:
                         score = None
-                    pin_type = ut.get_pin_type(pin, score, self._threshold_score)
+                    pin_type = ut.get_pin_type(pin, score, self._threshold_score, self._is_report_for_test_board)
                     info = (element.name, element_index, pin_index, pin.x, pin.y, pin.measurements, score,
                             pin_type, total_pin_index, pin.comment, pin.multiplexer_output)
                     pins_info.append(info)
@@ -555,6 +573,7 @@ class ReportGenerator(QObject):
                       ConfigAttributes.BOARD: self._board,
                       ConfigAttributes.DIRECTORY: self._dir_name,
                       ConfigAttributes.ENGLISH: False,
+                      ConfigAttributes.IS_REPORT_FOR_TEST_BOARD: None,
                       ConfigAttributes.NOISE_AMPLITUDES: None,
                       ConfigAttributes.OBJECTS: {},
                       ConfigAttributes.OPEN_REPORT_AT_FINISH: False,
@@ -573,6 +592,7 @@ class ReportGenerator(QObject):
         parent_directory = self._config.get(ConfigAttributes.DIRECTORY, self._dir_name)
         self._dir_name = ut.create_report_directory_name(parent_directory, _DEFAULT_REPORT_DIR_NAME)
         self._english = self._config.get(ConfigAttributes.ENGLISH, False)
+        self._is_report_for_test_board = self._config.get(ConfigAttributes.IS_REPORT_FOR_TEST_BOARD, None)
         self._noise_amplitudes = self._config.get(ConfigAttributes.NOISE_AMPLITUDES, None)
         self._open_report_at_finish = self._config.get(ConfigAttributes.OPEN_REPORT_AT_FINISH, False)
         self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, _PIN_WIDTH)
@@ -599,6 +619,7 @@ class ReportGenerator(QObject):
         if not isinstance(self._board, Board):
             return
         self._create_required_dirs()
+        self._analyze_required_report_type()
         self._pins_info = self._get_info_about_pins()
         self._bad_pins_info = self._get_bad_pins()
         if not self._pins_info:

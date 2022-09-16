@@ -40,10 +40,10 @@ class TestUtilsFunctions(unittest.TestCase):
                                                                                    max_voltage=20.0,
                                                                                    probe_signal_frequency=1),
                                                       ivc=IVCurve())])
-        self.assertEqual(ut.get_pin_type(pin, None, None), ut.PinTypes.NOT_EMPTY)
+        self.assertEqual(ut.get_pin_type(pin, None, None), ut.PinTypes.REFERENCE_NOT_EMPTY)
 
         pin = Pin(x=0, y=0)
-        self.assertEqual(ut.get_pin_type(pin, None, None), ut.PinTypes.EMPTY)
+        self.assertEqual(ut.get_pin_type(pin, None, None), ut.PinTypes.REFERENCE_EMPTY)
 
         pin = Pin(x=0, y=0, measurements=[Measurement(settings=MeasurementSettings(sampling_rate=1,
                                                                                    internal_resistance=1000.0,
@@ -51,7 +51,7 @@ class TestUtilsFunctions(unittest.TestCase):
                                                                                    probe_signal_frequency=1),
                                                       ivc=IVCurve())])
         pin.is_loss = True
-        self.assertEqual(ut.get_pin_type(pin, None, None), ut.PinTypes.LOSS)
+        self.assertEqual(ut.get_pin_type(pin, None, None), ut.PinTypes.REFERENCE_LOSS)
 
         pin = Pin(x=0, y=0, measurements=[Measurement(settings=MeasurementSettings(sampling_rate=1,
                                                                                    internal_resistance=1000.0,
@@ -63,5 +63,5 @@ class TestUtilsFunctions(unittest.TestCase):
                                                                                    max_voltage=20.0,
                                                                                    probe_signal_frequency=1),
                                                       ivc=IVCurve())])
-        self.assertEqual(ut.get_pin_type(pin, 0.2, 0.6), ut.PinTypes.LOW_SCORE)
-        self.assertEqual(ut.get_pin_type(pin, 0.2, 0.1), ut.PinTypes.HIGH_SCORE)
+        self.assertEqual(ut.get_pin_type(pin, 0.2, 0.6), ut.PinTypes.TEST_LOW_SCORE)
+        self.assertEqual(ut.get_pin_type(pin, 0.2, 0.1), ut.PinTypes.TEST_HIGH_SCORE)

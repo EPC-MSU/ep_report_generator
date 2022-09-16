@@ -25,11 +25,12 @@ class PinTypes(Enum):
     Types of pins.
     """
 
-    HIGH_SCORE = 0
-    LOW_SCORE = 1
-    EMPTY = 2
-    LOSS = 3
-    NOT_EMPTY = 4
+    REFERENCE_EMPTY = auto()
+    REFERENCE_LOSS = auto()
+    REFERENCE_NOT_EMPTY = auto()
+    TEST_EMPTY = auto()
+    TEST_HIGH_SCORE = auto()
+    TEST_LOW_SCORE = auto()
 
 
 class ScalingTypes(Enum):
@@ -43,11 +44,12 @@ class ScalingTypes(Enum):
 
 
 IV_IMAGE_SIZE: Tuple[int, int] = (300, 200)
-PIN_COLORS: Dict[PinTypes, str] = {PinTypes.HIGH_SCORE: "#f00",
-                                   PinTypes.LOW_SCORE: "#0f0",
-                                   PinTypes.EMPTY: "#f0f",
-                                   PinTypes.LOSS: "#ff9900",
-                                   PinTypes.NOT_EMPTY: "#0f0"}
+PIN_COLORS: Dict[PinTypes, str] = {PinTypes.REFERENCE_EMPTY: "#f0f",
+                                   PinTypes.REFERENCE_LOSS: "#ff9900",
+                                   PinTypes.REFERENCE_NOT_EMPTY: "#0f0",
+                                   PinTypes.TEST_EMPTY: "#f0f",
+                                   PinTypes.TEST_HIGH_SCORE: "#f00",
+                                   PinTypes.TEST_LOW_SCORE: "#0f0"}
 REFERENCE_CURVE_COLOR: str = "#00f"
 TEST_CURVE_COLOR: str = "#f00"
 
@@ -191,11 +193,12 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str, marker_s
     :return: True if image was drawn and saved.
     """
 
-    pins_xy = {PinTypes.HIGH_SCORE: [[], []],
-               PinTypes.LOW_SCORE: [[], []],
-               PinTypes.EMPTY: [[], []],
-               PinTypes.LOSS: [[], []],
-               PinTypes.NOT_EMPTY: [[], []]}
+    pins_xy = {PinTypes.REFERENCE_EMPTY: [[], []],
+               PinTypes.REFERENCE_LOSS: [[], []],
+               PinTypes.REFERENCE_NOT_EMPTY: [[], []],
+               PinTypes.TEST_EMPTY: [[], []],
+               PinTypes.TEST_HIGH_SCORE: [[], []],
+               PinTypes.TEST_LOW_SCORE: [[], []]}
     for pin_info in pins_info:
         _, _, _, x, y, _, _, pin_type, _, _, _ = pin_info
         pin_xy = pins_xy[pin_type]
@@ -369,23 +372,31 @@ def get_noise_amplitudes(pin: Pin) -> Tuple[float, float]:
     return default_voltage_noise_amplitude, default_current_noise_amplitude
 
 
-def get_pin_type(pin: Pin, score: Optional[float], threshold_score: Optional[float]) -> PinTypes:
+def get_pin_type(pin: Pin, score: Optional[float], threshold_score: Optional[float], is_report_for_test_board: bool
+                 ) -> PinTypes:
     """
     Function determines type of pin.
     :param pin: pin;
     :param score: score of test measurement in pin;
-    :param threshold_score: threshold score.
+    :param threshold_score: threshold score;
+    :param is_report_for_test_board: if True then report should be generated for test board,
+    otherwise for reference board.
     :return: type of pin.
     """
 
+    # Report for test board
+    if is_report_for_test_board:
+        if len(pin.measurements) < 2:
+            return PinTypes.TEST_EMPTY
+        if score is not None:
+            if threshold_score is not None:
+                return PinTypes.TEST_HIGH_SCORE if threshold_score <= score else PinTypes.TEST_LOW_SCORE
+            return PinTypes.TEST_LOW_SCORE
+        return PinTypes.TEST_LOW_SCORE
+    # Report for reference board
     if len(pin.measurements) == 0:
-        return PinTypes.EMPTY
+        return PinTypes.REFERENCE_EMPTY
     if len(pin.measurements) == 1:
         if getattr(pin, "is_loss", None):
-            return PinTypes.LOSS
-        return PinTypes.NOT_EMPTY
-    if score is not None:
-        if threshold_score is not None:
-            return PinTypes.HIGH_SCORE if threshold_score <= score else PinTypes.LOW_SCORE
-        return PinTypes.LOW_SCORE
-    return PinTypes.HIGH_SCORE
+            return PinTypes.REFERENCE_LOSS
+        return PinTypes.REFERENCE_NOT_EMPTY
