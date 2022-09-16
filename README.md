@@ -78,7 +78,7 @@
    run_example.bat
    ```
 
-   В папке репозитория появятся три новые папки **report_for_manual_board**, **report_for_manual_board_with_user_defined_scales** и **report_for_p10_board**, в которых будут лежать отчеты для трех плат.
+   В папке репозитория появятся четыре новые папки **report_for_empty_board**, **report_for_manual_board**, **report_for_manual_board_with_user_defined_scales** и **report_for_p10_board**, в которых будут лежать отчеты для соответствующих плат.
 
 ## Запуск тестов в Windows
 
@@ -109,7 +109,7 @@ run_tests.bat
    bash run_example.sh
    ```
 
-   В папке репозитория появятся три новые папки **report_for_manual_board**, **report_for_manual_board_with_user_defined_scales** и **report_for_p10_board**, в которых будут лежать отчеты для трех плат.
+   В папке репозитория появятся три новые папки **report_for_empty_board**, **report_for_manual_board**, **report_for_manual_board_with_user_defined_scales** и **report_for_p10_board**, в которых будут лежать отчеты для соответствующих плат.
 
 ## Запуск тестов в Linux
 
