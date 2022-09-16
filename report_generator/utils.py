@@ -174,7 +174,7 @@ def create_board(test_board: Board, ref_board: Board) -> Board:
                     pin_is_loss = getattr(ref_pin, "is_loss", None)
             pin_for_board = Pin(x=pin.x, y=pin.y, measurements=measurements, comment=pin.comment,
                                 multiplexer_output=pin.multiplexer_output)
-            if pin.measurements and pin_is_loss:
+            if len(measurements) == 1 and pin_is_loss:
                 pin_for_board.is_loss = pin_is_loss
             board_pins.append(pin_for_board)
         board_element = Element(pins=board_pins, name=element.name, package=element.package,
@@ -349,12 +349,12 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
             i_max = 1.2 * 1000 * np.amax(np.absolute(np.concatenate((test_currents, ref_currents), axis=0)))
             v_max = 1.2 * np.amax(np.absolute(np.concatenate((test_voltages, ref_voltages), axis=0)))
         viewer.plot.set_scale(v_max, i_max)
-        if ref_currents and ref_voltages:
+        if len(ref_currents) and len(ref_voltages):
             ref_curve.set_curve(Curve(ref_voltages, ref_currents))
             ref_curve.set_curve_params(QColor(REFERENCE_CURVE_COLOR))
         else:
             ref_curve.clear_curve()
-        if test_currents and test_voltages:
+        if len(test_currents) and len(test_voltages):
             test_curve.set_curve(Curve(test_voltages, test_currents))
             test_curve.set_curve_params(QColor(TEST_CURVE_COLOR))
         else:
