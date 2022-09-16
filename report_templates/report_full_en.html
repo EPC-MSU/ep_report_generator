@@ -191,12 +191,17 @@
                             <span>Voltage = ${measurements[0].settings.max_voltage} V</span><br>
                             <span>Internal resistance = ${measurements[0].settings.internal_resistance} Ohm</span><br>
                         </div><br>
-                            % if measurements[0].comment is not None:
-                            <button class="collapsible" onclick="handle_click(this)">Measurement comment</button>
-                            <div class="hidden_options">
-                                <span>${measurements[0].comment}</span>
-                            </div><br>
-                            % endif
+                        <%
+                            comment = ""
+                            comments = [measurement.comment for measurement in measurements if measurement.comment]
+                            comment = "<br>".join(comments)
+                        %>
+                        % if comment:
+                        <button class="collapsible" onclick="handle_click(this)">Measurement comment</button>
+                        <div class="hidden_options">
+                            <span>${comment}</span>
+                        </div><br>
+                        % endif
                         <%
                             legend_for_iv_img = ""
                             for measurement in measurements:

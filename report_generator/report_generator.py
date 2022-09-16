@@ -16,28 +16,29 @@ from epcore.measurementmanager import IVCComparator
 from report_generator import utils as ut
 from report_generator.version import Version
 
+
 logger = logging.getLogger("report_generator")
-_BOARD_IMAGE = "board_clear.png"
-_BOARD_WITH_BAD_PINS_IMAGE = "board_with_bad_pins.png"
-_BOARD_WITH_PINS_IMAGE = "board.png"
-_SCORE_HISTOGRAM_IMAGE = "score_histogram.png"
-_DEFAULT_REPORT_DIR_NAME = "report"
-_IMG_DIR_NAME = "img"
-_FAVICON_16_FOR_REPORT = "favicon-16x16.png"
-_FAVICON_32_FOR_REPORT = "favicon-32x32.png"
-_STATIC_DIR_NAME = "static"
-_STYLE_FOR_MAP = "style_for_map.css"
-_STYLE_FOR_REPORT = "style_for_report.css"
-_STYLES_DIR_NAME = "styles"
-_TEMPLATE_FILE_WITH_FULL_REPORT = "report_full.html"
-_TEMPLATE_FILE_WITH_FULL_REPORT_EN = "report_full_en.html"
-_TEMPLATE_FILE_WITH_MAP = "full_img.html"
-_TEMPLATE_FILE_WITH_MAP_EN = "full_img_en.html"
-_TEMPLATE_FILE_WITH_REPORT = "report.html"
-_TEMPLATE_FILE_WITH_REPORT_EN = "report_en.html"
-_TEMPLATES_DIR_NAME = "report_templates"
-_PIN_RADIUS = 6
-_PIN_WIDTH = 100
+_BOARD_IMAGE: str = "board_clear.png"
+_BOARD_WITH_BAD_PINS_IMAGE: str = "board_with_bad_pins.png"
+_BOARD_WITH_PINS_IMAGE: str = "board.png"
+_SCORE_HISTOGRAM_IMAGE: str = "score_histogram.png"
+_DEFAULT_REPORT_DIR_NAME: str = "report"
+_IMG_DIR_NAME: str = "img"
+_FAVICON_16_FOR_REPORT: str = "favicon-16x16.png"
+_FAVICON_32_FOR_REPORT: str = "favicon-32x32.png"
+_STATIC_DIR_NAME: str = "static"
+_STYLE_FOR_MAP: str = "style_for_map.css"
+_STYLE_FOR_REPORT: str = "style_for_report.css"
+_STYLES_DIR_NAME: str = "styles"
+_TEMPLATE_FILE_WITH_FULL_REPORT: str = "report_full.html"
+_TEMPLATE_FILE_WITH_FULL_REPORT_EN: str = "report_full_en.html"
+_TEMPLATE_FILE_WITH_MAP: str = "full_img.html"
+_TEMPLATE_FILE_WITH_MAP_EN: str = "full_img_en.html"
+_TEMPLATE_FILE_WITH_REPORT: str = "report.html"
+_TEMPLATE_FILE_WITH_REPORT_EN: str = "report_en.html"
+_TEMPLATES_DIR_NAME: str = "report_templates"
+_PIN_RADIUS: int = 6
+_PIN_WIDTH: int = 100
 
 
 class ConfigAttributes(Enum):
@@ -47,8 +48,7 @@ class ConfigAttributes(Enum):
 
     APP_NAME = auto()
     APP_VERSION = auto()
-    BOARD_REF = auto()
-    BOARD_TEST = auto()
+    BOARD = auto()
     DIRECTORY = auto()
     ENGLISH = auto()
     NOISE_AMPLITUDES = auto()
@@ -135,12 +135,11 @@ class ReportGenerator(QObject):
     step_started = pyqtSignal(str)
     total_number_of_steps_calculated = pyqtSignal(int)
 
-    def __init__(self, parent=None, board_test: Optional[Board] = None, board_ref: Optional[Board] = None,
-                 config: Optional[Dict] = None) -> None:
+    def __init__(self, parent=None, board: Optional[Board] = None, config: Optional[Dict[ConfigAttributes, Any]] = None
+                 ) -> None:
         """
         :param parent: parent object;
-        :param board_test: test board for which report should be generated;
-        :param board_ref: reference board;
+        :param board: board for which report should be generated;
         :param config: dictionary with full information about required report.
         """
 
@@ -149,24 +148,22 @@ class ReportGenerator(QObject):
         self._app_version: str = None
         self._bad_pins_info: List[Tuple[str, int, int, float, float, List[Measurement], float, ut.PinTypes, int, str,
                                         MultiplexerOutput]] = []
-        self._board: Board = None
-        self._board_ref: Board = board_ref
-        self._board_test: Board = board_test
-        self._config: Dict = config
+        self._board: Board = board
+        self._config: Dict[ConfigAttributes, Any] = config
         self._dir_name: str = self._get_default_dir_name()
         self._dir_template: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                                _TEMPLATES_DIR_NAME)
         self._english: bool = False
-        self._noise_amplitudes: list = None
+        self._noise_amplitudes: Optional[List[Optional[Tuple[float, float]]]] = None
         self._open_report_at_finish: bool = False
         self._pin_diameter: int = None
         self._pin_width: int = _PIN_WIDTH
         self._pins_info: List[Tuple[str, int, int, float, float, List[Measurement], float, ut.PinTypes, int, str,
                                     MultiplexerOutput]] = []
-        self._reports_to_open: List = []
+        self._reports_to_open: List[ReportTypes] = []
         self._required_board: bool = False
-        self._required_elements: List = []
-        self._required_pins: List = []
+        self._required_elements: List[int] = []
+        self._required_pins: List[int] = []
         self._results_by_steps: Dict = ReportCreationSteps.get_dict()
         self._scaling_type: ut.ScalingTypes = ut.ScalingTypes.AUTO
         self._static_dir_name: str = None
@@ -487,7 +484,6 @@ class ReportGenerator(QObject):
         :return: list with information about required pins.
         """
 
-        self._board = ut.create_board(self._board_test, self._board_ref)
         comparator = IVCComparator()
         pins_info = []
         accounted_pin_index = 0
@@ -556,8 +552,7 @@ class ReportGenerator(QObject):
         if not isinstance(config, Dict) and not isinstance(self._config, Dict):
             config = {ConfigAttributes.APP_NAME: None,
                       ConfigAttributes.APP_VERSION: None,
-                      ConfigAttributes.BOARD_REF: self._board_ref,
-                      ConfigAttributes.BOARD_TEST: self._board_test,
+                      ConfigAttributes.BOARD: self._board,
                       ConfigAttributes.DIRECTORY: self._dir_name,
                       ConfigAttributes.ENGLISH: False,
                       ConfigAttributes.NOISE_AMPLITUDES: None,
@@ -574,8 +569,7 @@ class ReportGenerator(QObject):
         self._config = config
         self._app_name = self._config.get(ConfigAttributes.APP_NAME, None)
         self._app_version = self._config.get(ConfigAttributes.APP_VERSION, None)
-        self._board_ref = self._config.get(ConfigAttributes.BOARD_REF, self._board_ref)
-        self._board_test = self._config.get(ConfigAttributes.BOARD_TEST, self._board_test)
+        self._board = self._config.get(ConfigAttributes.BOARD, self._board)
         parent_directory = self._config.get(ConfigAttributes.DIRECTORY, self._dir_name)
         self._dir_name = ut.create_report_directory_name(parent_directory, _DEFAULT_REPORT_DIR_NAME)
         self._english = self._config.get(ConfigAttributes.ENGLISH, False)
@@ -593,15 +587,16 @@ class ReportGenerator(QObject):
         if required_objects.get(ObjectsForReport.BOARD):
             self._required_board = True
         else:
-            self._required_elements = required_objects.get(ObjectsForReport.ELEMENT)
-            self._required_pins = required_objects.get(ObjectsForReport.PIN)
+            self._required_board = False
+            self._required_elements = required_objects.get(ObjectsForReport.ELEMENT, [])
+            self._required_pins = required_objects.get(ObjectsForReport.PIN, [])
 
     def _run(self) -> None:
         """
         Method runs report generation.
         """
 
-        if not isinstance(self._board_test, Board) and isinstance(self._board_ref, Board):
+        if not isinstance(self._board, Board):
             return
         self._create_required_dirs()
         self._pins_info = self._get_info_about_pins()

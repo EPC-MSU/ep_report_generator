@@ -29,10 +29,7 @@ class TestGenerator(unittest.TestCase):
         app = QApplication(sys.argv)
         app.some_action_to_fix_flake8 = True
         dir_for_report = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "test_report")
-        test_board = create_simple_board(True)
-        ref_board = create_simple_board(False)
-        config = {ConfigAttributes.BOARD_TEST: test_board,
-                  ConfigAttributes.BOARD_REF: ref_board,
+        config = {ConfigAttributes.BOARD: create_simple_board(),
                   ConfigAttributes.DIRECTORY: dir_for_report,
                   ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True,
                                              ObjectsForReport.ELEMENT: [],

@@ -1,7 +1,7 @@
 from datetime import timedelta
 import os
 import unittest
-from epcore.elements import Board, Element, IVCurve, Measurement, MeasurementSettings, Pin
+from epcore.elements import IVCurve, Measurement, MeasurementSettings, Pin
 from report_generator import utils as ut
 
 
@@ -9,38 +9,6 @@ class TestUtilsFunctions(unittest.TestCase):
 
     def test_calculate_distance_squared(self) -> None:
         self.assertEqual(ut.calculate_distance_squared(x_1=0, y_1=3, x_2=4, y_2=0), 5.0)
-
-    def test_create_board(self) -> None:
-        test_board = Board(elements=[
-            Element(pins=[Pin(x=0, y=0,
-                              measurements=[Measurement(settings=MeasurementSettings(sampling_rate=1,
-                                                                                     internal_resistance=1,
-                                                                                     max_voltage=1,
-                                                                                     probe_signal_frequency=1),
-                                                        ivc=IVCurve(currents=[0, 1, 2], voltages=[0, 1, 2]))])])])
-        ref_board = Board(elements=[
-            Element(pins=[Pin(x=0, y=0,
-                              measurements=[Measurement(settings=MeasurementSettings(sampling_rate=1,
-                                                                                     internal_resistance=1,
-                                                                                     max_voltage=1,
-                                                                                     probe_signal_frequency=1),
-                                                        ivc=IVCurve(currents=[2, 1, 0], voltages=[2, 1, 0]))])])])
-        result_board = Board(elements=[
-            Element(pins=[Pin(x=0, y=0,
-                              measurements=[Measurement(settings=MeasurementSettings(sampling_rate=1,
-                                                                                     internal_resistance=1,
-                                                                                     max_voltage=1,
-                                                                                     probe_signal_frequency=1),
-                                                        ivc=IVCurve(currents=[0, 1, 2], voltages=[0, 1, 2]),
-                                                        is_reference=False),
-                                            Measurement(settings=MeasurementSettings(sampling_rate=1,
-                                                                                     internal_resistance=1,
-                                                                                     max_voltage=1,
-                                                                                     probe_signal_frequency=1),
-                                                        ivc=IVCurve(currents=[2, 1, 0], voltages=[2, 1, 0]),
-                                                        is_reference=True)])])])
-        board = ut.create_board(test_board, ref_board)
-        self.assertEqual(board, result_board)
 
     def test_create_report_directory_name(self) -> None:
         dir_name = os.path.dirname(os.path.abspath(__file__))

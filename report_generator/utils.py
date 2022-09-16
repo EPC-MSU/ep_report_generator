@@ -2,7 +2,6 @@
 File with  useful functions.
 """
 
-import copy
 import logging
 import os
 from datetime import datetime, timedelta
@@ -14,8 +13,9 @@ from mako.template import Template
 from PIL.Image import Image
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QColor, QFont
-from epcore.elements import Board, Element, Pin
+from epcore.elements import Pin
 from ivviewer import Curve, Viewer
+
 
 logger = logging.getLogger("report_generator")
 
@@ -144,46 +144,6 @@ def calculate_min_distance(pins: list) -> Optional[float]:
     return min_distance
 
 
-def create_board(test_board: Board, ref_board: Board) -> Board:
-    """
-    Function creates one board from test and reference boards.
-    :param test_board: test board;
-    :param ref_board: reference board.
-    :return: board with test and reference IV-curves in pins.
-    """
-
-    board = Board()
-    board.image = test_board.image
-    board.pcb = test_board.pcb
-    board.elements = []
-    for element_index, element in enumerate(test_board.elements):
-        board_pins = []
-        for pin_index, pin in enumerate(element.pins):
-            pin_is_loss = None
-            if pin.measurements:
-                measurements = [copy.deepcopy(pin.measurements[0])]
-                measurements[0].is_reference = False
-            else:
-                measurements = []
-            if ref_board is not None:
-                ref_pin = ref_board.elements[element_index].pins[pin_index]
-                ref_measurements = ref_pin.measurements
-                if ref_measurements:
-                    measurements.append(copy.deepcopy(ref_measurements[0]))
-                    measurements[-1].is_reference = True
-                    pin_is_loss = getattr(ref_pin, "is_loss", None)
-            pin_for_board = Pin(x=pin.x, y=pin.y, measurements=measurements, comment=pin.comment,
-                                multiplexer_output=pin.multiplexer_output)
-            if len(measurements) == 1 and pin_is_loss:
-                pin_for_board.is_loss = pin_is_loss
-            board_pins.append(pin_for_board)
-        board_element = Element(pins=board_pins, name=element.name, package=element.package,
-                                bounding_zone=element.bounding_zone, rotation=element.rotation, width=element.width,
-                                height=element.height, set_automatically=element.set_automatically)
-        board.elements.append(board_element)
-    return board
-
-
 def create_report(template_file: str, report_file: str, **kwargs) -> None:
     """
     Function creates report.
@@ -217,44 +177,6 @@ def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
             report_dir_name = f"{report_dir_name_with_time} {index}"
         else:
             return report_dir_path
-
-
-def create_test_and_ref_boards(board: Board) -> Tuple[Board, Board]:
-    """
-    Function creates two separate test and reference boards from one.
-    :param board: initial board.
-    :return: test and reference boards.
-    """
-
-    ref_elements = []
-    test_elements = []
-    for element in board.elements:
-        ref_pins = []
-        test_pins = []
-        for pin in element.pins:
-            ref_measurement = None
-            test_measurement = None
-            for measurement in pin.measurements:
-                if measurement.is_reference:
-                    ref_measurement = measurement
-                else:
-                    test_measurement = measurement
-            ref_measurements = [] if ref_measurement is None else [ref_measurement]
-            test_measurements = [] if test_measurement is None else [test_measurement]
-            ref_pins.append(Pin(x=pin.x, y=pin.y, measurements=ref_measurements, comment=pin.comment,
-                                multiplexer_output=pin.multiplexer_output))
-            test_pins.append(Pin(x=pin.x, y=pin.y, measurements=test_measurements, comment=pin.comment,
-                                 multiplexer_output=pin.multiplexer_output))
-        ref_elements.append(Element(pins=ref_pins, name=element.name, package=element.package,
-                                    bounding_zone=element.bounding_zone, rotation=element.rotation, width=element.width,
-                                    height=element.height, set_automatically=element.set_automatically))
-        test_elements.append(Element(pins=test_pins, name=element.name, package=element.package,
-                                     bounding_zone=element.bounding_zone, rotation=element.rotation,
-                                     width=element.width, height=element.height,
-                                     set_automatically=element.set_automatically))
-    ref_board = Board(elements=ref_elements, image=board.image, pcb=board.pcb)
-    test_board = Board(elements=test_elements, image=board.image, pcb=board.pcb)
-    return test_board, ref_board
 
 
 @_check_for_image_availability

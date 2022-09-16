@@ -2,10 +2,9 @@ import numpy as np
 from epcore.elements import Board, Element, IVCurve, Measurement, MeasurementSettings, Pin
 
 
-def create_simple_board(test: bool) -> Board:
+def create_simple_board() -> Board:
     """
     Function creates simple board.
-    :param test: if True then test board will be created otherwise reference board will be created.
     :return: board.
     """
 
@@ -26,7 +25,7 @@ def create_simple_board(test: bool) -> Board:
             voltage_max = max_voltage / 2
             iv_curve = IVCurve(currents=list(np.linspace(-current_max, current_max, 100)),
                                voltages=list(np.linspace(-voltage_max, voltage_max, 100)))
-            pin = Pin(x=0, y=0, measurements=[Measurement(settings=settings, ivc=iv_curve, is_reference=not test)])
+            pin = Pin(x=0, y=0, measurements=[Measurement(settings=settings, ivc=iv_curve, is_reference=False)])
             pins.append(pin)
         elements.append(Element(name=f"Element_name_{element_index}", pins=pins))
     board = Board()

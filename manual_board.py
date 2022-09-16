@@ -6,10 +6,9 @@ import numpy as np
 from epcore.elements import Board, Element, IVCurve, Measurement, MeasurementSettings, PCBInfo, Pin
 
 
-def create_manual_board(test: bool) -> Board:
+def create_manual_board() -> Board:
     """
     Function creates board.
-    :param test: if True then test board will be created otherwise reference board will be created.
     :return: board.
     """
 
@@ -17,7 +16,7 @@ def create_manual_board(test: bool) -> Board:
     frequencies = 1, 100, 1000, 100000
     internal_resistances = 40, 400, 4000, 5000
     max_voltages = 1, 2, 3, 4
-    errors = 5, 20, 40, 60
+
     elements_number = 3
     pins_number = 3
     elements = []
@@ -29,21 +28,21 @@ def create_manual_board(test: bool) -> Board:
             x = element_index * 100 + pin_index * 2
             y = element_index * 100 + pin_index * 2
             comment_for_pin = f"This is comment for pin #{pin_index} of element {element_name}"
-            settings = MeasurementSettings(sampling_rate=100 * frequencies[index],
-                                           internal_resistance=internal_resistances[index],
-                                           probe_signal_frequency=frequencies[index],
-                                           max_voltage=max_voltages[index])
-            error = errors[index] if test else 0
-            iv_curve = get_iv_curve(index, error, settings)
-            comment_for_measurement = (f"This is comment for measurement in pin #{pin_index} of "
-                                       f"element {element_name}")
-            is_dynamic = bool(index % 2)
-            measurement = Measurement(settings=settings, ivc=iv_curve, comment=comment_for_measurement,
-                                      is_dynamic=is_dynamic, is_reference=not test)
             if pin_index == 1:
                 pin = Pin(x=x, y=y, comment=comment_for_pin, measurements=[])
             else:
-                pin = Pin(x=x, y=y, comment=comment_for_pin, measurements=[measurement])
+                settings = MeasurementSettings(sampling_rate=100 * frequencies[index],
+                                               internal_resistance=internal_resistances[index],
+                                               probe_signal_frequency=frequencies[index],
+                                               max_voltage=max_voltages[index])
+                measurements = []
+                for test_curve in (False, True):
+                    iv_curve = get_iv_curve(index, get_error(index) if test_curve else 0, settings)
+                    comment_for_measurement = (f"This is comment for {'test' if test_curve else 'reference'} "
+                                               f"measurement in pin #{pin_index} of element {element_name}")
+                    measurements.append(Measurement(settings=settings, ivc=iv_curve, comment=comment_for_measurement,
+                                                    is_reference=not test_curve))
+                pin = Pin(x=x, y=y, comment=comment_for_pin, measurements=measurements)
             pins.append(pin)
             index = (index + 1) % parameters_number
         elements.append(Element(name=element_name, pins=pins))
@@ -66,6 +65,15 @@ def get_circle(max_error: float) -> IVCurve:
     currents = list(np.cos(t) * errors / 1000)
     voltages = list(np.sin(t) * errors)
     return IVCurve(currents=currents, voltages=voltages)
+
+
+def get_error(index: int) -> float:
+    errors = 5, 20, 40, 60
+    if index < 0:
+        index = 0
+    elif index >= len(errors):
+        index = len(errors) - 1
+    return errors[index]
 
 
 def get_heart(max_error: float) -> IVCurve:
