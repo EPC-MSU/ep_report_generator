@@ -392,9 +392,12 @@ class ReportGenerator(QObject):
         self.step_started.emit("Drawing of IV-curves")
         logger.info("Drawing of IV-curves was started")
         img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-        ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done, self._scaling_type, self._english,
-                             lambda: self.stop, self._user_defined_scales)
-        logger.info("Images of IV-curves were saved to directory '%s'", img_dir_path)
+        if len(self._pins_info):
+            ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done, self._scaling_type, self._english,
+                                 lambda: self.stop, self._user_defined_scales)
+            logger.info("Images of IV-curves were saved to directory '%s'", img_dir_path)
+        else:
+            logger.info("There are no IV-curves to draw")
         return True
 
     @check_stop_operation
@@ -624,7 +627,6 @@ class ReportGenerator(QObject):
         self._bad_pins_info = self._get_bad_pins()
         if not self._pins_info:
             logger.info("There are no objects for which report should be created")
-            return
         methods = {ReportCreationSteps.DRAW_CLEAR_BOARD: self._draw_board,
                    ReportCreationSteps.DRAW_BOARD: self._draw_board_with_pins,
                    ReportCreationSteps.DRAW_BOARD_WITH_BAD_PINS: (lambda: self._draw_board_with_pins(True)),

@@ -6,6 +6,7 @@ import os
 import sys
 from datetime import timedelta
 from PyQt5.QtWidgets import QApplication
+from epcore.elements import Board
 from epcore.filemanager import load_board_from_ufiv
 from report_generator import ConfigAttributes, ObjectsForReport, ReportGenerator, ReportTypes, ScalingTypes
 from manual_board import create_manual_board
@@ -20,9 +21,7 @@ if __name__ == "__main__":
     dir_for_report = os.path.join(dir_name, "report_for_p10_board")
     config = {ConfigAttributes.BOARD: load_board_from_ufiv(BOARD_FILE_NAME),
               ConfigAttributes.DIRECTORY: dir_for_report,
-              ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True,
-                                         ObjectsForReport.ELEMENT: [],
-                                         ObjectsForReport.PIN: []},
+              ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True},
               ConfigAttributes.PIN_SIZE: 200,
               ConfigAttributes.OPEN_REPORT_AT_FINISH: True,
               ConfigAttributes.APP_NAME: "EyePoint P10",
@@ -67,4 +66,11 @@ if __name__ == "__main__":
               ConfigAttributes.SCALING_TYPE: ScalingTypes.USER_DEFINED,
               ConfigAttributes.THRESHOLD_SCORE: 0.15,
               ConfigAttributes.USER_DEFINED_SCALES: user_defined_scales}
+    report_generator.run(config)
+
+    # Report for empty board
+    dir_for_report = os.path.join(dir_name, "report_for_empty_board")
+    config = {ConfigAttributes.BOARD: Board(),
+              ConfigAttributes.DIRECTORY: dir_for_report,
+              ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True}}
     report_generator.run(config)

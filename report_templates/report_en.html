@@ -86,9 +86,15 @@
                         <span>Sample name: ${pcb_name}</span><br>
                         % endif
                         <span>Number of faulty components/number of all components: ${bad_elements_number}/${elements_number}</span><br>
-                        <span>Percentage of faulty components: ${"{:.2f}%".format(bad_elements_number / elements_number * 100)}</span><br>
+                        <%
+                            bad_elements_portion = 0 if not elements_number else 100 * bad_elements_number / elements_number
+                        %>
+                        <span>Percentage of faulty components: ${"{:.2f}%".format(bad_elements_portion)}</span><br>
                         <span>Number of faulty test points/number of all test points: ${bad_pins_number}/${pins_number}</span><br>
-                        <span>Percentage of faulty test points: ${"{:.2f}%".format(bad_pins_number / pins_number * 100)}</span><br>
+                        <%
+                            bad_pins_portion = 0 if not pins_number else 100 * bad_pins_number / pins_number
+                        %>
+                        <span>Percentage of faulty test points: ${"{:.2f}%".format(bad_pins_portion)}</span><br>
                         % if threshold_score:
                         <span>Threshold score: ${"{:.2f}%".format(threshold_score * 100)}</span><br>
                         % endif

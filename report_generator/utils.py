@@ -222,7 +222,7 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str, marker_s
 
 def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
                       scaling_type: ScalingTypes = ScalingTypes.AUTO, english: bool = False,
-                      stop_drawing: Callable = lambda: False, user_defined_scales: List = None):
+                      stop_drawing: Callable = lambda: False, user_defined_scales: List = None) -> None:
     """
     Function draws and saves IV-curves for pins of board.
     :param pins_info: list with information about pins required for report;
@@ -232,6 +232,7 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
     :param english: if True graph labels will be in English;
     :param stop_drawing: returns True if drawing should be stopped;
     :param user_defined_scales: list with user defined scales.
+    :
     """
 
     viewer = Viewer(axis_font=QFont("Times", 10), title_font=QFont("Times", 15))
