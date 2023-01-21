@@ -264,8 +264,8 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
                 test_currents = measurement.ivc.currents
                 test_voltages = measurement.ivc.voltages
         if scaling_type == ScalingTypes.EYEPOINT_P10:
-            v_max = np.ceil(measurements[0].settings.max_voltage)
-            i_max = np.ceil(v_max * 1000 / measurements[0].settings.internal_resistance)
+            v_max = 1.2 * np.ceil(measurements[0].settings.max_voltage)
+            i_max = 1.2 * np.ceil(v_max * 1000 / measurements[0].settings.internal_resistance)
         elif (scaling_type == ScalingTypes.USER_DEFINED and isinstance(user_defined_scales, (list, tuple)) and
               index < len(user_defined_scales) and isinstance(user_defined_scales[index], (list, tuple)) and
               len(user_defined_scales[index]) == 2):
