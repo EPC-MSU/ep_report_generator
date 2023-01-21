@@ -9,9 +9,6 @@ from report_generator.version import Version
 
 
 __all__ = ["ConfigAttributes", "ObjectsForReport", "ReportGenerator", "ReportTypes", "ScalingTypes", "Version"]
-
-mpl_logger = logging.getLogger("matplotlib")
-mpl_logger.setLevel(logging.WARNING)
 formatter = logging.Formatter("%(asctime)s %(name)s.%(funcName)s %(levelname)s - %(message)s",
                               datefmt="%Y-%m-%d %H:%M:%S")
 handler = logging.StreamHandler()
