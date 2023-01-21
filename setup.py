@@ -1,9 +1,8 @@
 from setuptools import find_packages, setup
-from report_generator import Version
 
 
 setup(name="ep_report_generator",
-      version=Version.full,
+      version="0.1.7",
       description="Library for generating reports for board objects from epcore.elements library",
       long_description=open("README.md", "r", encoding="utf-8").read(),
       long_description_content_type="text/markdown",
