@@ -237,10 +237,8 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
 
     viewer = Viewer(axis_font=QFont("Times", 10), title_font=QFont("Times", 15))
     viewer.resize(*IV_IMAGE_SIZE)
-    x_label = "Voltage, V" if english else "Напряжение, В"
-    viewer.plot.set_x_axis_title(x_label)
-    y_label = "Current, mA" if english else "Ток, мА"
-    viewer.plot.set_y_axis_title(y_label)
+    viewer.plot.set_x_axis_title("Voltage, V" if english else "Напряжение, В")
+    viewer.plot.set_y_axis_title("Current, mA" if english else "Ток, мА")
     viewer.plot.setStyleSheet("background: white")
     test_curve = viewer.plot.add_curve()
     ref_curve = viewer.plot.add_curve()

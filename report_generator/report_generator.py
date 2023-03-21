@@ -14,7 +14,7 @@ from PyQt5.QtCore import pyqtSignal, QObject
 from epcore.elements import Board, Measurement, MultiplexerOutput
 from epcore.measurementmanager import IVCComparator
 from report_generator import utils as ut
-from report_generator.version import Version
+from report_generator.version import VERSION
 
 
 logger = logging.getLogger("report_generator")
@@ -652,7 +652,7 @@ class ReportGenerator(QObject):
         :return: version.
         """
 
-        return Version.full
+        return VERSION
 
     def run(self, config: Dict) -> None:
         """

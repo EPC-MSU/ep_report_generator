@@ -1,6 +1,6 @@
-from datetime import timedelta
 import os
 import unittest
+from datetime import timedelta
 from epcore.elements import IVCurve, Measurement, MeasurementSettings, Pin
 from report_generator import utils as ut
 

@@ -28,7 +28,7 @@ class TestGenerator(unittest.TestCase):
     def test_empty_report_generation(self) -> None:
         app = QApplication(sys.argv)
         app.some_action_to_fix_flake8 = True
-        dir_for_report = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "test_report")
+        dir_for_report = os.path.join(os.path.curdir, "test_report")
         config = {ConfigAttributes.BOARD: Board(),
                   ConfigAttributes.DIRECTORY: dir_for_report,
                   ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True}}
@@ -41,7 +41,7 @@ class TestGenerator(unittest.TestCase):
     def test_simple_report_generation(self) -> None:
         app = QApplication(sys.argv)
         app.some_action_to_fix_flake8 = True
-        dir_for_report = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "test_report")
+        dir_for_report = os.path.join(os.path.curdir, "test_report")
         config = {ConfigAttributes.BOARD: create_simple_board(),
                   ConfigAttributes.DIRECTORY: dir_for_report,
                   ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True,
