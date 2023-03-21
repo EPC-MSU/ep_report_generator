@@ -12,7 +12,7 @@ import numpy as np
 from mako.template import Template
 from PIL.Image import Image
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QColor, QFont
+from PyQt5.QtGui import QBrush, QColor, QFont, QPen
 from epcore.elements import Pin
 from ivviewer import Curve, Viewer
 
@@ -50,8 +50,8 @@ PIN_COLORS: Dict[PinTypes, str] = {PinTypes.REFERENCE_EMPTY: "#f0f",
                                    PinTypes.TEST_EMPTY: "#f0f",
                                    PinTypes.TEST_HIGH_SCORE: "#f00",
                                    PinTypes.TEST_LOW_SCORE: "#0f0"}
-REFERENCE_CURVE_COLOR: str = "#00f"
-TEST_CURVE_COLOR: str = "#f00"
+REFERENCE_CURVE_PEN: QPen = QPen(QBrush(QColor(0, 0, 255, 255)), 2)
+TEST_CURVE_PEN: QPen = QPen(QBrush(QColor(255, 0, 0, 255)), 4)
 
 
 def _check_for_image_availability(func: Callable) -> Callable:
@@ -241,7 +241,9 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
     viewer.plot.set_y_axis_title("Current, mA" if english else "Ток, мА")
     viewer.plot.setStyleSheet("background: white")
     test_curve = viewer.plot.add_curve()
+    test_curve.set_curve_params(TEST_CURVE_PEN)
     ref_curve = viewer.plot.add_curve()
+    ref_curve.set_curve_params(REFERENCE_CURVE_PEN)
     for index, pin_info in enumerate(pins_info):
         if stop_drawing():
             break
@@ -275,12 +277,10 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
         viewer.plot.set_scale(v_max, i_max)
         if len(ref_currents) and len(ref_voltages):
             ref_curve.set_curve(Curve(ref_voltages, ref_currents))
-            ref_curve.set_curve_params(QColor(REFERENCE_CURVE_COLOR))
         else:
             ref_curve.clear_curve()
         if len(test_currents) and len(test_voltages):
             test_curve.set_curve(Curve(test_voltages, test_currents))
-            test_curve.set_curve_params(QColor(TEST_CURVE_COLOR))
         else:
             test_curve.clear_curve()
         file_name = f"{element_index}_{pin_index}_iv.png"
