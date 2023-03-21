@@ -2,7 +2,7 @@ Mako==1.1.5
 matplotlib==3.3.4
 numpy==1.18.1
 Pillow==8.0.1
-PyQt5<=5.15.2
+PyQt5>=5.8.2, <=5.15.2
 PyQt5-stubs
-git+https://vladimirov_iy:NZ0v5K6L@gitlab.ximc.ru/eyepoint/epcore@dev-0.1#egg=epcore
-git+https://vladimirov_iy:NZ0v5K6L@gitlab.ximc.ru/eyepoint/ivviewer@t-76337#egg=ivviewer
+git+https://gitlab.ximc.ru/eyepoint/epcore@dev-0.1#egg=epcore
+git+https://gitlab.ximc.ru/eyepoint/ivviewer@t-76337#egg=ivviewer
