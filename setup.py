@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 
 setup(name="ep_report_generator",
-      version="0.1.8",
+      version="0.1.9",
       description="Library for generating reports for board objects from epcore.elements library",
       url="https://github.com/EPC-MSU/ep_report_generator",
       author="EPC MSU",
