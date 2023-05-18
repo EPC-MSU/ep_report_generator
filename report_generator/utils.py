@@ -237,6 +237,7 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
 
     viewer = Viewer(axis_font=QFont("Times", 10), title_font=QFont("Times", 15))
     viewer.resize(*IV_IMAGE_SIZE)
+    viewer.plot.set_min_borders(0.1, 0.1)
     viewer.plot.set_x_axis_title("Voltage, V" if english else "Напряжение, В")
     viewer.plot.set_y_axis_title("Current, mA" if english else "Ток, мА")
     viewer.plot.setStyleSheet("background: white")
@@ -264,8 +265,9 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
                 test_currents = measurement.ivc.currents
                 test_voltages = measurement.ivc.voltages
         if scaling_type == ScalingTypes.EYEPOINT_P10:
-            v_max = 1.2 * np.ceil(measurements[0].settings.max_voltage)
-            i_max = 1.2 * np.ceil(v_max * 1000 / measurements[0].settings.internal_resistance)
+            scale_coefficient = 1.2
+            v_max = scale_coefficient * measurements[0].settings.max_voltage
+            i_max = 1000 * v_max / measurements[0].settings.internal_resistance
         elif (scaling_type == ScalingTypes.USER_DEFINED and isinstance(user_defined_scales, (list, tuple)) and
               index < len(user_defined_scales) and isinstance(user_defined_scales[index], (list, tuple)) and
               len(user_defined_scales[index]) == 2):
