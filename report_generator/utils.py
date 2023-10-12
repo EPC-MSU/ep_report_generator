@@ -70,7 +70,7 @@ def _check_for_image_availability(func: Callable) -> Callable:
 
 def _draw_circle(image: Image, circles: Tuple[List[float], List[float]], color: str) -> plt.Figure:
     """
-    Function draws circle on image.
+    Function draws circle on the image.
     :param image: image;
     :param circles: list of coordinates of circles to draw;
     :param color: color for circles.
@@ -93,11 +93,11 @@ def _draw_circle(image: Image, circles: Tuple[List[float], List[float]], color: 
 
 def _get_pin_borders(center: float, board_width: int, pin_width: int) -> Tuple[float, float]:
     """
-    Function defines boundaries of pin rectangle along one of axes.
-    :param center: center of pin;
+    Function defines the boundaries of the pin rectangle along one of the axes.
+    :param center: pin center;
     :param board_width: width of board along axis;
     :param pin_width: width in pixels of pin image.
-    :return: boundaries of pin rectangle.
+    :return: boundaries of the pin rectangle.
     """
 
     left = center - pin_width // 2
@@ -114,17 +114,17 @@ def _get_pin_borders(center: float, board_width: int, pin_width: int) -> Tuple[f
 def calculate_distance_squared(x_1: float, y_1: float, x_2: float, y_2: float) -> float:
     """
     Function calculates distance between two points.
-    :param x_1: X coordinate of first point;
-    :param y_1: Y coordinate of first point;
-    :param x_2: X coordinate of second point;
-    :param y_2: Y coordinate of second point.
+    :param x_1: X coordinate of the first point;
+    :param y_1: Y coordinate of the first point;
+    :param x_2: X coordinate of the second point;
+    :param y_2: Y coordinate of the second point.
     :return: distance between two points.
     """
 
     return np.sqrt(np.power(x_1 - x_2, 2) + np.power(y_1 - y_2, 2))
 
 
-def calculate_min_distance(pins: list) -> Optional[float]:
+def calculate_min_distance(pins: List[Pin]) -> Optional[float]:
     """
     Function calculates min distance between two pins.
     :param pins: list of pins.
@@ -162,8 +162,7 @@ def create_report(template_file: str, report_file: str, **kwargs) -> None:
 def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
     """
     Function creates name for directory where report will be saved.
-    :param parent_directory: name of parent directory where directory with
-    report will be placed;
+    :param parent_directory: name of parent directory where directory with report will be placed;
     :param dir_base: base name for report directory.
     :return: path to report directory.
     """
@@ -182,10 +181,10 @@ def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
 
 
 @_check_for_image_availability
-def draw_board_with_pins(image: Image, pins_info: List, file_name: str, marker_size: Optional[int]) -> bool:
+def draw_board_with_pins(image: Image, pins_info: list, file_name: str, marker_size: Optional[int]) -> bool:
     """
-    Function draws and saves image of board with pins. Function was borrowed
-    from https://stackoverflow.com/questions/34768717.
+    Function draws and saves image of board with pins. Function was borrowed from
+    https://stackoverflow.com/questions/34768717.
     :param image: board image;
     :param pins_info: list with information about pins required for report;
     :param file_name: name of file where image should be saved;
@@ -220,7 +219,7 @@ def draw_board_with_pins(image: Image, pins_info: List, file_name: str, marker_s
     return True
 
 
-def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
+def draw_ivc_for_pins(pins_info: list, dir_name: str, signal: pyqtSignal,
                       scaling_type: ScalingTypes = ScalingTypes.AUTO, english: bool = False,
                       stop_drawing: Callable = lambda: False, user_defined_scales: List = None) -> None:
     """
@@ -232,7 +231,6 @@ def draw_ivc_for_pins(pins_info: List, dir_name: str, signal: pyqtSignal,
     :param english: if True graph labels will be in English;
     :param stop_drawing: returns True if drawing should be stopped;
     :param user_defined_scales: list with user defined scales.
-    :
     """
 
     viewer = Viewer(axis_font=QFont("Times", 10), title_font=QFont("Times", 15))
@@ -325,19 +323,32 @@ def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal, 
     return True
 
 
-def draw_score_histogram(values: list, threshold: float, file_name: str) -> None:
+def draw_score_histogram(scores: List[float], threshold: float, file_name: str, english: bool = False) -> None:
     """
-    Function draws and saves histogram of score values.
-    :param values: score values to draw histogram;
+    Function draws and saves a histogram of score values.
+    :param scores: score values for which to draw a histogram;
     :param threshold: score threshold;
-    :param file_name: name of file to save histogram.
+    :param file_name: name of file to save the histogram;
+    :param english: if True histogram labels will be in English.
     """
 
-    fig = plt.figure(figsize=(6, 6))
-    plt.hist(values, bins=80, range=([0, 1.0]))
+    plt.rc("axes", labelsize=30)
+    plt.rc("xtick", labelsize=20)
+    plt.rc("ytick", labelsize=20)
+    plt.rc("legend", fontsize=20)
+    fig = plt.figure(figsize=(10, 8))
+    good_scores = [scores[index[0]] for index in np.argwhere(scores < threshold)]
+    if good_scores:
+        label = "Good points" if english else "Исправные точки"
+        plt.hist(good_scores, bins=50, rwidth=0.85, color="#46CB18", alpha=0.7, range=([0, 1.0]), label=label)
+    bad_scores = [scores[index[0]] for index in np.argwhere(scores >= threshold)]
+    if bad_scores:
+        label = "Faulty points" if english else "Неисправные точки"
+        plt.hist(bad_scores, bins=50, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 1.0]), label=label)
     plt.axvline(x=threshold, color="red", linewidth=2)
-    plt.yscale("symlog")
-    plt.title("Score histogram")
+    plt.xlabel("Score" if english else "Score")
+    plt.ylabel("Points number" if english else "Количество точек")
+    plt.legend(loc="lower left", bbox_to_anchor=(0, 1.02, 1, 0.2), mode="expand", ncol=2)
     fig.savefig(file_name)
     fig.clear()
 
@@ -380,8 +391,8 @@ def get_pin_type(pin: Pin, score: Optional[float], threshold_score: Optional[flo
     :param pin: pin;
     :param score: score of test measurement in pin;
     :param threshold_score: threshold score;
-    :param is_report_for_test_board: if True then report should be generated for test board,
-    otherwise for reference board.
+    :param is_report_for_test_board: if True then report should be generated for test board, otherwise for reference
+    board.
     :return: type of pin.
     """
 
@@ -394,6 +405,7 @@ def get_pin_type(pin: Pin, score: Optional[float], threshold_score: Optional[flo
                 return PinTypes.TEST_HIGH_SCORE if threshold_score <= score else PinTypes.TEST_LOW_SCORE
             return PinTypes.TEST_LOW_SCORE
         return PinTypes.TEST_LOW_SCORE
+
     # Report for reference board
     if len(pin.measurements) == 0:
         return PinTypes.REFERENCE_EMPTY

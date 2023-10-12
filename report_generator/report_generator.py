@@ -412,7 +412,7 @@ class ReportGenerator(QObject):
         all_scores = [pin_info[6] for pin_info in self._pins_info if pin_info[6] is not None]
         if all_scores:
             img_name = os.path.join(self._static_dir_name, _SCORE_HISTOGRAM_IMAGE)
-            ut.draw_score_histogram(all_scores, self._threshold_score, img_name)
+            ut.draw_score_histogram(all_scores, self._threshold_score, img_name, self._english)
             self.step_done.emit()
             logger.info("Score histogram was saved to '%s'", img_name)
             return True
