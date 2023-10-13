@@ -102,19 +102,6 @@ def _get_pin_borders(center: float, board_width: int, pin_width: int) -> Tuple[f
     return left, right
 
 
-def create_report(template_file: str, report_file: str, **kwargs) -> None:
-    """
-    Function creates a report.
-    :param template_file: name of template file for report;
-    :param report_file: name of file where report should be saved;
-    :param kwargs: arguments for template.
-    """
-
-    report = Template(filename=template_file, input_encoding="utf-8")
-    with open(report_file, "w", encoding="utf-8") as file:
-        file.write(report.render(**kwargs))
-
-
 def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
     """
     Function creates name for directory where report will be saved.
@@ -317,6 +304,19 @@ def draw_pins(image: Image, pins_info: List[PinInfo], dir_name: str, signal: pyq
         fig.savefig(os.path.join(dir_name, file_name))
         signal.emit()
         logger.info("Image of the pin '%s_%s' is saved to '%s'", pin_info.element_index, pin_info.pin_index, file_name)
+
+
+def generate_report(template_file: str, report_file: str, **kwargs) -> None:
+    """
+    Function generates a report.
+    :param template_file: name of template file for report;
+    :param report_file: name of file where report should be saved;
+    :param kwargs: arguments for template.
+    """
+
+    report = Template(filename=template_file, input_encoding="utf-8")
+    with open(report_file, "w", encoding="utf-8") as file:
+        file.write(report.render(**kwargs))
 
 
 def get_default_dir_path() -> str:

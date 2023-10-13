@@ -365,7 +365,7 @@ class ReportGenerator(QObject):
             template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_FULL_REPORT_EN)
         else:
             template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_FULL_REPORT)
-        ut.create_report(template_file_name, report_file_name, **data)
+        ut.generate_report(template_file_name, report_file_name, **data)
 
         self.step_done.emit()
         logger.info("The full report is saved to '%s'", report_file_name)
@@ -390,7 +390,7 @@ class ReportGenerator(QObject):
             template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_REPORT_EN)
         else:
             template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_REPORT)
-        ut.create_report(template_file_name, report_file_name, **data)
+        ut.generate_report(template_file_name, report_file_name, **data)
 
         self.step_done.emit()
         self.generation_finished.emit(os.path.dirname(report_file_name))
@@ -416,7 +416,7 @@ class ReportGenerator(QObject):
             template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_MAP_EN)
         else:
             template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_MAP)
-        ut.create_report(template_file_name, report_file_name, pins=self._pins_info)
+        ut.generate_report(template_file_name, report_file_name, pins=self._pins_info)
 
         self.step_done.emit()
         logger.info("The report with board map is saved to '%s'", report_file_name)

@@ -1,6 +1,7 @@
 import os
 import unittest
 from datetime import timedelta
+from collections import namedtuple
 from epcore.elements import IVCurve, Measurement, MeasurementSettings, Pin
 from report_generator import utils as ut
 
@@ -20,6 +21,14 @@ class TestUtilsFunctions(unittest.TestCase):
         self.assertEqual(ut.get_duration_in_str(timedelta(hours=2, minutes=31, seconds=43), english=False),
                          "151 мин 43 сек")
 
+    def test_get_elements_number(self) -> None:
+        pins = [ut.PinInfo("name_1", 1, 1, 0, 0, [], 0, None, 0, None, None),
+                ut.PinInfo("name_1", 2, 1, 0, 0, [], 0, None, 0, None, None),
+                ut.PinInfo("name_1", 3, 1, 0, 0, [], 0, None, 0, None, None),
+                ut.PinInfo("name_1", 1, 1, 0, 0, [], 0, None, 0, None, None),
+                ut.PinInfo("name_1", 2, 1, 0, 0, [], 0, None, 0, None, None)]
+        self.assertEqual(ut.get_elements_number(pins), 3)
+
     def test_get_noise_amplitudes(self) -> None:
         pin = Pin(x=0, y=0, measurements=[Measurement(settings=MeasurementSettings(sampling_rate=1,
                                                                                    internal_resistance=1000.0,
@@ -30,6 +39,13 @@ class TestUtilsFunctions(unittest.TestCase):
 
         pin = Pin(x=0, y=0)
         self.assertEqual(ut.get_noise_amplitudes(pin), (0.6, 0.2))
+
+    def test_get_pin_diameter(self) -> None:
+        self.assertIsNone(ut.get_pin_diameter(None))
+
+        Image = namedtuple("Image", ["width"])
+        image = Image(76)
+        self.assertEqual(ut.get_pin_diameter(image), 2)
 
     def test_get_pin_type(self) -> None:
         pin = Pin(x=0, y=0)
