@@ -182,7 +182,7 @@ def draw_board_with_pins(image: Image, pins_info: list, file_name: str, marker_s
 
 def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, english: bool = False) -> None:
     """
-    Function draws and saves a histogram of pin faults.
+    Function draws and saves a histogram of pin faults. The name of the histogram axes was chosen in the ticket #85658.
     :param scores: score values for which to draw a histogram;
     :param threshold: score threshold;
     :param file_name: name of file to save the histogram;
