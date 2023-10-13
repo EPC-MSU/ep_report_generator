@@ -107,7 +107,7 @@
                         <span><a href="full_img.html" target="_blank">Image inspect</a></span><br>
                         % endif
                     </td>
-                    % if score_histogram:
+                    % if fault_histogram:
                     <td>
                         <img src="static/fault_histogram.png" alt="Fault histogram" title="Fault histogram" width="600px">
                     </td>
@@ -244,7 +244,7 @@
                     </td>
                     % endif
                     <td>
-                    % if measurements:
+                    % if bad_pin.measurements:
                         <img src="static/img/${'%s_%s_iv.png'%(bad_pin.element_index, bad_pin.pin_index)}" height="${pin_img_size}"
                             alt="IVC" title="${legend_for_iv_img}">
                     % else:
