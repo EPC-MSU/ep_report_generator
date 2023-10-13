@@ -4,6 +4,7 @@ File with  useful functions.
 
 import logging
 import os
+from collections import namedtuple
 from datetime import datetime, timedelta
 from enum import auto, Enum
 from typing import Callable, Dict, List, Optional, Tuple
@@ -21,9 +22,13 @@ from ivviewer import Curve, Viewer
 logger = logging.getLogger("report_generator")
 
 
+PinInfo = namedtuple("PinInfo", ["element_name", "element_index", "pin_index", "x", "y", "measurements", "score",
+                                 "pin_type", "total_pin_index", "comment", "multiplexer_output"])
+
+
 class PinTypes(Enum):
     """
-    Types of pins.
+    Pin types
     """
 
     REFERENCE_EMPTY = auto()
@@ -36,7 +41,7 @@ class PinTypes(Enum):
 
 class ScalingTypes(Enum):
     """
-    Scaling types for graph with IV-curves.
+    Types of scaling of a graph with IV-curves.
     """
 
     AUTO = auto()
@@ -55,34 +60,19 @@ REFERENCE_CURVE_PEN: QPen = QPen(QBrush(QColor(0, 0, 255, 255)), 2)
 TEST_CURVE_PEN: QPen = QPen(QBrush(QColor(255, 0, 0, 255)), 4)
 
 
-def _check_for_image_availability(func: Callable) -> Callable:
+def _draw_circles(image: Image, circles: Tuple[List[float], List[float]], color: str) -> plt.Figure:
     """
-    Decorator checks if there is image.
-    :param func: decorated function.
-    """
-
-    def wrapper(image: Image, *args):
-        if image is None:
-            logger.warning("Board has no image")
-            return False
-        return func(image, *args)
-    return wrapper
-
-
-def _draw_circle(image: Image, circles: Tuple[List[float], List[float]], color: str) -> plt.Figure:
-    """
-    Function draws circle on the image.
-    :param image: image;
-    :param circles: list of coordinates of circles to draw;
+    Function draws circles on the image.
+    :param image: image on which to draw a circle;
+    :param circles: list of coordinates of circles to be drawn on the image;
     :param color: color for circles.
     :return: figure.
     """
 
-    dpi = plt.rcParams["figure.dpi"]
+    dpi = float(plt.rcParams["figure.dpi"])
     height = image.height
     width = image.width
-    fig_size = width / float(dpi), height / float(dpi)
-    fig = plt.figure(figsize=fig_size)
+    fig = plt.figure(figsize=(width / dpi, height / dpi))
     ax = fig.add_axes([0, 0, 1, 1])
     ax.axis("off")
     ax.imshow(image, interpolation="nearest")
@@ -96,8 +86,8 @@ def _get_pin_borders(center: float, board_width: int, pin_width: int) -> Tuple[f
     """
     Function defines the boundaries of the pin rectangle along one of the axes.
     :param center: pin center;
-    :param board_width: width of board along axis;
-    :param pin_width: width in pixels of pin image.
+    :param board_width: board width along the axis;
+    :param pin_width: width in pixels of the pin image.
     :return: boundaries of the pin rectangle.
     """
 
@@ -112,44 +102,9 @@ def _get_pin_borders(center: float, board_width: int, pin_width: int) -> Tuple[f
     return left, right
 
 
-def calculate_distance_squared(x_1: float, y_1: float, x_2: float, y_2: float) -> float:
-    """
-    Function calculates distance between two points.
-    :param x_1: X coordinate of the first point;
-    :param y_1: Y coordinate of the first point;
-    :param x_2: X coordinate of the second point;
-    :param y_2: Y coordinate of the second point.
-    :return: distance between two points.
-    """
-
-    return np.sqrt(np.power(x_1 - x_2, 2) + np.power(y_1 - y_2, 2))
-
-
-def calculate_min_distance(pins: List[Pin]) -> Optional[float]:
-    """
-    Function calculates min distance between two pins.
-    :param pins: list of pins.
-    :return: min distance between two pins.
-    """
-
-    min_distance = None
-    for pin in pins:
-        pin_x = pin[3]
-        pin_y = pin[4]
-        for another_pin in pins:
-            if pin == another_pin:
-                continue
-            another_pin_x = another_pin[3]
-            another_pin_y = another_pin[4]
-            distance = calculate_distance_squared(pin_x, pin_y, another_pin_x, another_pin_y)
-            if min_distance is None or min_distance > distance:
-                min_distance = distance
-    return min_distance
-
-
 def create_report(template_file: str, report_file: str, **kwargs) -> None:
     """
-    Function creates report.
+    Function creates a report.
     :param template_file: name of template file for report;
     :param report_file: name of file where report should be saved;
     :param kwargs: arguments for template.
@@ -171,7 +126,7 @@ def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
     datetime_now = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
     report_dir_name_with_time = f"{dir_base} {datetime_now}"
     report_dir_name = report_dir_name_with_time
-    index = 1
+    index = 0
     while True:
         report_dir_path = os.path.join(parent_directory, report_dir_name)
         if os.path.exists(report_dir_path):
@@ -181,16 +136,16 @@ def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
             return report_dir_path
 
 
-@_check_for_image_availability
-def draw_board_with_pins(image: Image, pins_info: list, file_name: str, marker_size: Optional[int]) -> bool:
+def draw_board_with_pins(image: Image, pins_info: list, file_name: str, marker_size: Optional[int],
+                         check_stop: Callable[[], None] = lambda: None) -> None:
     """
-    Function draws and saves image of board with pins. Function was borrowed from
+    Function draws and saves an image of board with pins. Function was borrowed from
     https://stackoverflow.com/questions/34768717.
     :param image: board image;
-    :param pins_info: list with information about pins required for report;
+    :param pins_info: list with information about pins to draw;
     :param file_name: name of file where image should be saved;
-    :param marker_size: size of marker to display pin.
-    :return: True if image was drawn and saved.
+    :param marker_size: size of marker to display pin;
+    :param check_stop: function that checks whether the operation is stopped.
     """
 
     pins_xy = {PinTypes.REFERENCE_EMPTY: [[], []],
@@ -200,133 +155,34 @@ def draw_board_with_pins(image: Image, pins_info: list, file_name: str, marker_s
                PinTypes.TEST_HIGH_SCORE: [[], []],
                PinTypes.TEST_LOW_SCORE: [[], []]}
     for pin_info in pins_info:
+        check_stop()
         _, _, _, x, y, _, _, pin_type, _, _, _ = pin_info
         pin_xy = pins_xy[pin_type]
         pin_xy[0].append(x)
         pin_xy[1].append(y)
-    dpi = plt.rcParams["figure.dpi"]
+
+    check_stop()
+    dpi = float(plt.rcParams["figure.dpi"])
     height = image.height
     width = image.width
-    fig_size = width / float(dpi), height / float(dpi)
-    fig = plt.figure(figsize=fig_size)
+    fig = plt.figure(figsize=(width / dpi, height / dpi))
     ax = fig.add_axes([0, 0, 1, 1])
     ax.axis("off")
     ax.imshow(image, interpolation="nearest")
+
     if marker_size is None:
         marker_size = width // 38
     for pin_type, x_and_y in pins_xy.items():
+        check_stop()
         ax.scatter(*x_and_y, s=marker_size, c=PIN_COLORS[pin_type], zorder=1)
+
+    check_stop()
     fig.savefig(file_name, dpi=dpi, transparent=True)
-    return True
 
 
-def draw_ivc_for_pins(pins_info: list, dir_name: str, signal: pyqtSignal,
-                      scaling_type: ScalingTypes = ScalingTypes.AUTO, english: bool = False,
-                      stop_drawing: Callable = lambda: False, user_defined_scales: List = None) -> None:
+def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, english: bool = False) -> None:
     """
-    Function draws and saves IV-curves for pins of board.
-    :param pins_info: list with information about pins required for report;
-    :param dir_name: name of directory where images should be saved;
-    :param signal: signal;
-    :param scaling_type: scaling type for graph with IV-curves;
-    :param english: if True graph labels will be in English;
-    :param stop_drawing: returns True if drawing should be stopped;
-    :param user_defined_scales: list with user defined scales.
-    """
-
-    viewer = Viewer(axis_font=QFont("Times", 10), title_font=QFont("Times", 15))
-    viewer.resize(*IV_IMAGE_SIZE)
-    viewer.plot.set_min_borders(0.1, 0.1)
-    viewer.plot.set_x_axis_title("Voltage, V" if english else "Напряжение, В")
-    viewer.plot.set_y_axis_title("Current, mA" if english else "Ток, мА")
-    viewer.plot.setStyleSheet("background: white")
-    test_curve = viewer.plot.add_curve()
-    test_curve.set_curve_params(TEST_CURVE_PEN)
-    ref_curve = viewer.plot.add_curve()
-    ref_curve.set_curve_params(REFERENCE_CURVE_PEN)
-    for index, pin_info in enumerate(pins_info):
-        if stop_drawing():
-            break
-        element_name, element_index, pin_index, _, _, measurements, _, pin_type, _, _, _ = pin_info
-        if not measurements:
-            signal.emit()
-            logger.info("Pin '%s_%s' has no measurements", element_index, pin_index)
-            continue
-        ref_currents = np.array([])
-        ref_voltages = np.array([])
-        test_currents = np.array([])
-        test_voltages = np.array([])
-        for measurement in measurements:
-            if measurement.is_reference:
-                ref_currents = measurement.ivc.currents
-                ref_voltages = measurement.ivc.voltages
-            else:
-                test_currents = measurement.ivc.currents
-                test_voltages = measurement.ivc.voltages
-        if scaling_type == ScalingTypes.EYEPOINT_P10:
-            scale_coefficient = 1.2
-            v_max = scale_coefficient * measurements[0].settings.max_voltage
-            i_max = 1000 * v_max / measurements[0].settings.internal_resistance
-        elif (scaling_type == ScalingTypes.USER_DEFINED and isinstance(user_defined_scales, (list, tuple)) and
-              index < len(user_defined_scales) and isinstance(user_defined_scales[index], (list, tuple)) and
-              len(user_defined_scales[index]) == 2):
-            v_max, i_max = user_defined_scales[index]
-            i_max *= 1000
-        else:
-            i_max = 1.2 * 1000 * np.amax(np.absolute(np.concatenate((test_currents, ref_currents), axis=0)))
-            v_max = 1.2 * np.amax(np.absolute(np.concatenate((test_voltages, ref_voltages), axis=0)))
-        viewer.plot.set_scale(v_max, i_max)
-        if len(ref_currents) and len(ref_voltages):
-            ref_curve.set_curve(Curve(ref_voltages, ref_currents))
-        else:
-            ref_curve.clear_curve()
-        if len(test_currents) and len(test_voltages):
-            test_curve.set_curve(Curve(test_voltages, test_currents))
-        else:
-            test_curve.clear_curve()
-        file_name = f"{element_index}_{pin_index}_iv.png"
-        path = os.path.join(dir_name, file_name)
-        viewer.plot.grab().save(path)
-        signal.emit()
-        logger.info("IV-curve of pin '%s_%s' was saved to '%s'", element_index, pin_index, file_name)
-
-
-@_check_for_image_availability
-def draw_pins(image: Image, pins_info: List, dir_name: str, signal: pyqtSignal, pin_width: int,
-              stop_drawing: Callable = lambda: False) -> bool:
-    """
-    Function draws and saves images of pins of board.
-    :param image: board image;
-    :param pins_info: list with information about pins required for report;
-    :param dir_name: name of directory where images should be saved;
-    :param signal: signal;
-    :param pin_width: width in pixels of pins images;
-    :param stop_drawing: returns True if drawing should be stopped.
-    :return: True if images were drawn and saved.
-    """
-
-    height = image.height
-    width = image.width
-    for pin_info in pins_info:
-        if stop_drawing():
-            return False
-        element_name, element_index, pin_index, x, y, _, _, pin_type, _, _, _ = pin_info
-        left, right = _get_pin_borders(x, width, pin_width)
-        upper, lower = _get_pin_borders(y, height, pin_width)
-        pin_image = image.crop((left, upper, right, lower))
-        pin_color = PIN_COLORS[pin_type]
-        fig = _draw_circle(pin_image, ([x - left], [y - upper]), pin_color)
-        file_name = f"{element_index}_{pin_index}_pin.png"
-        path = os.path.join(dir_name, file_name)
-        fig.savefig(path)
-        signal.emit()
-        logger.info("Image of pin '%s_%s' was saved to '%s'", element_index, pin_index, file_name)
-    return True
-
-
-def draw_score_histogram(scores: List[float], threshold: float, file_name: str, english: bool = False) -> None:
-    """
-    Function draws and saves a histogram of score values.
+    Function draws and saves a histogram of pin faults.
     :param scores: score values for which to draw a histogram;
     :param threshold: score threshold;
     :param file_name: name of file to save the histogram;
@@ -359,9 +215,116 @@ def draw_score_histogram(scores: List[float], threshold: float, file_name: str, 
     fig.clear()
 
 
-if __name__ == "__main__":
-    scores = 100 * np.random.rand(100)
-    draw_score_histogram(scores, 15, "fig.png")
+def draw_ivc_for_pins(pins_info: List[PinInfo], dir_name: str, signal: pyqtSignal,
+                      scaling_type: ScalingTypes = ScalingTypes.AUTO, english: bool = False,
+                      user_defined_scales: List = None, check_stop: Callable[[], None] = lambda: None) -> None:
+    """
+    Function draws and saves the IV-curves for the pins.
+    :param pins_info: list with information about pins for which to draw IV-curves;
+    :param dir_name: name of directory where images should be saved;
+    :param signal: signal;
+    :param scaling_type: type of scaling for a graph with IV-curve;
+    :param english: if True, graph labels will be in English;
+    :param user_defined_scales: list with user defined scales;
+    :param check_stop: function that checks whether the operation is stopped.
+    """
+
+    check_stop()
+    viewer = Viewer(axis_font=QFont("Times", 10), title_font=QFont("Times", 15))
+    viewer.resize(*IV_IMAGE_SIZE)
+    viewer.plot.set_min_borders(0.1, 0.1)
+    viewer.plot.set_x_axis_title("Voltage, V" if english else "Напряжение, В")
+    viewer.plot.set_y_axis_title("Current, mA" if english else "Ток, мА")
+    viewer.plot.setStyleSheet("background: white")
+    test_curve = viewer.plot.add_curve()
+    test_curve.set_curve_params(TEST_CURVE_PEN)
+    ref_curve = viewer.plot.add_curve()
+    ref_curve.set_curve_params(REFERENCE_CURVE_PEN)
+
+    for index, pin_info in enumerate(pins_info):
+        check_stop()
+        if not pin_info.measurements:
+            signal.emit()
+            logger.info("The pin '%s_%s' has no measurements", pin_info.element_index, pin_info.pin_index)
+            continue
+
+        ref_currents = np.array([])
+        ref_voltages = np.array([])
+        test_currents = np.array([])
+        test_voltages = np.array([])
+        for measurement in pin_info.measurements:
+            if measurement.is_reference:
+                ref_currents = measurement.ivc.currents
+                ref_voltages = measurement.ivc.voltages
+            else:
+                test_currents = measurement.ivc.currents
+                test_voltages = measurement.ivc.voltages
+
+        check_stop()
+        if scaling_type == ScalingTypes.EYEPOINT_P10:
+            scale_coefficient = 1.2
+            v_max = scale_coefficient * pin_info.measurements[0].settings.max_voltage
+            i_max = 1000 * v_max / pin_info.measurements[0].settings.internal_resistance
+        elif (scaling_type == ScalingTypes.USER_DEFINED and isinstance(user_defined_scales, (list, tuple)) and
+              index < len(user_defined_scales) and isinstance(user_defined_scales[index], (list, tuple)) and
+              len(user_defined_scales[index]) == 2):
+            v_max, i_max = user_defined_scales[index]
+            i_max *= 1000
+        else:
+            i_max = 1.2 * 1000 * np.amax(np.absolute(np.concatenate((test_currents, ref_currents), axis=0)))
+            v_max = 1.2 * np.amax(np.absolute(np.concatenate((test_voltages, ref_voltages), axis=0)))
+        viewer.plot.set_scale(v_max, i_max)
+
+        check_stop()
+        if len(ref_currents) and len(ref_voltages):
+            ref_curve.set_curve(Curve(ref_voltages, ref_currents))
+        else:
+            ref_curve.clear_curve()
+        if len(test_currents) and len(test_voltages):
+            test_curve.set_curve(Curve(test_voltages, test_currents))
+        else:
+            test_curve.clear_curve()
+
+        file_name = f"{pin_info.element_index}_{pin_info.pin_index}_iv.png"
+        viewer.plot.grab().save(os.path.join(dir_name, file_name))
+        signal.emit()
+        logger.info("IV-curve of the pin '%s_%s' is saved to '%s'", pin_info.element_index, pin_info.pin_index,
+                    file_name)
+
+
+def draw_pins(image: Image, pins_info: List[PinInfo], dir_name: str, signal: pyqtSignal, pin_width: int,
+              check_stop: Callable[[], None] = lambda: None) -> None:
+    """
+    Function draws and saves pin images.
+    :param image: board image;
+    :param pins_info: list with information about pins which to draw;
+    :param dir_name: name of directory where images should be saved;
+    :param signal: signal;
+    :param pin_width: width in pixels of pin images;
+    :param check_stop: function that checks whether the operation is stopped.
+    """
+
+    height = image.height
+    width = image.width
+    for pin_info in pins_info:
+        check_stop()
+        left, right = _get_pin_borders(pin_info.x, width, pin_width)
+        upper, lower = _get_pin_borders(pin_info.y, height, pin_width)
+        pin_image = image.crop((left, upper, right, lower))
+        pin_color = PIN_COLORS[pin_info.pin_type]
+        fig = _draw_circles(pin_image, ([pin_info.x - left], [pin_info.y - upper]), pin_color)
+        file_name = f"{pin_info.element_index}_{pin_info.pin_index}_pin.png"
+        fig.savefig(os.path.join(dir_name, file_name))
+        signal.emit()
+        logger.info("Image of the pin '%s_%s' is saved to '%s'", pin_info.element_index, pin_info.pin_index, file_name)
+
+
+def get_default_dir_path() -> str:
+    """
+    :return: default path to the directory where report will be saved.
+    """
+
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def get_duration_in_str(duration: timedelta, english: bool) -> Optional[str]:
@@ -380,6 +343,15 @@ def get_duration_in_str(duration: timedelta, english: bool) -> Optional[str]:
     return None
 
 
+def get_elements_number(pins_info: List[PinInfo]) -> int:
+    """
+    :param pins_info: list with information about pins.
+    :return: number of different elements that pins from the list belong to.
+    """
+
+    return len({pin_info.element_index for pin_info in pins_info})
+
+
 def get_noise_amplitudes(pin: Pin) -> Tuple[float, float]:
     """
     Function calculates noise amplitudes for given pin.
@@ -393,6 +365,15 @@ def get_noise_amplitudes(pin: Pin) -> Tuple[float, float]:
         settings = pin.measurements[0].settings
         return settings.max_voltage / 20, 1000.0 * settings.max_voltage / (20 * settings.internal_resistance)
     return default_voltage_noise_amplitude, default_current_noise_amplitude
+
+
+def get_pin_diameter(image: Image) -> Optional[int]:
+    """
+    :param image: image of the board with pins.
+    :return: diameter of pins.
+    """
+
+    return image.width // 38 if image else None
 
 
 def get_pin_type(pin: Pin, score: Optional[float], threshold_score: Optional[float], is_report_for_test_board: bool

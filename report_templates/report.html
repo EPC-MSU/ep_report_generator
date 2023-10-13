@@ -56,7 +56,7 @@
         <table id="general_info" cellspacing="0" cellpadding="0">
             <tbody>
                 <tr>
-                    % if score_histogram:
+                    % if fault_histogram:
                     <th colspan="2">
                     % else:
                     <th>
@@ -96,7 +96,7 @@
                         %>
                         <span>Доля неисправных точек тестирования: ${"{:.2f}%".format(bad_pins_portion)}</span><br>
                         % if threshold_score:
-                        <span>Пороговое значение score: ${"{:.2f}%".format(threshold_score * 100)}</span><br>
+                        <span>Пороговое значение score: ${"{:.2f}%".format(threshold_score)}</span><br>
                         % endif
                         % if pcb_comment:
                         <span>Комментарий: ${pcb_comment}</span><br>
@@ -107,15 +107,15 @@
                         <span><a href="full_img.html" target="_blank">Изображение платы</a></span><br>
                         % endif
                     </td>
-                    % if score_histogram:
+                    % if fault_histogram:
                     <td>
-                        <img src="static/score_histogram.png" alt="Гистограмма значений score" width="300px">
+                        <img src="static/fault_histogram.png" alt="Гистограмма неисправностей" width="500px">
                     </td>
                     % endif
                 </tr>
                 % if board_img_width is not None:
                 <tr>
-                    % if score_histogram:
+                    % if fault_histogram:
                     <th colspan="2">
                     % else:
                     <th>
@@ -124,15 +124,15 @@
                     </th>
                 </tr>
                 <tr>
-                    % if score_histogram:
+                    % if fault_histogram:
                     <td colspan="2">
                     % else:
                     <td>
                     % endif
                         <img id="board" src="static/img/board_with_bad_pins.png" usemap="#map" alt="Карта неисправных точек тестирования" title="Карта неисправных точек тестирования">
                         <p><map name="map">
-                            % for _, _, _, x, y, _, _, _, _, _, _ in bad_pins:
-                            <area shape="circle" coords="${x},${y},${pin_radius}" href="#point${x}${y}" alt="">
+                            % for bad_pin in bad_pins:
+                            <area shape="circle" coords="${bad_pin.x},${bad_pin.y},${pin_radius}" href="#point${bad_pin.x}${bad_pin.y}" alt="">
                             % endfor
                             </map>
                         </p>
@@ -157,52 +157,51 @@
                 <%
                     prev_element_index = None
                 %>
-                % for name, element_index, pin_index, x, y, measurements, score, pin_type, total_pin_index, pin_comment, mux_output in bad_pins:
-                % if element_index != prev_element_index:
+                % for bad_pin in bad_pins:
+                % if bad_pin.element_index != prev_element_index:
                 <%
-                    prev_element_index = element_index
+                    prev_element_index = bad_pin.element_index
                 %>
                 <tr>
                     <td class="element_name" colspan="3">
-                        <h2>${"#{} - {}".format(element_index, name)}</h2>
+                        <h2>${"#{} - {}".format(bad_pin.element_index, bad_pin.element_name)}</h2>
                     </td>
                 </tr>
                 % endif
-                % if measurements or board_img_width is not None:
+                % if bad_pin.measurements or board_img_width is not None:
                 <tr>
                     <td class="align_left">
-                        <a class="anchor" id="top" name="point${x}${y}"></a>
-                        <span>#${total_pin_index}</span><br>
-                        <span>Название элемента: ${name}</span><br>
-                        <span>Индекс элемента: ${element_index}</span><br>
-                        <span>Индекс пина: ${pin_index}</span><br>
+                        <a class="anchor" id="top" name="point${bad_pin.x}${bad_pin.y}"></a>
+                        <span>#${bad_pin.total_pin_index}</span><br>
+                        <span>Название элемента: ${bad_pin.element_name}</span><br>
+                        <span>Индекс элемента: ${bad_pin.element_index}</span><br>
+                        <span>Индекс пина: ${bad_pin.pin_index}</span><br>
                         % if mm_per_px:
-                        <span>X = ${"{:.2f}".format(x * mm_per_px) } мм</span><br>
-                        <span>Y = ${"{:.2f}".format(y * mm_per_px)} мм</span><br>
+                        <span>X = ${"{:.2f}".format(bad_pin.x * mm_per_px) } мм</span><br>
+                        <span>Y = ${"{:.2f}".format(bad_pin.y * mm_per_px)} мм</span><br>
                         % else:
-                        <span>X = ${"{:.2f}".format(x)} пк</span><br>
-                        <span>Y = ${"{:.2f}".format(y)} пк</span><br>
+                        <span>X = ${"{:.2f}".format(bad_pin.x)} пк</span><br>
+                        <span>Y = ${"{:.2f}".format(bad_pin.y)} пк</span><br>
                         % endif
-                        % if score is not None:
-                        <span>score = ${"{:.2f}%".format(score * 100)}</span><br>
+                        % if bad_pin.score is not None:
+                        <span>score = ${"{:.2f}%".format(bad_pin.score)}</span><br>
                         % endif
-                        % if mux_output:
+                        % if bad_pin.multiplexer_output:
                         <button class="collapsible" onclick="handle_click(this)">Выход мультиплексора</button>
                         <div class="hidden_options">
-                            <span>Номер модуля = ${mux_output.module_number}</span><br>
-                            <span>Номер канала = ${mux_output.channel_number}</span><br>
+                            <span>Номер модуля = ${bad_pin.multiplexer_output.module_number}</span><br>
+                            <span>Номер канала = ${bad_pin.multiplexer_output.channel_number}</span><br>
                         </div><br>
                         % endif
-                        % if measurements:
+                        % if bad_pin.measurements:
                         <button class="collapsible" onclick="handle_click(this)">Параметры измерения</button>
                         <div class="hidden_options">
-                            <span>Частота = ${measurements[0].settings.probe_signal_frequency} Гц</span><br>
-                            <span>Напряжение = ${measurements[0].settings.max_voltage} В</span><br>
-                            <span>Внутреннее сопротивление = ${measurements[0].settings.internal_resistance} Ом</span><br>
+                            <span>Частота = ${bad_pin.measurements[0].settings.probe_signal_frequency} Гц</span><br>
+                            <span>Напряжение = ${bad_pin.measurements[0].settings.max_voltage} В</span><br>
+                            <span>Внутреннее сопротивление = ${bad_pin.measurements[0].settings.internal_resistance} Ом</span><br>
                         </div><br>
                         <%
-                            comment = ""
-                            comments = [measurement.comment for measurement in measurements if measurement.comment]
+                            comments = [measurement.comment for measurement in bad_pin.measurements if measurement.comment]
                             comment = "<br>".join(comments)
                         %>
                         % if comment:
@@ -213,7 +212,7 @@
                         % endif
                         <%
                             legend_for_iv_img = ""
-                            for measurement in measurements:
+                            for measurement in bad_pin.measurements:
                                 if measurement.is_reference:
                                     legend_for_iv_img += "Синяя - ВАХ эталона\n"
                                 else:
@@ -224,29 +223,29 @@
                             <span style="white-space: pre-line">${legend_for_iv_img}</span>
                         </div><br>
                         % endif
-                        % if pin_comment:
+                        % if bad_pin.comment:
                         <button class="collapsible" onclick="handle_click(this)">Комментарий к пину</button>
                         <div class="hidden_options">
-                            <span>${pin_comment}</span>
+                            <span>${bad_pin.comment}</span>
                         </div>
                         % endif
                     </td>
                     % if board_img_width is not None:
                     <td>
                         <a class="img_pin">
-                            <img src="static/img/${'%s_%s_pin.png'%(element_index, pin_index)}" height="${pin_img_size}"
+                            <img src="static/img/${'%s_%s_pin.png'%(bad_pin.element_index, bad_pin.pin_index)}" height="${pin_img_size}"
                                 alt="Изображение точки тестирования (пина)", title="Изображение точки тестирования (пина)">
                             <span>
                                 <img src="static/img/board_clear.png" width="300px" style="position:fixed; top:50px; left:50px">
-                                <div class="pin" style="top:${50 + y * 300 / board_img_width - 2}px; left:${50 + x * 300 / board_img_width - 2}px;"></div>
+                                <div class="pin" style="top:${50 + bad_pin.y * 300 / board_img_width - 2}px; left:${50 + bad_pin.x * 300 / board_img_width - 2}px;"></div>
                                 </img>
                             </span>
                         </a>
                     </td>
                     % endif
                     <td>
-                        % if measurements:
-                        <img src="static/img/${'%s_%s_iv.png'%(element_index, pin_index)}" height="${pin_img_size}"
+                        % if bad_pin.measurements:
+                        <img src="static/img/${'%s_%s_iv.png'%(bad_pin.element_index, bad_pin.pin_index)}" height="${pin_img_size}"
                             alt="Изображение ВАХ" title="${legend_for_iv_img}">
                         % else:
                         <span>ВАХ нет</span>

@@ -57,7 +57,7 @@
 
 7. После окончания работы в указанной вами папке появится отчет.
 
-## Запуск примера в Windows
+## Запуск примера
 
 1. Склонируйте репозиторий и перейдите в папку репозитория **ep_report_generator**:
 
@@ -66,56 +66,47 @@
    cd ep_report_generator
    ```
 
-2. Установите необходимые зависимости, перейдя в папку **scripts** и выполнив скрипт **install.bat**:
+2. Установите необходимые зависимости, перейдя в папку **scripts** и выполнив скрипт:
 
-   ```bash
-   install.bat
-   ```
+   - **install.bat**, если Вы работаете в *Windows*;
 
-3. Запустите пример, перейдя в папку **scripts** и выполнив скрипт **run_example.bat**:
+   - **install.sh**, если Вы работаете в *Linux*:
 
-   ```bash
-   run_example.bat
-   ```
+     ```bash
+     bash install.sh
+     ```
+
+3. Перейдите в папку **scripts** и запустите скрипт:
+
+   - **run_example.bat**, если Вы работаете в *Windows*;
+
+   - **run_example.sh**, если Вы работаете в *Linux*:
+
+     ```bash
+     bash run_example.sh
+     ```
 
    В папке репозитория появятся четыре новые папки **report_for_empty_board**, **report_for_manual_board**, **report_for_manual_board_with_user_defined_scales** и **report_for_p10_board**, в которых будут лежать отчеты для соответствующих плат.
 
-## Запуск тестов в Windows
+## Запуск тестов
 
-Для запуска тестов перейдите в папку **scripts** и запустите скрипт **run_tests.bat**:
+1. Установите необходимые зависимости, перейдя в папку **scripts** и выполнив скрипт:
 
-```bash
-run_tests.bat
-```
+   - **install.bat**, если Вы работаете в *Windows*;
 
-## Запуск примера в Linux
+   - **install.sh**, если Вы работаете в *Linux*:
 
-1. Склонируйте репозиторий и перейдите в папку репозитория **ep_report_generator**:
+     ```bash
+     bash install.sh
+     ```
 
-   ```bash
-   git clone https://github.com/EPC-MSU/ep_report_generator
-   cd ep_report_generator
-   ```
+2. Перейдите в папку **scripts** и запустите скрипт:
 
-2. Установите необходимые зависимости, перейдя в папку **scripts** и выполнив скрипт **install.sh**:
+   - **run_tests.bat**, если Вы работаете в *Windows*;
 
-   ```bash
-   bash install.sh
-   ```
+   - **run_tests.sh**, если Вы работаете в *Linux*:
 
-3. Запустите пример, перейдя в папку **scripts** и выполнив скрипт **run_example.sh**:
-
-   ```bash
-   bash run_example.sh
-   ```
-
-   В папке репозитория появятся три новые папки **report_for_empty_board**, **report_for_manual_board**, **report_for_manual_board_with_user_defined_scales** и **report_for_p10_board**, в которых будут лежать отчеты для соответствующих плат.
-
-## Запуск тестов в Linux
-
-Для запуска тестов перейдите в папку **scripts** и запустите скрипт **run_tests.bat**:
-
-```bash
-bash run_tests.sh
-```
+     ```bash
+     bash run_tests.sh
+     ```
 

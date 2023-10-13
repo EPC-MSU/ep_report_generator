@@ -7,9 +7,6 @@ from report_generator import utils as ut
 
 class TestUtilsFunctions(unittest.TestCase):
 
-    def test_calculate_distance_squared(self) -> None:
-        self.assertEqual(ut.calculate_distance_squared(x_1=0, y_1=3, x_2=4, y_2=0), 5.0)
-
     def test_create_report_directory_name(self) -> None:
         dir_name = os.path.dirname(os.path.abspath(__file__))
         base_name = "BASE_NAME"

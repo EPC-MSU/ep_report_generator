@@ -76,20 +76,20 @@
     </center>
     <p>
         <map name="map">
-            % for name, element_index, pin_index, x, y, _, _, _, _, _, _ in pins:
-            <area onmouseover="hide_or_show_img(this, true);" onmouseout="hide_or_show_img(this, false);" shape="circle" coords="${x},${y},6" href="#point${x}${y}" alt="">
+            % for pin in pins:
+            <area onmouseover="hide_or_show_img(this, true);" onmouseout="hide_or_show_img(this, false);" shape="circle" coords="${pin.x},${pin.y},6" href="#point${pin.x}${pin.y}" alt="">
             % endfor
         </map>
     </p>
-    % for name, element_index, pin_index, x, y, measurements, _, _, _, _, _ in pins:
-    %if measurements:
-    <figure id="img${x},${y},6" onmouseover="change_position(this);" style="display: none;">
+    % for pin in pins:
+    %if pin.measurements:
+    <figure id="img${pin.x},${pin.y},6" onmouseover="change_position(this);" style="display: none;">
         <p>
-            <img src="static/img/${'%s_%s_iv.png'%(element_index, pin_index)}" alt="IVC at test pin" title="IVC at test pin">
+            <img src="static/img/${'%s_%s_iv.png'%(pin.element_index, pin.pin_index)}" alt="IVC at test pin" title="IVC at test pin">
         </p>
         <%
             legend_for_iv_img = ""
-            for measurement in measurements:
+            for measurement in pin.measurements:
                 if measurement.is_reference:
                     legend_for_iv_img += "Blue - reference IVC\n"
                 else:

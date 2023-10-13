@@ -56,7 +56,7 @@
         <table id="general_info" cellspacing="0" cellpadding="0">
             <tbody>
                 <tr>
-                    % if score_histogram:
+                    % if fault_histogram:
                     <th colspan="2">
                     % else:
                     <th>
@@ -88,7 +88,7 @@
                         <span>All components: ${elements_number}</span><br>
                         <span>All test points: ${pins_number}</span><br>
                         % if threshold_score:
-                        <span>Threshold score: ${"{:.2f}%".format(threshold_score * 100)}</span><br>
+                        <span>Threshold score: ${"{:.2f}%".format(threshold_score)}</span><br>
                         % endif
                         % if pcb_comment:
                         <span>Comment: ${pcb_comment}</span><br>
@@ -99,15 +99,15 @@
                         <span><a href="full_img.html" target="_blank">Image inspect</a></span><br>
                         % endif
                     </td>
-                    % if score_histogram:
+                    % if fault_histogram:
                     <td>
-                        <img src="static/score_histogram.png" alt="Histogram of scores" width="300px">
+                        <img src="static/fault_histogram.png" alt="Fault histogram" width="500px">
                     </td>
                     % endif
                 </tr>
                 % if board_img_width is not None:
                 <tr>
-                    % if score_histogram:
+                    % if fault_histogram:
                     <th colspan="2">
                     % else:
                     <th>
@@ -116,15 +116,15 @@
                     </th>
                 </tr>
                 <tr>
-                    % if score_histogram:
+                    % if fault_histogram:
                     <td colspan="2">
                     % else:
                     <td>
                     % endif
                         <img id="board" src="static/img/board.png" usemap="#map" alt="Test points map" title="Test points map">
                         <p><map name="map">
-                            % for _, _, _, x, y, _, _, _, _, _, _ in pins:
-                            <area shape="circle" coords="${x},${y},${pin_radius}" href="#point${x}${y}" alt="">
+                            % for pin in pins:
+                            <area shape="circle" coords="${pin.x},${pin.y},${pin_radius}" href="#point${pin.x}${pin.y}" alt="">
                             % endfor
                             </map>
                         </p>
@@ -149,51 +149,50 @@
                 <%
                     prev_element_index = None
                 %>
-                % for name, element_index, pin_index, x, y, measurements, score, pin_type, total_pin_index, pin_comment, mux_output in pins:
-                % if element_index != prev_element_index:
+                % for pin in pins:
+                % if pin.element_index != prev_element_index:
                 <%
-                    prev_element_index = element_index
+                    prev_element_index = pin.element_index
                 %>
                 <tr>
                     <td class="element_name" colspan="3">
-                        <h2>${"#{} - {}".format(element_index, name)}</h2>
+                        <h2>${"#{} - {}".format(pin.element_index, pin.element_name)}</h2>
                     </td>
                 </tr>
                 % endif
                 <tr>
                     <td class="align_left">
-                        <a class="anchor" id="top" name="point${x}${y}"></a>
-                        <span>#${total_pin_index}</span><br>
-                        <span>Component name: ${name}</span><br>
-                        <span>Component index: ${element_index}</span><br>
-                        <span>Pin index: ${pin_index}</span><br>
+                        <a class="anchor" id="top" name="point${pin.x}${pin.y}"></a>
+                        <span>#${pin.total_pin_index}</span><br>
+                        <span>Component name: ${pin.element_name}</span><br>
+                        <span>Component index: ${pin.element_index}</span><br>
+                        <span>Pin index: ${pin.pin_index}</span><br>
                         % if mm_per_px:
-                        <span>X = ${"{:.2f}".format(x * mm_per_px) } mm</span><br>
-                        <span>Y = ${"{:.2f}".format(y * mm_per_px)} mm</span><br>
+                        <span>X = ${"{:.2f}".format(pin.x * mm_per_px) } mm</span><br>
+                        <span>Y = ${"{:.2f}".format(pin.y * mm_per_px)} mm</span><br>
                         % else:
-                        <span>X = ${"{:.2f}".format(x)} px</span><br>
-                        <span>Y = ${"{:.2f}".format(y)} px</span><br>
+                        <span>X = ${"{:.2f}".format(pin.x)} px</span><br>
+                        <span>Y = ${"{:.2f}".format(pin.y)} px</span><br>
                         % endif
-                        % if score is not None:
-                        <span>score = ${"{:.2f}%".format(score * 100)}</span><br>
+                        % if pin.score is not None:
+                        <span>score = ${"{:.2f}%".format(pin.score)}</span><br>
                         % endif
-                        % if mux_output:
+                        % if pin.multiplexer_output:
                         <button class="collapsible" onclick="handle_click(this)">Multiplexer output</button>
                         <div class="hidden_options">
-                            <span>Module number = ${mux_output.module_number}</span><br>
-                            <span>Channel number = ${mux_output.channel_number}</span><br>
+                            <span>Module number = ${pin.multiplexer_output.module_number}</span><br>
+                            <span>Channel number = ${pin.multiplexer_output.channel_number}</span><br>
                         </div><br>
                         % endif
-                        % if measurements:
+                        % if pin.measurements:
                         <button class="collapsible" onclick="handle_click(this)">Measurement settings</button>
                         <div class="hidden_options">
-                            <span>Frequency = ${measurements[0].settings.probe_signal_frequency} Hz</span><br>
-                            <span>Voltage = ${measurements[0].settings.max_voltage} V</span><br>
-                            <span>Internal resistance = ${measurements[0].settings.internal_resistance} Ohm</span><br>
+                            <span>Frequency = ${pin.measurements[0].settings.probe_signal_frequency} Hz</span><br>
+                            <span>Voltage = ${pin.measurements[0].settings.max_voltage} V</span><br>
+                            <span>Internal resistance = ${pin.measurements[0].settings.internal_resistance} Ohm</span><br>
                         </div><br>
                         <%
-                            comment = ""
-                            comments = [measurement.comment for measurement in measurements if measurement.comment]
+                            comments = [measurement.comment for measurement in pin.measurements if measurement.comment]
                             comment = "<br>".join(comments)
                         %>
                         % if comment:
@@ -204,7 +203,7 @@
                         % endif
                         <%
                             legend_for_iv_img = ""
-                            for measurement in measurements:
+                            for measurement in pin.measurements:
                                 if measurement.is_reference:
                                     legend_for_iv_img += "Blue - reference IVC\n"
                                 else:
@@ -215,21 +214,21 @@
                             <span style="white-space: pre-line">${legend_for_iv_img}</span>
                         </div><br>
                         % endif
-                        % if pin_comment:
+                        % if pin.comment:
                         <button class="collapsible" onclick="handle_click(this)">Pin comment</button>
                         <div class="hidden_options">
-                            <span>${pin_comment}</span>
+                            <span>${pin.comment}</span>
                         </div>
                         % endif
                     </td>
                     % if board_img_width is not None:
                     <td>
                         <a class="img_pin">
-                            <img src="static/img/${'%s_%s_pin.png'%(element_index, pin_index)}" height="${pin_img_size}"
+                            <img src="static/img/${'%s_%s_pin.png'%(pin.element_index, pin.pin_index)}" height="${pin_img_size}"
                                 alt="Test point image (pin)", title="Test point image (pin)">
                             <span>
                                 <img src="static/img/board_clear.png" width="300px" style="position:fixed; top:50px; left:50px">
-                                <div class="pin" style="top:${50 + y * 300 / board_img_width - 2}px; left:${50 + x * 300 / board_img_width - 2}px;"></div>
+                                <div class="pin" style="top:${50 + pin.y * 300 / board_img_width - 2}px; left:${50 + pin.x * 300 / board_img_width - 2}px;"></div>
                                 </img>
                             </span>
                         </a>
@@ -237,7 +236,7 @@
                     % endif
                     <td>
                     % if measurements:
-                        <img src="static/img/${'%s_%s_iv.png'%(element_index, pin_index)}" height="${pin_img_size}"
+                        <img src="static/img/${'%s_%s_iv.png'%(pin.element_index, pin.pin_index)}" height="${pin_img_size}"
                             alt="IVC" title="${legend_for_iv_img}">
                     % else:
                         <span>No IVC</span>
