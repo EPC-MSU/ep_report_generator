@@ -157,7 +157,7 @@
                 <%
                     prev_element_index = None
                 %>
-                % for name, element_index, pin_index, x, y, measurements, score, pin_type, total_pin_index, pin_comment, mux_output in bad_pins:
+                % for bad_pin in bad_pins:
                 % if bad_pin.element_index != prev_element_index:
                 <%
                     prev_element_index = bad_pin.element_index
