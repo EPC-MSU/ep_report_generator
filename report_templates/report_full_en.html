@@ -235,7 +235,7 @@
                     </td>
                     % endif
                     <td>
-                    % if measurements:
+                    % if pin.measurements:
                         <img src="static/img/${'%s_%s_iv.png'%(pin.element_index, pin.pin_index)}" height="${pin_img_size}"
                             alt="IVC" title="${legend_for_iv_img}">
                     % else:
