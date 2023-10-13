@@ -9,8 +9,7 @@ from report_generator.version import VERSION
 
 
 __all__ = ["ConfigAttributes", "ObjectsForReport", "ReportGenerator", "ReportTypes", "ScalingTypes", "VERSION"]
-formatter = logging.Formatter("%(asctime)s %(name)s.%(funcName)s %(levelname)s - %(message)s",
-                              datefmt="%Y-%m-%d %H:%M:%S")
+formatter = logging.Formatter("[%(asctime)s %(levelname)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 handler.setLevel(logging.INFO)

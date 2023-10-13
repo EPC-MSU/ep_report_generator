@@ -6,6 +6,7 @@ import logging
 import os
 import platform
 import shutil
+import sys
 import webbrowser
 from datetime import datetime, timedelta
 from enum import auto, Enum
@@ -668,7 +669,7 @@ class ReportGenerator(QObject):
         except Exception as exc:
             exception_text = f"Error occurred while generating report: {exc}"
             self.exception_raised.emit(exception_text)
-            logger.error(exception_text)
+            logger.error(exception_text, exc_info=sys.exc_info())
 
     def stop_process(self) -> None:
         """

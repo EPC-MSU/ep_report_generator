@@ -10,6 +10,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 from mako.template import Template
+from matplotlib.ticker import MaxNLocator
 from PIL.Image import Image
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QBrush, QColor, QFont, QPen
@@ -337,20 +338,30 @@ def draw_score_histogram(scores: List[float], threshold: float, file_name: str, 
     plt.rc("ytick", labelsize=20)
     plt.rc("legend", fontsize=20)
     fig = plt.figure(figsize=(10, 8))
+    fig.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
+    fig.gca().yaxis.set_major_locator(MaxNLocator(integer=True))
+    scores = np.array(scores)
     good_scores = [scores[index[0]] for index in np.argwhere(scores < threshold)]
+    bins_number = 100
     if good_scores:
-        label = "Good points" if english else "Исправные точки"
-        plt.hist(good_scores, bins=50, rwidth=0.85, color="#46CB18", alpha=0.7, range=([0, 1.0]), label=label)
+        label = "Good points" if english else "Исправные\nточки"
+        plt.hist(good_scores, bins=bins_number, rwidth=0.85, color="#46CB18", alpha=0.7, range=([0, 100]), label=label)
     bad_scores = [scores[index[0]] for index in np.argwhere(scores >= threshold)]
     if bad_scores:
-        label = "Faulty points" if english else "Неисправные точки"
-        plt.hist(bad_scores, bins=50, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 1.0]), label=label)
-    plt.axvline(x=threshold, color="red", linewidth=2)
-    plt.xlabel("Score" if english else "Score")
-    plt.ylabel("Points number" if english else "Количество точек")
-    plt.legend(loc="lower left", bbox_to_anchor=(0, 1.02, 1, 0.2), mode="expand", ncol=2)
+        label = "Faulty points" if english else "Неисправные\nточки"
+        plt.hist(bad_scores, bins=bins_number, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 100]), label=label)
+    plt.axvline(x=threshold, color="#232B2B", linewidth=2, label="Threshold" if english else "Порог")
+    plt.xlabel("Fault distribution" if english else "Распределение неисправностей")
+    plt.xlim(xmin=0, xmax=100)
+    plt.ylabel("Faults number" if english else "Количество неисправностей")
+    plt.legend(loc="lower left", bbox_to_anchor=(0, 0.99, 1, 0.2), mode="expand", ncol=3)
     fig.savefig(file_name)
     fig.clear()
+
+
+if __name__ == "__main__":
+    scores = 100 * np.random.rand(100)
+    draw_score_histogram(scores, 15, "fig.png")
 
 
 def get_duration_in_str(duration: timedelta, english: bool) -> Optional[str]:

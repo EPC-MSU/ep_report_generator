@@ -30,7 +30,7 @@ if __name__ == "__main__":
               ConfigAttributes.SCALING_TYPE: ScalingTypes.EYEPOINT_P10,
               ConfigAttributes.ENGLISH: True}
     report_generator = ReportGenerator()
-    report_generator.run(config)
+    # report_generator.run(config)
 
     # Report for manual board
     dir_for_report = os.path.join(dir_name, "report_for_manual_board")
@@ -66,11 +66,11 @@ if __name__ == "__main__":
               ConfigAttributes.SCALING_TYPE: ScalingTypes.USER_DEFINED,
               ConfigAttributes.THRESHOLD_SCORE: 0.15,
               ConfigAttributes.USER_DEFINED_SCALES: user_defined_scales}
-    report_generator.run(config)
+    # report_generator.run(config)
 
     # Report for empty board
     dir_for_report = os.path.join(dir_name, "report_for_empty_board")
     config = {ConfigAttributes.BOARD: Board(),
               ConfigAttributes.DIRECTORY: dir_for_report,
               ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True}}
-    report_generator.run(config)
+    # report_generator.run(config)
