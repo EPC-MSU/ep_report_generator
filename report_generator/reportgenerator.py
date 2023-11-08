@@ -243,9 +243,9 @@ class ReportGenerator(QObject):
 
         if self._board.image:
             file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, _BOARD_IMAGE)
-            self._board.image.save(file_name)
+            ut.draw_board(self._board.image, file_name)
             self.step_done.emit()
-            logger.info("The board image is saved to '%s'", file_name)
+            logger.info("The board image is saved to '%s'", os.path.basename(file_name))
             return True
 
         self.step_done.emit()
@@ -277,7 +277,7 @@ class ReportGenerator(QObject):
             file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, board_file_name)
             ut.draw_board_with_pins(self._board.image, pins, file_name, self._pin_diameter, self._check_stop_operation)
             self.step_done.emit()
-            logger.info("The board image with %s is saved to '%s'", pins_name, file_name)
+            logger.info("The board image with %s is saved to '%s'", pins_name, os.path.basename(file_name))
             return True
 
         self.step_done.emit()
