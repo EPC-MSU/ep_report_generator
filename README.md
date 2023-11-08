@@ -8,7 +8,7 @@
    ```bash
    python -m pip install --upgrade pip
    python -m pip install git+https://github.com/EPC-MSU/ep_report_generator
-   python -m pip install hg+https://hg.ximc.ru/eyepoint/epcore@dev-0.1 hg+https://hg.ximc.ru/eyepoint/ivviewer@dev-0.1
+   python -m pip install git+https://github.com/EPC-MSU/epcore@dev-0.1 git+https://github.com/EPC-MSU/ivviewer@dev-0.1
    ```
 
 2. В вашем python-скрипте импортируйте из библиотеки следующие классы:
@@ -86,7 +86,7 @@
      bash run_example.sh
      ```
 
-   В папке репозитория появятся четыре новые папки **report_for_empty_board**, **report_for_manual_board**, **report_for_manual_board_with_user_defined_scales** и **report_for_p10_board**, в которых будут лежать отчеты для соответствующих плат.
+   В папке репозитория появится папка **examples**, в которой будут находиться четыре новые папки **report_for_empty_board**, **report_for_manual_board**, **report_for_manual_board_with_user_defined_scales** и **report_for_p10_board с отчетами для соответствующих плат.
 
 ## Запуск тестов
 
@@ -110,3 +110,8 @@
      bash run_tests.sh
      ```
 
+## Выпуск релиза
+
+1. Задайте версию X.X.X выпускаемого релиза в файле **report_generator/version.py**.
+2. Запушьте соответствующий коммит.
+3. Повесьте тег vX.X.X на коммит.
