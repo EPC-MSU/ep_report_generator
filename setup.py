@@ -1,8 +1,15 @@
+from distutils.util import convert_path
 from setuptools import find_packages, setup
 
 
+data = {}
+version_path = convert_path("report_generator/version.py")
+with open(version_path) as version_file:
+    exec(version_file.read(), data)
+
+
 setup(name="ep_report_generator",
-      version="0.1.12",
+      version=data["VERSION"],
       description="Library for generating reports for board objects from epcore.elements library",
       url="https://github.com/EPC-MSU/ep_report_generator",
       author="EPC MSU",
