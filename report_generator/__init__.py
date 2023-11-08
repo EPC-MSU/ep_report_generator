@@ -3,7 +3,7 @@ Package to generate report for Board object from epcore library.
 """
 
 import logging
-from report_generator.report_generator import ConfigAttributes, ObjectsForReport, ReportGenerator, ReportTypes
+from report_generator.reportgenerator import ConfigAttributes, ObjectsForReport, ReportGenerator, ReportTypes
 from report_generator.utils import ScalingTypes
 from report_generator.version import VERSION
 
