@@ -295,7 +295,7 @@ class ReportGenerator(QObject):
         logger.info("Fault histogram drawing...")
 
         scores = [pin_info.score for pin_info in self._pins_info if pin_info.score is not None]
-        if scores:
+        if scores and self._threshold_score is not None:
             self._check_stop_operation()
             img_name = os.path.join(self._static_dir_name, _FAULT_HISTOGRAM_IMAGE)
             ut.draw_fault_histogram(scores, self._threshold_score, img_name, self._english)

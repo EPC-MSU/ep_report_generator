@@ -15,11 +15,11 @@ from manual_board import create_manual_board
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
-    # Report for board from P10 file
-    BOARD_FILE_NAME = "example_board/elements.json"
     dir_name = os.path.dirname(os.path.abspath(__file__))
+
+    # Report for board from P10 file
     dir_for_report = os.path.join(dir_name, "examples", "report_for_p10_board")
-    config = {ConfigAttributes.BOARD: load_board_from_ufiv(BOARD_FILE_NAME),
+    config = {ConfigAttributes.BOARD: load_board_from_ufiv(os.path.join("example_board", "elements.json")),
               ConfigAttributes.DIRECTORY: dir_for_report,
               ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True},
               ConfigAttributes.PIN_SIZE: 200,

@@ -102,6 +102,19 @@ def _get_pin_borders(center: float, board_width: int, pin_width: int) -> Tuple[f
     return left, right
 
 
+def _set_y_ticks_on_histogram(ax, y_values: np.ndarray) -> None:
+    """
+    :param ax: axis on which to place ticks.
+    :param y_values: the values of the histogram bins.
+    """
+
+    y_max = y_values.max()
+    if y_max > 10:
+        ax.set_yticks([int(i * y_max / 4) for i in range(5)])
+    else:
+        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+
+
 def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
     """
     Function creates name for directory where report will be saved.
@@ -185,13 +198,17 @@ def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, 
     scores = np.array(scores)
     good_scores = [scores[index[0]] for index in np.argwhere(scores < threshold)]
     bins_number = 100
+    y_values = np.array([])
     if good_scores:
         label = "Good points" if english else "Исправные\nточки"
-        ax.hist(good_scores, bins=bins_number, rwidth=0.85, color="#46CB18", alpha=0.7, range=([0, 100]), label=label)
+        y_values, _, _ = ax.hist(good_scores, bins=bins_number, rwidth=0.85, color="#46CB18", alpha=0.7,
+                                 range=([0, 100]), label=label)
     bad_scores = [scores[index[0]] for index in np.argwhere(scores >= threshold)]
     if bad_scores:
         label = "Faulty points" if english else "Неисправные\nточки"
-        ax.hist(bad_scores, bins=bins_number, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 100]), label=label)
+        y_new, _, _ = ax.hist(bad_scores, bins=bins_number, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 100]),
+                              label=label)
+        y_values = np.append(y_values, y_new)
     ax.axvline(x=threshold, color="#232B2B", linewidth=2, label="Threshold" if english else "Порог")
     ax.set_xlabel("Fault distribution" if english else "Распределение неисправностей")
     ax.set_xlim(xmin=0, xmax=100)
@@ -199,7 +216,7 @@ def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, 
     ax.set_yscale("symlog")
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.yaxis.set_major_formatter(ScalarFormatter())
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    _set_y_ticks_on_histogram(ax, y_values)
     plt.legend(loc="lower left", bbox_to_anchor=(0, 0.99, 1, 0.2), mode="expand", ncol=3)
     fig.savefig(file_name)
     fig.clear()
