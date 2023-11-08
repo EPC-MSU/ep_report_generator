@@ -18,7 +18,7 @@ if __name__ == "__main__":
     # Report for board from P10 file
     BOARD_FILE_NAME = "example_board/elements.json"
     dir_name = os.path.dirname(os.path.abspath(__file__))
-    dir_for_report = os.path.join(dir_name, "report_for_p10_board")
+    dir_for_report = os.path.join(dir_name, "examples", "report_for_p10_board")
     config = {ConfigAttributes.BOARD: load_board_from_ufiv(BOARD_FILE_NAME),
               ConfigAttributes.DIRECTORY: dir_for_report,
               ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True},
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     report_generator.run(config)
 
     # Report for manual board
-    dir_for_report = os.path.join(dir_name, "report_for_manual_board")
+    dir_for_report = os.path.join(dir_name, "examples", "report_for_manual_board")
     config = {ConfigAttributes.BOARD: create_manual_board(),
               ConfigAttributes.DIRECTORY: dir_for_report,
               ConfigAttributes.OBJECTS: {ObjectsForReport.ELEMENT: [0, 2],
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     report_generator.run(config)
 
     # Report for manual board with user defined scales
-    dir_for_report = os.path.join(dir_name, "report_for_manual_board_with_user_defined_scales")
+    dir_for_report = os.path.join(dir_name, "examples", "report_for_manual_board_with_user_defined_scales")
     board = create_manual_board()
     # Define scales for each pin
     required_pins = [3, 4, 5]
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     report_generator.run(config)
 
     # Report for empty board
-    dir_for_report = os.path.join(dir_name, "report_for_empty_board")
+    dir_for_report = os.path.join(dir_name, "examples", "report_for_empty_board")
     config = {ConfigAttributes.BOARD: Board(),
               ConfigAttributes.DIRECTORY: dir_for_report,
               ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True}}

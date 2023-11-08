@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 
 setup(name="ep_report_generator",
-      version="0.1.9",
+      version="0.1.12",
       description="Library for generating reports for board objects from epcore.elements library",
       url="https://github.com/EPC-MSU/ep_report_generator",
       author="EPC MSU",
@@ -20,8 +20,8 @@ setup(name="ep_report_generator",
           # "ivviewer @ hg+https://anonymous:anonymous@hg.ximc.ru/eyepoint/ivviewer#egg=ivviewer",
       ],
       dependency_links=[
-          # "hg+https://anonymous:anonymous@hg.ximc.ru/eyepoint/epcore#egg=epcore",
-          # "hg+https://anonymous:anonymous@hg.ximc.ru/eyepoint/ivviewer#egg=ivviewer",
+          # "git+https://github.com/EPC-MSU/epcore#egg=epcore",
+          # "git+https://github.com/EPC-MSU/ivviewer#egg=ivviewer",
       ],
       package_data={"report_templates": ["*"]},
       )
