@@ -87,16 +87,16 @@
                         % endif
                         <span>Number of faulty components/number of all components: ${bad_elements_number}/${elements_number}</span><br>
                         <%
-                            bad_elements_portion = 0 if not elements_number else 100 * bad_elements_number / elements_number
+                            bad_elements_portion = 0 if not elements_number else round(100 * bad_elements_number / elements_number, 2)
                         %>
-                        <span>Percentage of faulty components: ${"{:.2f}%".format(bad_elements_portion)}</span><br>
+                        <span>Percentage of faulty components: ${"{}%".format(bad_elements_portion)}</span><br>
                         <span>Number of faulty test points/number of all test points: ${bad_pins_number}/${pins_number}</span><br>
                         <%
-                            bad_pins_portion = 0 if not pins_number else 100 * bad_pins_number / pins_number
+                            bad_pins_portion = 0 if not pins_number else round(100 * bad_pins_number / pins_number, 2)
                         %>
-                        <span>Percentage of faulty test points: ${"{:.2f}%".format(bad_pins_portion)}</span><br>
+                        <span>Percentage of faulty test points: ${"{}%".format(bad_pins_portion)}</span><br>
                         % if threshold_score:
-                        <span>Threshold score: ${"{:.2f}%".format(threshold_score)}</span><br>
+                        <span>Threshold score: ${"{}%".format(round(threshold_score, 2))}</span><br>
                         % endif
                         % if pcb_comment:
                         <span>Comment: ${pcb_comment}</span><br>
@@ -177,14 +177,14 @@
                         <span>Component index: ${bad_pin.element_index}</span><br>
                         <span>Pin index: ${bad_pin.pin_index}</span><br>
                         % if mm_per_px:
-                        <span>X = ${"{:.2f}".format(bad_pin.x * mm_per_px) } mm</span><br>
-                        <span>Y = ${"{:.2f}".format(bad_pin.y * mm_per_px)} mm</span><br>
+                        <span>X = ${"{}".format(round(bad_pin.x * mm_per_px, 2))} mm</span><br>
+                        <span>Y = ${"{}".format(round(bad_pin.y * mm_per_px, 2))} mm</span><br>
                         % else:
-                        <span>X = ${"{:.2f}".format(bad_pin.x)} px</span><br>
-                        <span>Y = ${"{:.2f}".format(bad_pin.y)} px</span><br>
+                        <span>X = ${"{}".format(round(bad_pin.x, 2))} px</span><br>
+                        <span>Y = ${"{}".format(round(bad_pin.y, 2))} px</span><br>
                         % endif
                         % if score is not None:
-                        <span>score = ${"{:.2f}%".format(bad_pin.score)}</span><br>
+                        <span>score = ${"{}%".format(round(bad_pin.score, 2))}</span><br>
                         % endif
                         % if bad_pin.multiplexer_output:
                         <button class="collapsible" onclick="handle_click(this)">Multiplexer output</button>

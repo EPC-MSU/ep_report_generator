@@ -87,16 +87,16 @@
                         % endif
                         <span>Количество неисправных компонентов/количество компонентов: ${bad_elements_number}/${elements_number}</span><br>
                         <%
-                            bad_elements_portion = 0 if not elements_number else 100 * bad_elements_number / elements_number
+                            bad_elements_portion = 0 if not elements_number else round(100 * bad_elements_number / elements_number, 2)
                         %>
-                        <span>Доля неисправных компонентов: ${"{:.2f}%".format(bad_elements_portion)}</span><br>
+                        <span>Доля неисправных компонентов: ${"{}%".format(bad_elements_portion)}</span><br>
                         <span>Количество неисправных точек тестирования/количество точек тестирования: ${bad_pins_number}/${pins_number}</span><br>
                         <%
-                            bad_pins_portion = 0 if not pins_number else 100 * bad_pins_number / pins_number
+                            bad_pins_portion = 0 if not pins_number else round(100 * bad_pins_number / pins_number, 2)
                         %>
-                        <span>Доля неисправных точек тестирования: ${"{:.2f}%".format(bad_pins_portion)}</span><br>
+                        <span>Доля неисправных точек тестирования: ${"{}%".format(bad_pins_portion)}</span><br>
                         % if threshold_score:
-                        <span>Пороговое значение score: ${"{:.2f}%".format(threshold_score)}</span><br>
+                        <span>Пороговое значение score: ${"{}%".format(round(threshold_score, 2))}</span><br>
                         % endif
                         % if pcb_comment:
                         <span>Комментарий: ${pcb_comment}</span><br>
@@ -177,14 +177,14 @@
                         <span>Индекс элемента: ${bad_pin.element_index}</span><br>
                         <span>Индекс пина: ${bad_pin.pin_index}</span><br>
                         % if mm_per_px:
-                        <span>X = ${"{:.2f}".format(bad_pin.x * mm_per_px) } мм</span><br>
-                        <span>Y = ${"{:.2f}".format(bad_pin.y * mm_per_px)} мм</span><br>
+                        <span>X = ${"{}".format(round(bad_pin.x * mm_per_px, 2))} мм</span><br>
+                        <span>Y = ${"{}".format(round(bad_pin.y * mm_per_px, 2))} мм</span><br>
                         % else:
-                        <span>X = ${"{:.2f}".format(bad_pin.x)} пк</span><br>
-                        <span>Y = ${"{:.2f}".format(bad_pin.y)} пк</span><br>
+                        <span>X = ${"{}".format(round(bad_pin.x, 2))} пк</span><br>
+                        <span>Y = ${"{}".format(round(bad_pin.y, 2))} пк</span><br>
                         % endif
                         % if bad_pin.score is not None:
-                        <span>score = ${"{:.2f}%".format(bad_pin.score)}</span><br>
+                        <span>score = ${"{}%".format(round(bad_pin.score, 2))}</span><br>
                         % endif
                         % if bad_pin.multiplexer_output:
                         <button class="collapsible" onclick="handle_click(this)">Выход мультиплексора</button>

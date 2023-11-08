@@ -88,7 +88,7 @@
                         <span>Количество компонентов: ${elements_number}</span><br>
                         <span>Количество точек тестирования: ${pins_number}</span><br>
                         % if threshold_score:
-                        <span>Пороговое значение score: ${"{:.2f}%".format(threshold_score)}</span><br>
+                        <span>Пороговое значение score: ${"{}%".format(round(threshold_score, 2))}</span><br>
                         % endif
                         % if pcb_comment:
                         <span>Комментарий: ${pcb_comment}</span><br>
@@ -168,14 +168,14 @@
                         <span>Индекс элемента: ${pin.element_index}</span><br>
                         <span>Индекс пина: ${pin.pin_index}</span><br>
                         % if mm_per_px:
-                        <span>X = ${"{:.2f}".format(pin.x * mm_per_px) } мм</span><br>
-                        <span>Y = ${"{:.2f}".format(pin.y * mm_per_px)} мм</span><br>
+                        <span>X = ${"{}".format(round(pin.x * mm_per_px, 2))} мм</span><br>
+                        <span>Y = ${"{}".format(round(pin.y * mm_per_px, 2))} мм</span><br>
                         % else:
-                        <span>X = ${"{:.2f}".format(pin.x)} пк</span><br>
-                        <span>Y = ${"{:.2f}".format(pin.y)} пк</span><br>
+                        <span>X = ${"{}".format(round(pin.x, 2))} пк</span><br>
+                        <span>Y = ${"{}".format(round(pin.y, 2))} пк</span><br>
                         % endif
                         % if pin.score is not None:
-                        <span>score = ${"{:.2f}%".format(pin.score)}</span><br>
+                        <span>score = ${"{}%".format(round(pin.score, 2))}</span><br>
                         % endif
                         % if pin.multiplexer_output:
                         <button class="collapsible" onclick="handle_click(this)">Выход мультиплексора</button>
