@@ -10,7 +10,7 @@ import sys
 import webbrowser
 from datetime import datetime, timedelta
 from enum import auto, Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from PyQt5.QtCore import pyqtSignal, QObject
 from epcore.elements import Board
 from epcore.measurementmanager import IVCComparator
@@ -19,12 +19,12 @@ from report_generator.version import VERSION
 
 
 logger = logging.getLogger("report_generator")
-_BOARD_IMAGE: str = "board_clear.png"
-_BOARD_WITH_BAD_PINS_IMAGE: str = "board_with_bad_pins.png"
-_BOARD_WITH_PINS_IMAGE: str = "board.png"
+_BOARD_IMAGE: str = "board_clear.jpeg"
+_BOARD_WITH_BAD_PINS_IMAGE: str = "board_with_bad_pins.jpeg"
+_BOARD_WITH_PINS_IMAGE: str = "board.jpeg"
 _DEFAULT_REPORT_DIR_NAME: str = "report"
 _IMG_DIR_NAME: str = "img"
-_FAULT_HISTOGRAM_IMAGE: str = "fault_histogram.png"
+_FAULT_HISTOGRAM_IMAGE: str = "fault_histogram.jpeg"
 _FAVICON_16_FOR_REPORT: str = "favicon-16x16.png"
 _FAVICON_32_FOR_REPORT: str = "favicon-32x32.png"
 _STATIC_DIR_NAME: str = "static"
@@ -116,30 +116,17 @@ class UserStop(Exception):
     pass
 
 
-def check_stop_operation(func: Callable) -> Callable:
-    """
-    Decorator checks if operation needs to be stopped.
-    :param func: decorated method.
-    """
-
-    def wrapper(self, *args):
-        if self.stop:
-            return
-        return func(self, *args)
-    return wrapper
-
-
 class ReportGenerator(QObject):
     """
     Class to generate report for Board object.
     """
 
-    exception_raised = pyqtSignal(str)
-    generation_finished = pyqtSignal(str)
-    generation_stopped = pyqtSignal()
-    step_done = pyqtSignal()
-    step_started = pyqtSignal(str)
-    total_number_of_steps_calculated = pyqtSignal(int)
+    exception_raised: pyqtSignal = pyqtSignal(str)
+    generation_finished: pyqtSignal = pyqtSignal(str)
+    generation_stopped: pyqtSignal = pyqtSignal()
+    step_done: pyqtSignal = pyqtSignal()
+    step_started: pyqtSignal = pyqtSignal(str)
+    total_number_of_steps_calculated: pyqtSignal = pyqtSignal(int)
 
     def __init__(self, parent=None, board: Optional[Board] = None, config: Optional[Dict[ConfigAttributes, Any]] = None
                  ) -> None:
@@ -243,7 +230,7 @@ class ReportGenerator(QObject):
 
         if self._board.image:
             file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, _BOARD_IMAGE)
-            ut.draw_board(self._board.image, file_name)
+            ut.save_board(self._board.image, file_name)
             self.step_done.emit()
             logger.info("The board image is saved to '%s'", os.path.basename(file_name))
             return True
@@ -316,14 +303,15 @@ class ReportGenerator(QObject):
         self._check_stop_operation()
         self.step_started.emit("IV-curves drawing")
         logger.info("IV-curves drawing...")
-        if len(self._pins_info):
+        if len(self._pins_info) > 0:
             img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
             ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done, self._scaling_type, self._english,
                                  self._user_defined_scales, self._check_stop_operation)
             logger.info("The IV-curve images are saved in the '%s' directory", img_dir_path)
-        else:
-            logger.info("There are no IV-curves to draw")
-        return True
+            return True
+
+        logger.info("There are no IV-curves to draw")
+        return False
 
     def _draw_pins(self) -> bool:
         """
@@ -479,9 +467,8 @@ class ReportGenerator(QObject):
 
     def _get_info_about_faulty_elements_and_pins(self) -> Dict[str, Any]:
         """
-        Method returns dictionary with information about faulty elements and pins. Faulty pins are pins whose score is
+        :return: dictionary with information about faulty elements and pins. Faulty pins are pins whose score is
         greater or equal to the threshold. Faulty element has at least one faulty pin.
-        :return: dictionary with information about faulty elements and pins.
         """
 
         self._check_stop_operation()
@@ -527,9 +514,8 @@ class ReportGenerator(QObject):
 
     def _get_total_number_of_steps(self, pin_number: int) -> int:
         """
-        Method returns total number of steps to generate all reports.
         :param pin_number: number of pins on the board.
-        :return: total number of steps.
+        :return: total number of steps to generate all reports.
         """
 
         processes = (self._draw_board, self._draw_board_with_pins, self._draw_board_with_pins,
@@ -582,7 +568,7 @@ class ReportGenerator(QObject):
         threshold = self._config.get(ConfigAttributes.THRESHOLD_SCORE, None)
         if threshold is not None:
             # The threshold is given in relative units (0 - minimum value, 1 - maximum). Convert this value to %.
-            # The transition to percentages is carried out in the task # 85658
+            # The transition to percentages is carried out in the task #85658
             self._threshold_score = 100 * threshold
         self._user_defined_scales = self._config.get(ConfigAttributes.USER_DEFINED_SCALES, None)
         required_objects = self._config.get(ConfigAttributes.OBJECTS, {})
@@ -633,7 +619,7 @@ class ReportGenerator(QObject):
 
         return VERSION
 
-    def run(self, config: Dict) -> None:
+    def run(self, config: Dict[ConfigAttributes, Any]) -> None:
         """
         Method runs report generation.
         :param config: dictionary with full information about required report.

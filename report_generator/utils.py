@@ -8,7 +8,7 @@ import time
 from collections import namedtuple
 from datetime import datetime, timedelta
 from enum import auto, Enum
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 from mako.template import Template
@@ -62,13 +62,20 @@ TEST_CURVE_PEN: QPen = QPen(QBrush(QColor(255, 0, 0, 255)), 4)
 
 
 def write_time(process_name: str):
+    """
+    A decorator that measures the execution time of the decorated operation and outputs it to the log.
+    :param process_name: name of the operation whose execution time needs to be measured.
+    """
 
     def decorator(func):
+        """
+        :param func: decorated function.
+        """
 
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> Any:
             start_time = time.time()
             result = func(*args, **kwargs)
-            logger.info("[TIME] Time spent on the process '%s': %f sec", process_name, time.time() - start_time)
+            logger.info("[TIME_SPENT] Time spent on the process '%s': %f sec", process_name, time.time() - start_time)
             return result
 
         return wrapper
@@ -80,6 +87,19 @@ def write_time(process_name: str):
 def _draw_ivc_for_pin(pin_info: PinInfo, index: int, file_name: str, scaling_type: ScalingTypes,
                       user_defined_scales: list, viewer: Viewer, ref_curve, test_curve,
                       check_stop: Callable[[], None] = lambda: None) -> None:
+    """
+    :param pin_info: information about pin for which to draw IV-curve;
+    :param index: pin index;
+    :param file_name: name of the file in which to save the IV-curve image;
+    :param scaling_type: type of scaling for a graph with IV-curve;
+    :param user_defined_scales: list with user defined scales;
+    :param viewer: widget in which to draw IV-curve;
+    :param ref_curve: object into which to write data for the reference curve;
+    :param test_curve: object into which to write data for the test curve;
+    :param check_stop: function that checks whether the operation is stopped.
+    """
+
+    check_stop()
     ref_currents = np.array([])
     ref_voltages = np.array([])
     test_currents = np.array([])
@@ -117,7 +137,7 @@ def _draw_ivc_for_pin(pin_info: PinInfo, index: int, file_name: str, scaling_typ
     else:
         test_curve.clear_curve()
 
-    viewer.plot.grab().save(file_name)
+    viewer.plot.grab().save(file_name, format="PNG")
 
 
 @write_time("DRAW PIN")
@@ -127,7 +147,7 @@ def _draw_pin(image: Image, pin: Tuple[float, float], color: str, file_name: str
     :param image: image on which to draw a circle;
     :param pin: coordinates of pin to be drawn on the image;
     :param color: color for pin;
-    :param file_name:
+    :param file_name: the name of the file where to save the pin image.
     """
 
     dpi = float(plt.rcParams["figure.dpi"])
@@ -195,11 +215,6 @@ def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
             report_dir_name = f"{report_dir_name_with_time} {index}"
         else:
             return report_dir_path
-
-
-@write_time("DRAW BOARD")
-def draw_board(image: Image, file_name: str) -> None:
-    image.save(file_name)
 
 
 @write_time("DRAW BOARD WITH PINS")
@@ -351,13 +366,14 @@ def draw_pins(image: Image, pins_info: List[PinInfo], dir_name: str, signal: pyq
         upper, lower = _get_pin_borders(pin_info.y, height, pin_width)
         pin_image = image.crop((left, upper, right, lower))
         pin_color = PIN_COLORS[pin_info.pin_type]
-        file_name = os.path.join(dir_name, f"{pin_info.element_index}_{pin_info.pin_index}_pin.png")
+        file_name = os.path.join(dir_name, f"{pin_info.element_index}_{pin_info.pin_index}_pin.jpeg")
         _draw_pin(pin_image, (pin_info.x - left, pin_info.y - upper), pin_color, file_name)
         signal.emit()
         logger.info("Image of the pin '%s_%s' is saved to '%s'", pin_info.element_index, pin_info.pin_index,
                     os.path.basename(file_name))
 
 
+@write_time("GENERATE REPORT")
 def generate_report(template_file: str, report_file: str, **kwargs) -> None:
     """
     Function generates a report.
@@ -457,3 +473,13 @@ def get_pin_type(pin: Pin, score: Optional[float], threshold_score: Optional[flo
         if getattr(pin, "is_loss", None):
             return PinTypes.REFERENCE_LOSS
         return PinTypes.REFERENCE_NOT_EMPTY
+
+
+@write_time("SAVE BOARD")
+def save_board(image: Image, file_name: str) -> None:
+    """
+    :param image: board image to save;
+    :param file_name: name of the file in which to save the board image.
+    """
+
+    image.save(file_name, "JPEG")

@@ -109,7 +109,7 @@
                     </td>
                     % if fault_histogram:
                     <td>
-                        <img src="static/fault_histogram.png" alt="Гистограмма неисправностей" title="Гистограмма неисправностей" width="600px">
+                        <img src="static/fault_histogram.jpeg" alt="Гистограмма неисправностей" title="Гистограмма неисправностей" width="600px">
                     </td>
                     % endif
                 </tr>
@@ -129,7 +129,7 @@
                     % else:
                     <td>
                     % endif
-                        <img id="board" src="static/img/board_with_bad_pins.png" usemap="#map" alt="Карта неисправных точек тестирования" title="Карта неисправных точек тестирования">
+                        <img id="board" src="static/img/board_with_bad_pins.jpeg" usemap="#map" alt="Карта неисправных точек тестирования" title="Карта неисправных точек тестирования">
                         <p><map name="map">
                             % for bad_pin in bad_pins:
                             <area shape="circle" coords="${bad_pin.x},${bad_pin.y},${pin_radius}" href="#point${bad_pin.x}${bad_pin.y}" alt="">
@@ -233,10 +233,10 @@
                     % if board_img_width is not None:
                     <td>
                         <a class="img_pin">
-                            <img src="static/img/${'%s_%s_pin.png'%(bad_pin.element_index, bad_pin.pin_index)}" height="${pin_img_size}"
+                            <img src="static/img/${'%s_%s_pin.jpeg'%(bad_pin.element_index, bad_pin.pin_index)}" height="${pin_img_size}"
                                 alt="Изображение точки тестирования (пина)", title="Изображение точки тестирования (пина)">
                             <span>
-                                <img src="static/img/board_clear.png" width="300px" style="position:fixed; top:50px; left:50px">
+                                <img src="static/img/board_clear.jpeg" width="300px" style="position:fixed; top:50px; left:50px">
                                 <div class="pin" style="top:${50 + bad_pin.y * 300 / board_img_width - 2}px; left:${50 + bad_pin.x * 300 / board_img_width - 2}px;"></div>
                                 </img>
                             </span>

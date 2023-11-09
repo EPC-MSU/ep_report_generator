@@ -10,10 +10,12 @@ from epcore.elements import Board
 from epcore.filemanager import load_board_from_ufiv
 from report_generator import ConfigAttributes, ObjectsForReport, ReportGenerator, ReportTypes, ScalingTypes
 from manual_board import create_manual_board
+from report_generator.logger import save_logs_to_file
 
 
 if __name__ == "__main__":
 
+    save_logs_to_file("log.txt")
     app = QApplication(sys.argv)
     dir_name = os.path.dirname(os.path.abspath(__file__))
 
