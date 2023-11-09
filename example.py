@@ -30,9 +30,10 @@ if __name__ == "__main__":
               ConfigAttributes.APP_VERSION: "1.2.3",
               ConfigAttributes.TEST_DURATION: timedelta(seconds=562),
               ConfigAttributes.SCALING_TYPE: ScalingTypes.EYEPOINT_P10,
-              ConfigAttributes.ENGLISH: True}
+              ConfigAttributes.ENGLISH: False}
     report_generator = ReportGenerator()
     report_generator.run(config)
+    sys.exit(0)
 
     # Report for manual board
     dir_for_report = os.path.join(dir_name, "examples", "report_for_manual_board")

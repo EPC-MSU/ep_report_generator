@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="static/styles/style_for_report.css">
     <script type="text/javascript">
         var flag = false;
+        var pin_image_size = ${pin_img_size};
 
         /**
          * Function changes size of board image and position of area pins on it.
@@ -17,11 +18,13 @@
         function change_size() {
             if (flag)
                 return;
+
             flag = true;
             const WIDTH = 800;
             let board_img = document.getElementById("board");
             if (board_img == null)
                 return;
+
             let natural_width = board_img.naturalWidth;
             board_img.width = WIDTH;
             let pin_areas = document.getElementsByTagName("area");
@@ -32,6 +35,27 @@
                 let y = coords[1] * WIDTH / natural_width;
                 let r = coords[2] * WIDTH / natural_width / 5;
                 pin.setAttribute("coords", x + "," + y + "," + r);
+            }
+            
+            draw_pins();
+        }
+
+        /**
+         *
+         */
+        function draw_pins() {
+            let board_img = document.getElementById("board");
+            let pin_canvases = document.getElementsByTagName("canvas");
+            for (let i = 0; i < pin_canvases.length; i++) {
+                console.log(i);
+                let pin_canvas = pin_canvases[i];
+                pin_canvas.height = pin_image_size;
+                pin_canvas.width = pin_image_size;
+                let context = pin_canvas.getContext("2d");
+                let coords = pin_canvas.dataset.pinCoords.split(",");
+                let sx = coords[0] - pin_image_size / 2;
+                let sy = coords[1] - pin_image_size / 2;
+                context.drawImage(board_img, sx, sy, pin_image_size, pin_image_size, 0, 0, pin_image_size, pin_image_size);
             }
         }
 
@@ -122,9 +146,10 @@
                     <td>
                     % endif
                         <img id="board" src="static/img/board.jpeg" usemap="#map" alt="Карта точек тестирования" title="Карта точек тестирования">
-                        <p><map name="map">
+                        <p>
+                            <map name="map">
                             % for pin in pins:
-                            <area shape="circle" coords="${pin.x},${pin.y},${pin_radius}" href="#point${pin.x}${pin.y}" alt="">
+                                <area shape="circle" coords="${pin.x},${pin.y},${pin_radius}" href="#point${pin.x}${pin.y}" alt="">
                             % endfor
                             </map>
                         </p>
@@ -224,8 +249,7 @@
                     % if board_img_width is not None:
                     <td>
                         <a class="img_pin">
-                            <img src="static/img/${'%s_%s_pin.jpeg'%(pin.element_index, pin.pin_index)}" height="${pin_img_size}"
-                                alt="Изображение точки тестирования (пина)", title="Изображение точки тестирования (пина)">
+                            <canvas data-pin-coords="${pin.x},${pin.y}"></canvas>
                             <span>
                                 <img src="static/img/board_clear.jpeg" width="300px" style="position:fixed; top:50px; left:50px">
                                 <div class="pin" style="top:${50 + pin.y * 300 / board_img_width - 2}px; left:${50 + pin.x * 300 / board_img_width - 2}px;"></div>

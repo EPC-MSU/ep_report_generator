@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="static/styles/style_for_report.css">
     <script type="text/javascript">
         var flag = false;
+        var pin_image_size = ${pin_img_size};
 
         /**
          * Function changes size of board image and position of area pins on it.
@@ -22,6 +23,7 @@
             let board_img = document.getElementById("board");
             if (board_img == null)
                 return;
+            
             let natural_width = board_img.naturalWidth;
             board_img.width = WIDTH;
             let pin_areas = document.getElementsByTagName("area");
@@ -32,6 +34,22 @@
                 let y = coords[1] * WIDTH / natural_width;
                 let r = coords[2] * WIDTH / natural_width / 5;
                 pin.setAttribute("coords", x + "," + y + "," + r);
+            }
+            
+            draw_pins();
+        }
+
+        /**
+         *
+         */
+        function draw_pins() {
+            let board_img = document.getElementById("board");
+            let pin_canvases = document.getElementByTagName("canvas");
+            for (let i = 0; i < pin_canvases.length; i++) {
+                let pin_canvas = pin_canvases[i];
+                let context = pin_canvas.getContext("2d");
+                let coords = pin_canvas.dataset.pinCoords.split(",");
+                context.drawImage(img, coords[0], coords[1], pin_image_size, pin_image_size, 0, 0, pin_image_size, pin_image_size);
             }
         }
 
@@ -130,9 +148,10 @@
                     <td>
                     % endif
                         <img id="board" src="static/img/board_with_bad_pins.jpeg" usemap="#map" alt="Карта неисправных точек тестирования" title="Карта неисправных точек тестирования">
-                        <p><map name="map">
+                        <p>
+                            <map name="map">
                             % for bad_pin in bad_pins:
-                            <area shape="circle" coords="${bad_pin.x},${bad_pin.y},${pin_radius}" href="#point${bad_pin.x}${bad_pin.y}" alt="">
+                                <area shape="circle" coords="${bad_pin.x},${bad_pin.y},${pin_radius}" href="#point${bad_pin.x}${bad_pin.y}" alt="">
                             % endfor
                             </map>
                         </p>
@@ -233,8 +252,7 @@
                     % if board_img_width is not None:
                     <td>
                         <a class="img_pin">
-                            <img src="static/img/${'%s_%s_pin.jpeg'%(bad_pin.element_index, bad_pin.pin_index)}" height="${pin_img_size}"
-                                alt="Изображение точки тестирования (пина)", title="Изображение точки тестирования (пина)">
+                            <canvas data-pin-coords="${bad_pin.x,bad_pin.y}"></canvas>
                             <span>
                                 <img src="static/img/board_clear.jpeg" width="300px" style="position:fixed; top:50px; left:50px">
                                 <div class="pin" style="top:${50 + bad_pin.y * 300 / board_img_width - 2}px; left:${50 + bad_pin.x * 300 / board_img_width - 2}px;"></div>

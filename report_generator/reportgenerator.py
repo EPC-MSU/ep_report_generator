@@ -597,8 +597,7 @@ class ReportGenerator(QObject):
                    ReportCreationSteps.DRAW_BOARD: (lambda: self._draw_board_with_pins(False)),
                    ReportCreationSteps.DRAW_BOARD_WITH_BAD_PINS: (lambda: self._draw_board_with_pins(True)),
                    ReportCreationSteps.DRAW_FAULT_HISTOGRAM: self._draw_fault_histogram,
-                   ReportCreationSteps.DRAW_IV: self._draw_ivc,
-                   ReportCreationSteps.DRAW_PINS: self._draw_pins}
+                   ReportCreationSteps.DRAW_IV: self._draw_ivc}
         for step, method in methods.items():
             self._results_by_steps[step] = method()
         self._copy_favicon_and_styles()
