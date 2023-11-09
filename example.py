@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     # Report for board from P10 file
     dir_for_report = os.path.join(dir_name, "examples", "report_for_p10_board")
-    config = {ConfigAttributes.BOARD: load_board_from_ufiv(os.path.join("example_board", "elements.json")),
+    config = {ConfigAttributes.BOARD: load_board_from_ufiv("board.uzf"),
               ConfigAttributes.DIRECTORY: dir_for_report,
               ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True},
               ConfigAttributes.PIN_SIZE: 200,

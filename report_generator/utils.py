@@ -183,19 +183,6 @@ def _get_pin_borders(center: float, board_width: int, pin_width: int) -> Tuple[f
     return left, right
 
 
-def _set_y_ticks_on_histogram(ax, y_values: np.ndarray) -> None:
-    """
-    :param ax: axis on which to place ticks.
-    :param y_values: the values of the histogram bins.
-    """
-
-    y_max = y_values.max()
-    if y_max > 10:
-        ax.set_yticks([int(i * y_max / 4) for i in range(5)])
-    else:
-        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-
-
 def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
     """
     Function creates name for directory where report will be saved.
@@ -299,7 +286,8 @@ def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, 
     ax.set_yscale("symlog")
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.yaxis.set_major_formatter(ScalarFormatter())
-    _set_y_ticks_on_histogram(ax, y_values)
+    y_ticks_all = np.array([1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000])
+    ax.set_yticks(y_ticks_all[y_ticks_all <= y_values.max()])
     plt.legend(loc="lower left", bbox_to_anchor=(0, 0.99, 1, 0.2), mode="expand", ncol=3)
     fig.savefig(file_name)
     fig.clear()
