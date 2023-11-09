@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     # Report for board from P10 file
     dir_for_report = os.path.join(dir_name, "examples", "report_for_p10_board")
-    config = {ConfigAttributes.BOARD: load_board_from_ufiv("board.uzf"),
+    config = {ConfigAttributes.BOARD: load_board_from_ufiv(os.path.join("example_board", "elements.json")),
               ConfigAttributes.DIRECTORY: dir_for_report,
               ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True},
               ConfigAttributes.PIN_SIZE: 200,
@@ -33,7 +33,6 @@ if __name__ == "__main__":
               ConfigAttributes.ENGLISH: True}
     report_generator = ReportGenerator()
     report_generator.run(config)
-    sys.exit(0)
 
     # Report for manual board
     dir_for_report = os.path.join(dir_name, "examples", "report_for_manual_board")
