@@ -2,6 +2,7 @@
 File with  useful functions.
 """
 
+import json
 import logging
 import os
 import time
@@ -11,7 +12,7 @@ from enum import auto, Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
-from mako.template import Template
+from mako.lookup import TemplateLookup
 from matplotlib.ticker import MaxNLocator, ScalarFormatter
 from PIL.Image import Image
 from PyQt5.QtCore import pyqtSignal
@@ -29,7 +30,7 @@ PinInfo = namedtuple("PinInfo", ["element_name", "element_index", "pin_index", "
 
 class PinTypes(Enum):
     """
-    Pin types
+    Pin types.
     """
 
     REFERENCE_EMPTY = auto()
@@ -138,29 +139,6 @@ def _draw_ivc_for_pin(pin_info: PinInfo, index: int, file_name: str, scaling_typ
         test_curve.clear_curve()
 
     viewer.plot.grab().save(file_name, format="PNG")
-
-
-@write_time("DRAW PIN")
-def _draw_pin(image: Image, pin: Tuple[float, float], color: str, file_name: str) -> None:
-    """
-    Function draws pin on the image.
-    :param image: image on which to draw a circle;
-    :param pin: coordinates of pin to be drawn on the image;
-    :param color: color for pin;
-    :param file_name: the name of the file where to save the pin image.
-    """
-
-    dpi = float(plt.rcParams["figure.dpi"])
-    height = image.height
-    width = image.width
-    fig = plt.figure(figsize=(width / dpi, height / dpi))
-    ax = fig.add_axes([0, 0, 1, 1])
-    ax.axis("off")
-    ax.imshow(image, interpolation="nearest")
-    marker_size = width // 35
-    ax.scatter([pin[0]], [pin[1]], s=marker_size, c=color, zorder=1)
-    ax.set(xlim=[-0.5, width - 0.5], ylim=[height - 0.5, -0.5], aspect=1)
-    fig.savefig(file_name)
 
 
 def _get_pin_borders(center: float, board_width: int, pin_width: int) -> Tuple[float, float]:
@@ -334,45 +312,21 @@ def draw_ivc_for_pins(pins_info: List[PinInfo], dir_name: str, signal: pyqtSigna
                     os.path.basename(file_name))
 
 
-def draw_pins(image: Image, pins_info: List[PinInfo], dir_name: str, signal: pyqtSignal, pin_width: int,
-              check_stop: Callable[[], None] = lambda: None) -> None:
-    """
-    Function draws and saves pin images.
-    :param image: board image;
-    :param pins_info: list with information about pins which to draw;
-    :param dir_name: name of directory where images should be saved;
-    :param signal: signal;
-    :param pin_width: width in pixels of pin images;
-    :param check_stop: function that checks whether the operation is stopped.
-    """
-
-    height = image.height
-    width = image.width
-    for pin_info in pins_info:
-        check_stop()
-        left, right = _get_pin_borders(pin_info.x, width, pin_width)
-        upper, lower = _get_pin_borders(pin_info.y, height, pin_width)
-        pin_image = image.crop((left, upper, right, lower))
-        pin_color = PIN_COLORS[pin_info.pin_type]
-        file_name = os.path.join(dir_name, f"{pin_info.element_index}_{pin_info.pin_index}_pin.jpeg")
-        _draw_pin(pin_image, (pin_info.x - left, pin_info.y - upper), pin_color, file_name)
-        signal.emit()
-        logger.info("Image of the pin '%s_%s' is saved to '%s'", pin_info.element_index, pin_info.pin_index,
-                    os.path.basename(file_name))
-
-
 @write_time("GENERATE REPORT")
-def generate_report(template_file: str, report_file: str, **kwargs) -> None:
+def generate_report(template_dir: str, template_file: str, report_file: str, **kwargs) -> None:
     """
     Function generates a report.
+    :param template_dir:
     :param template_file: name of template file for report;
     :param report_file: name of file where report should be saved;
     :param kwargs: arguments for template.
     """
 
-    report = Template(filename=template_file, input_encoding="utf-8")
+    template_lookup = TemplateLookup(directories=[template_dir])
+    template = template_lookup.get_template(template_file)
     with open(report_file, "w", encoding="utf-8") as file:
-        file.write(report.render(**kwargs))
+        kwargs["PIN_COLORS"] = json.dumps({str(key): value for key, value in PIN_COLORS.items()})
+        file.write(template.render(**kwargs))
 
 
 def get_default_dir_path() -> str:

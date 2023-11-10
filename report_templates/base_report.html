@@ -1,0 +1,19 @@
+<%inherit file="base.html"/>
+
+<%block name="style_and_script">
+    <link rel="stylesheet" href="static/styles/style_for_report.css">
+    <script type="text/javascript" src="static/scripts/report_script.js"></script>
+    <script>
+        const PIN_COLORS = ${PIN_COLORS};
+        const PIN_IMAGE_SIZE = ${pin_img_size};
+    </script>
+</%block>
+
+<body onload="change_size()">
+    <div id="wrapper">
+        <h1><%block name="title"/></h1>
+        <%block name="general_info_table"/>
+        <%block name="component_table"/>
+        ${next.body()}
+    </div>
+</body>

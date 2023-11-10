@@ -25,11 +25,8 @@ _BOARD_WITH_PINS_IMAGE: str = "board.jpeg"
 _DEFAULT_REPORT_DIR_NAME: str = "report"
 _IMG_DIR_NAME: str = "img"
 _FAULT_HISTOGRAM_IMAGE: str = "fault_histogram.jpeg"
-_FAVICON_16_FOR_REPORT: str = "favicon-16x16.png"
-_FAVICON_32_FOR_REPORT: str = "favicon-32x32.png"
+_SCRIPTS_DIR_NAME: str = "scripts"
 _STATIC_DIR_NAME: str = "static"
-_STYLE_FOR_MAP: str = "style_for_map.css"
-_STYLE_FOR_REPORT: str = "style_for_report.css"
 _STYLES_DIR_NAME: str = "styles"
 _TEMPLATE_FILE_WITH_FULL_REPORT: str = "report_full.html"
 _TEMPLATE_FILE_WITH_FULL_REPORT_EN: str = "report_full_en.html"
@@ -191,20 +188,19 @@ class ReportGenerator(QObject):
         """
 
         self._check_stop_operation()
-        files_info = [{"file_name": _STYLE_FOR_MAP,
+        files_info = [{"file_names": ["style_for_map.css", "style_for_report.css"],
                        "dir_name": _STYLES_DIR_NAME},
-                      {"file_name": _STYLE_FOR_REPORT,
-                       "dir_name": _STYLES_DIR_NAME},
-                      {"file_name": _FAVICON_16_FOR_REPORT,
+                      {"file_names": ["favicon-16x16.png", "favicon-32x32.png"],
                        "dir_name": _IMG_DIR_NAME},
-                      {"file_name": _FAVICON_32_FOR_REPORT,
-                       "dir_name": _IMG_DIR_NAME}]
+                      {"file_names": ["full_image_script.js", "report_script.js"],
+                       "dir_name": _SCRIPTS_DIR_NAME}]
+
         for file_info in files_info:
-            self._check_stop_operation()
-            file_name = file_info["file_name"]
             dir_name = file_info["dir_name"]
-            file_path = os.path.join(self._dir_template, file_name)
-            shutil.copyfile(file_path, os.path.join(self._static_dir_name, dir_name, file_name))
+            for file_name in file_info["file_names"]:
+                self._check_stop_operation()
+                file_path = os.path.join(self._dir_template, file_name)
+                shutil.copyfile(file_path, os.path.join(self._static_dir_name, dir_name, file_name))
 
     def _create_required_dirs(self) -> None:
         """
@@ -212,11 +208,9 @@ class ReportGenerator(QObject):
         """
 
         self._static_dir_name = os.path.join(self._dir_name, _STATIC_DIR_NAME)
-        img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-        styles_dir_path = os.path.join(self._static_dir_name, _STYLES_DIR_NAME)
-        for dir_path in (img_dir_path, styles_dir_path):
+        for dir_name in (_IMG_DIR_NAME, _SCRIPTS_DIR_NAME, _STYLES_DIR_NAME):
             self._check_stop_operation()
-            os.makedirs(dir_path, exist_ok=True)
+            os.makedirs(os.path.join(self._static_dir_name, dir_name), exist_ok=True)
 
     def _draw_board(self) -> bool:
         """
@@ -313,28 +307,6 @@ class ReportGenerator(QObject):
         logger.info("There are no IV-curves to draw")
         return False
 
-    def _draw_pins(self) -> bool:
-        """
-        Method draws and saves pin images.
-        :return: True if images were drawn and saved.
-        """
-
-        self._check_stop_operation()
-        self.step_started.emit("Pins drawing")
-        logger.info("Pins drawing...")
-
-        if self._board.image:
-            img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-            ut.draw_pins(self._board.image, self._pins_info, img_dir_path, self.step_done, self._pin_width,
-                         self._check_stop_operation)
-            logger.info("The pin images are saved in the '%s' directory", img_dir_path)
-            return True
-
-        for _ in range(len(self._pins_info)):
-            self.step_done.emit()
-        logger.info("The pin images were not drawn")
-        return False
-
     def _generate_full_report(self) -> str:
         """
         Method generates a full report.
@@ -349,11 +321,8 @@ class ReportGenerator(QObject):
 
         self._check_stop_operation()
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_FULL_REPORT)
-        if self._english:
-            template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_FULL_REPORT_EN)
-        else:
-            template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_FULL_REPORT)
-        ut.generate_report(template_file_name, report_file_name, **data)
+        template_file_name = _TEMPLATE_FILE_WITH_FULL_REPORT_EN if self._english else _TEMPLATE_FILE_WITH_FULL_REPORT
+        ut.generate_report(self._dir_template, template_file_name, report_file_name, **data)
 
         self.step_done.emit()
         logger.info("The full report is saved to '%s'", report_file_name)
@@ -374,11 +343,8 @@ class ReportGenerator(QObject):
 
         self._check_stop_operation()
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_REPORT)
-        if self._english:
-            template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_REPORT_EN)
-        else:
-            template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_REPORT)
-        ut.generate_report(template_file_name, report_file_name, **data)
+        template_file_name = _TEMPLATE_FILE_WITH_REPORT_EN if self._english else _TEMPLATE_FILE_WITH_REPORT
+        ut.generate_report(self._dir_template, template_file_name, report_file_name, **data)
 
         self.step_done.emit()
         self.generation_finished.emit(os.path.dirname(report_file_name))
@@ -400,11 +366,8 @@ class ReportGenerator(QObject):
         logger.info("Generating a report with board map...")
 
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_MAP)
-        if self._english:
-            template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_MAP_EN)
-        else:
-            template_file_name = os.path.join(self._dir_template, _TEMPLATE_FILE_WITH_MAP)
-        ut.generate_report(template_file_name, report_file_name, pins=self._pins_info)
+        template_file_name = _TEMPLATE_FILE_WITH_MAP_EN if self._english else _TEMPLATE_FILE_WITH_MAP
+        ut.generate_report(self._dir_template, template_file_name, report_file_name, pins=self._pins_info)
 
         self.step_done.emit()
         logger.info("The report with board map is saved to '%s'", report_file_name)
@@ -521,7 +484,7 @@ class ReportGenerator(QObject):
         processes = (self._draw_board, self._draw_board_with_pins, self._draw_board_with_pins,
                      self._draw_fault_histogram, self._generate_report_with_map, self._generate_full_report,
                      self._generate_report)
-        processes_for_pins = self._draw_pins, self._draw_ivc
+        processes_for_pins = (self._draw_ivc,)
         return len(processes) + pin_number * len(processes_for_pins)
 
     def _read_config(self, config: Dict[ConfigAttributes, Any]) -> None:
