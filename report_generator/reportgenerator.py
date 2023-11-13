@@ -30,11 +30,8 @@ _SCRIPTS_DIR_NAME: str = "scripts"
 _STATIC_DIR_NAME: str = "static"
 _STYLES_DIR_NAME: str = "styles"
 _TEMPLATE_FILE_WITH_FULL_REPORT: str = "report_full.html"
-_TEMPLATE_FILE_WITH_FULL_REPORT_EN: str = "report_full_en.html"
 _TEMPLATE_FILE_WITH_MAP: str = "full_img.html"
-_TEMPLATE_FILE_WITH_MAP_EN: str = "full_img_en.html"
 _TEMPLATE_FILE_WITH_REPORT: str = "report.html"
-_TEMPLATE_FILE_WITH_REPORT_EN: str = "report_en.html"
 _TEMPLATES_DIR_NAME: str = "report_templates"
 _PIN_RADIUS: int = 6
 _PIN_WIDTH: int = 100
@@ -323,8 +320,7 @@ class ReportGenerator(QObject):
 
         self._check_stop_operation()
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_FULL_REPORT)
-        template_file_name = _TEMPLATE_FILE_WITH_FULL_REPORT_EN if self._english else _TEMPLATE_FILE_WITH_FULL_REPORT
-        ut.generate_report(self._dir_template, template_file_name, report_file_name, **data)
+        ut.generate_report(self._dir_template, _TEMPLATE_FILE_WITH_FULL_REPORT, report_file_name, **data)
 
         self.step_done.emit()
         logger.info("The full report is saved to '%s'", report_file_name)
@@ -345,8 +341,7 @@ class ReportGenerator(QObject):
 
         self._check_stop_operation()
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_REPORT)
-        template_file_name = _TEMPLATE_FILE_WITH_REPORT_EN if self._english else _TEMPLATE_FILE_WITH_REPORT
-        ut.generate_report(self._dir_template, template_file_name, report_file_name, **data)
+        ut.generate_report(self._dir_template, _TEMPLATE_FILE_WITH_REPORT, report_file_name, **data)
 
         self.step_done.emit()
         self.generation_finished.emit(os.path.dirname(report_file_name))
@@ -368,8 +363,7 @@ class ReportGenerator(QObject):
         logger.info("Generating a report with board map...")
 
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_MAP)
-        template_file_name = _TEMPLATE_FILE_WITH_MAP_EN if self._english else _TEMPLATE_FILE_WITH_MAP
-        ut.generate_report(self._dir_template, template_file_name, report_file_name, pins=self._pins_info,
+        ut.generate_report(self._dir_template, _TEMPLATE_FILE_WITH_MAP, report_file_name, pins=self._pins_info,
                            _=self._translation_function)
 
         self.step_done.emit()
