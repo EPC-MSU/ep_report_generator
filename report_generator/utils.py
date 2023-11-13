@@ -273,7 +273,8 @@ def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, 
 
 def draw_ivc_for_pins(pins_info: List[PinInfo], dir_name: str, signal: pyqtSignal,
                       scaling_type: ScalingTypes = ScalingTypes.AUTO, english: bool = False,
-                      user_defined_scales: list = None, check_stop: Callable[[], None] = lambda: None) -> None:
+                      user_defined_scales: list = None, check_stop: Callable[[], None] = lambda: None,
+                      _: Callable[[str], str] = None) -> None:
     """
     Function draws and saves the IV-curves for the pins.
     :param pins_info: list with information about pins for which to draw IV-curves;
@@ -282,7 +283,8 @@ def draw_ivc_for_pins(pins_info: List[PinInfo], dir_name: str, signal: pyqtSigna
     :param scaling_type: type of scaling for a graph with IV-curve;
     :param english: if True, graph labels will be in English;
     :param user_defined_scales: list with user defined scales;
-    :param check_stop: function that checks whether the operation is stopped.
+    :param check_stop: function that checks whether the operation is stopped;
+    :param _: translation function.
     """
 
     check_stop()
@@ -292,10 +294,11 @@ def draw_ivc_for_pins(pins_info: List[PinInfo], dir_name: str, signal: pyqtSigna
     viewer.plot.set_x_axis_title("Voltage, V" if english else "Напряжение, В")
     viewer.plot.set_y_axis_title("Current, mA" if english else "Ток, мА")
     viewer.plot.setStyleSheet("background: white")
-    test_curve = viewer.plot.add_curve()
+    test_curve = viewer.plot.add_curve(_("Тестовая ВАХ"))
     test_curve.set_curve_params(TEST_CURVE_PEN)
-    ref_curve = viewer.plot.add_curve()
+    ref_curve = viewer.plot.add_curve(_("ВАХ эталона"))
     ref_curve.set_curve_params(REFERENCE_CURVE_PEN)
+    viewer.plot.show_legend(QFont("Times", 10))
 
     for index, pin_info in enumerate(pins_info):
         check_stop()

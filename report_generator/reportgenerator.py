@@ -299,7 +299,7 @@ class ReportGenerator(QObject):
         if len(self._pins_info) > 0:
             img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
             ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done, self._scaling_type, self._english,
-                                 self._user_defined_scales, self._check_stop_operation)
+                                 self._user_defined_scales, self._check_stop_operation, self._translation_function)
             logger.info("The IV-curve images are saved in the '%s' directory", img_dir_path)
             return True
 

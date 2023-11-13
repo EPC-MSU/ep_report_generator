@@ -5,4 +5,4 @@ Pillow==8.0.1
 PyQt5>=5.8.2, <=5.15.2
 PyQt5-stubs
 git+https://github.com/EPC-MSU/epcore@v0.1.20#egg=epcore
-git+https://github.com/EPC-MSU/ivviewer@v0.1.13#egg=ivviewer
+git+https://github.com/EPC-MSU/ivviewer@dev-0.1#egg=ivviewer

@@ -30,7 +30,7 @@ msgstr "IVC at the test pin"
 msgid "ВАХ эталона"
 msgstr "Reference IVC"
 
-msgid "Тестовая (текущая) ВАХ"
+msgid "Тестовая ВАХ"
 msgstr "Test (current) IVC"
 
 
@@ -53,6 +53,9 @@ msgstr "Component index"
 
 msgid "Индекс пина"
 msgstr "Pin index"
+
+msgid "пк"
+msgstr "px"
 
 msgid "Выход мультиплексора"
 msgstr "Multiplexer output"

@@ -36,8 +36,8 @@
                     <span>${_("Название элемента")}: ${pin.element_name}</span><br>
                     <span>${_("Индекс элемента")}: ${pin.element_index}</span><br>
                     <span>${_("Индекс пина")}: ${pin.pin_index}</span><br>
-                    <span>X = ${round(pin.x, 2)} пк</span><br>
-                    <span>Y = ${round(pin.y, 2)} пк</span><br>
+                    <span>X = ${round(pin.x, 2)} ${_("пк")}</span><br>
+                    <span>Y = ${round(pin.y, 2)} ${_("пк")}</span><br>
                 % if pin.score is not None:
                     <span>score = ${round(pin.score, 2)}%}</span><br>
                 % endif
@@ -65,20 +65,6 @@
                         <span>${comment}</span>
                     </div><br>
                     % endif
-                    <%
-                        legend_for_iv_img = ""
-                        for measurement in pin.measurements:
-                            if measurement.is_reference:
-                                label = _("ВАХ эталона")
-                                legend_for_iv_img += f'<font color="#00f">{label}</font>\n'
-                            else:
-                                label = _("Тестовая (текущая) ВАХ")
-                                legend_for_iv_img += f'<font color="#f00">{label}</font>\n'
-                    %>
-                    <button class="collapsible" onclick="handle_click(this)">${_("Легенда ВАХ")}</button>
-                    <div class="hidden_options">
-                        <span style="white-space: pre-line">${legend_for_iv_img}</span>
-                    </div><br>
                 % endif
                 % if pin.comment:
                     <button class="collapsible" onclick="handle_click(this)">${_("Комментарий к пину")}</button>
