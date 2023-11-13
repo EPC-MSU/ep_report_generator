@@ -30,7 +30,7 @@ if __name__ == "__main__":
               ConfigAttributes.APP_VERSION: "1.2.3",
               ConfigAttributes.TEST_DURATION: timedelta(seconds=562),
               ConfigAttributes.SCALING_TYPE: ScalingTypes.EYEPOINT_P10,
-              ConfigAttributes.ENGLISH: False}
+              ConfigAttributes.ENGLISH: True}
     report_generator = ReportGenerator()
     report_generator.run(config)
     sys.exit(0)

@@ -1,5 +1,6 @@
 import gettext
 import logging
+import os
 from typing import Callable
 
 
@@ -7,8 +8,10 @@ logger = logging.getLogger("report_generator")
 
 
 def install_translation(english: bool) -> Callable[[str], str]:
+    dir_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "locales")
+    print(dir_path)
     if english:
-        en = gettext.translation("report_generator", localedir="locales", languages=["en"])
+        en = gettext.translation("translation", localedir=dir_path, languages=["en"])
         en.install()
         _ = en.gettext
         logger.info("English translation installed")
