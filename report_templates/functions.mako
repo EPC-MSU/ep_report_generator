@@ -39,7 +39,7 @@
                     <span>X = ${round(pin.x, 2)} ${_("пк")}</span><br>
                     <span>Y = ${round(pin.y, 2)} ${_("пк")}</span><br>
                 % if pin.score is not None:
-                    <span>score = ${round(pin.score, 2)}%}</span><br>
+                    <span>score = ${round(pin.score, 2)}%</span><br>
                 % endif
                 % if pin.multiplexer_output:
                     <button class="collapsible" onclick="handle_click(this)">${_("Выход мультиплексора")}</button>
