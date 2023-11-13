@@ -397,14 +397,11 @@ class ReportGenerator(QObject):
             pin_img_size = self._pin_width
         pcb_name = None
         pcb_comment = None
-        mm_per_px = None
         if self._board.pcb is not None:
             if self._board.pcb.pcb_name is not None:
                 pcb_name = self._board.pcb.pcb_name
             if self._board.pcb.comment is not None:
                 pcb_comment = self._board.pcb.comment
-            if self._board.pcb.image_resolution_ppcm is not None:
-                mm_per_px = 10 / self._board.pcb.image_resolution_ppcm
 
         self._check_stop_operation()
         return {"app_name": self._app_name,
@@ -413,7 +410,6 @@ class ReportGenerator(QObject):
                 "computer": os.environ.get("COMPUTERNAME", "Unknown"),
                 "date": datetime.strftime(datetime.now(), "%Y.%m.%d %H:%M:%S"),
                 "elements_number": ut.get_elements_number(self._pins_info),
-                "mm_per_px": mm_per_px,
                 "operating_system": f"{platform.system()} {platform.release()} {platform.architecture()[0]}",
                 "pcb_comment": pcb_comment,
                 "pcb_name": pcb_name,
