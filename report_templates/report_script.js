@@ -12,7 +12,8 @@ function change_size() {
     const WIDTH = 800;
     const board_images = ["board", "board_clear"]
     let natural_width = null;
-    for (const board_image of board_images) {
+    for (let i = 0; i < board_images.length; i++) {
+        let board_image = board_images[i];
         natural_width = change_size_of_board_image(board_image, WIDTH);
     }
 

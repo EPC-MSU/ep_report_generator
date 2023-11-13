@@ -191,7 +191,7 @@ class ReportGenerator(QObject):
                        "dir_name": _STYLES_DIR_NAME},
                       {"file_names": ["favicon-16x16.png", "favicon-32x32.png"],
                        "dir_name": _IMG_DIR_NAME},
-                      {"file_names": ["full_image_script.js", "report_script.js"],
+                      {"file_names": ["excanvas.js", "full_image_script.js", "report_script.js"],
                        "dir_name": _SCRIPTS_DIR_NAME}]
 
         for file_info in files_info:
