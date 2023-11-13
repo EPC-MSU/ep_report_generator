@@ -40,7 +40,7 @@ msgid "Номер модуля"
 msgstr "Module number"
 
 msgid "Номер канала"
-msdstr "Channel number"
+msgstr "Channel number"
 
 msgid "Параметры измерения"
 msgstr "Measurement settings"
