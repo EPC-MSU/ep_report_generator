@@ -144,7 +144,7 @@
                     <span>HTML: v4.01</span><br>
                     <span><a href="${other_report_file}" target="_blank">${other_report_name}</a></span><br>
                 % if board_img_width:
-                    <span><a href="full_img.html" target="_blank">${_("Просмотерть изображение платы")}</a></span><br>
+                    <span><a href="full_img.html" target="_blank">${_("Просмотреть изображение платы")}</a></span><br>
                 % endif
                 </td>
             % if fault_histogram:
