@@ -101,7 +101,7 @@
                 % endif
                 <td>
                 % if pin.measurements:
-                    <img src="static/img/${pin.element_index}_${pin.pin_index}_iv.png" height="${pin_img_size}" alt="${_('ВАХ')}" title="${legend_for_iv_img}">
+                    <img src="static/img/${pin.element_index}_${pin.pin_index}_iv.png" height="${pin_img_size}" alt="${_('ВАХ')}">
                 % else:
                     <span>${_("ВАХ нет")}</span>
                 % endif
