@@ -129,8 +129,11 @@ msgstr "Threshold score"
 msgid "Комментарий"
 msgstr "Comment"
 
-msgid "Изображение платы"
+msgid "Просмотреть изображение платы"
 msgstr "Image inspect"
+
+msgid "Изображение платы"
+msgstr "Board image"
 
 msgid "Гистограмма неисправностей"
 msgstr "Fault histogram"
@@ -161,7 +164,13 @@ msgstr "Percentage of faulty test points"
 msgid "Отчет"
 msgstr "Report"
 
+msgid "Просмотреть полный отчет"
+msgstr "View full report"
+
 
 # report_full.html
 msgid "Полный отчет"
 msgstr "Full report"
+
+msgid "Просмотреть отчет"
+msgstr "View report"
