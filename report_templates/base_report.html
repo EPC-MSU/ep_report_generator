@@ -12,7 +12,7 @@
 
 <body onload="change_size()">
     <div id="wrapper">
-        <h1><%block name="title"/></h1>
+        <h1>${self.title()}</h1>
         <%block name="general_info_table"/>
         <%block name="component_table"/>
         ${next.body()}

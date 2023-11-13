@@ -21,6 +21,9 @@ msgstr ""
 
 # full_img.html
 
+msgid "Карта точек тестирования"
+msgstr "Test pins map"
+
 msgid "Изображение платы с пинами"
 msgstr "Image of the board with pins"
 

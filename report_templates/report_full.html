@@ -1,13 +1,16 @@
 <%inherit file="base_report.html"/>
 <%namespace name="functions" file="functions.mako"/>
 
+
 <%block name="title">
     ${_("Полный отчет")}
 </%block>
 
+
 <%block name="general_info_table">
     ${functions.create_general_info_table(other_report_file="report.html", other_report_name=_("Просмотреть отчет"), full_report=True, board_image_file="board.jpeg", pins_info=pins)}
 </%block>
+
 
 <%block name="component_table">
     ${functions.create_component_table(pins)}
