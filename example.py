@@ -33,7 +33,6 @@ if __name__ == "__main__":
               ConfigAttributes.ENGLISH: True}
     report_generator = ReportGenerator()
     report_generator.run(config)
-    sys.exit(0)
 
     # Report for manual board
     dir_for_report = os.path.join(dir_name, "examples", "report_for_manual_board")
