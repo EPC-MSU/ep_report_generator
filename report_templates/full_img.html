@@ -1,8 +1,10 @@
 <%inherit file="base.html"/>
 
+
 <%block name="title">
-    Карта точек тестирования
+    ${_("Карта точек тестирования")}
 </%block>
+
 
 <%block name="style_and_script">
     <link rel="stylesheet" href="static/styles/style_for_map.css">
@@ -12,7 +14,7 @@
 
 <body>
     <center>
-        <img id="board_img" src="static/img/board.jpeg" alt="Изображение платы с пинами" usemap="#map">
+        <img id="board_img" src="static/img/board.jpeg" alt="${_('Изображение платы с пинами')}" usemap="#map">
     </center>
     <p>
         <map name="map">
@@ -25,15 +27,17 @@
     % if pin.measurements:
     <figure id="img${pin.x},${pin.y},6" onmouseover="change_position(this);" style="display: none;">
         <p>
-            <img src="static/img/${pin.element_index}_${pin.pin_index}_iv.png" alt="Изображение ВАХ в точке тестирования" title="Изображение ВАХ в точке тестирования">
+            <img src="static/img/${pin.element_index}_${pin.pin_index}_iv.png" alt="${_('ВАХ в точке тестирования')}" title="${_('ВАХ в точке тестирования')}">
         </p>
         <%
             legend_for_iv_img = ""
             for measurement in pin.measurements:
                 if measurement.is_reference:
-                    legend_for_iv_img += '<font color="#00f">ВАХ эталона</font>\n'
+                    label = _("ВАХ эталона")
+                    legend_for_iv_img += f'<font color="#00f">{label}</font>\n'
                 else:
-                    legend_for_iv_img += '<font color="#f00">Тестовая (текущая) ВАХ</font>>\n'
+                    label = _("Тестовая (текущая) ВАХ")
+                    legend_for_iv_img += f'<font color="#f00">{label}</font>\n'
         %>
         <figcaption>${legend_for_iv_img}</figcaption>
     </figure>

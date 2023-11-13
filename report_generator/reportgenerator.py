@@ -10,12 +10,13 @@ import sys
 import webbrowser
 from datetime import datetime, timedelta
 from enum import auto, Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 from PyQt5.QtCore import pyqtSignal, QObject
 from epcore.elements import Board
 from epcore.measurementmanager import IVCComparator
 from report_generator import utils as ut
 from report_generator.version import VERSION
+from translation import install_translation
 
 
 logger = logging.getLogger("report_generator")
@@ -158,6 +159,7 @@ class ReportGenerator(QObject):
         self._static_dir_name: str = None
         self._test_duration: timedelta = None
         self._threshold_score: Optional[float] = None
+        self._translation_function: Callable[[str], str] = lambda x: x
         self._user_defined_scales: Optional[List[Tuple[float, float]]] = None
         self.stop: bool = False
 
@@ -367,7 +369,8 @@ class ReportGenerator(QObject):
 
         report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_MAP)
         template_file_name = _TEMPLATE_FILE_WITH_MAP_EN if self._english else _TEMPLATE_FILE_WITH_MAP
-        ut.generate_report(self._dir_template, template_file_name, report_file_name, pins=self._pins_info)
+        ut.generate_report(self._dir_template, template_file_name, report_file_name, pins=self._pins_info,
+                           _=self._translation_function)
 
         self.step_done.emit()
         logger.info("The report with board map is saved to '%s'", report_file_name)
@@ -426,7 +429,8 @@ class ReportGenerator(QObject):
                 "pins_number": len(self._pins_info),
                 "fault_histogram": self._results_by_steps[ReportCreationSteps.DRAW_FAULT_HISTOGRAM],
                 "test_duration": self._test_duration,
-                "threshold_score": self._threshold_score}
+                "threshold_score": self._threshold_score,
+                "_": self._translation_function}
 
     def _get_info_about_faulty_elements_and_pins(self) -> Dict[str, Any]:
         """
@@ -588,6 +592,7 @@ class ReportGenerator(QObject):
         """
 
         self._read_config(config)
+        self._translation_function = install_translation(self._english)
         try:
             self._run()
             if self.stop:

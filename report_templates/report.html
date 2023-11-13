@@ -2,11 +2,11 @@
 <%namespace name="functions" file="functions.mako"/>
 
 <%block name="title">
-    Отчет
+    ${_("Отчет")}
 </%block>
 
 <%block name="general_info_table">
-    ${functions.create_general_info_table(other_report_file="report_full.html", other_report_name="Полный отчет", full_report=False, board_image_file="board_with_bad_pins.jpeg", pins_info=bad_pins)}
+    ${functions.create_general_info_table(other_report_file="report_full.html", other_report_name=_("Полный отчет"), full_report=False, board_image_file="board_with_bad_pins.jpeg", pins_info=bad_pins)}
 </%block>
 
 <%block name="component_table">

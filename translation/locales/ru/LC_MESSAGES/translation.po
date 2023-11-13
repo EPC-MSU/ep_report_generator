@@ -1,0 +1,143 @@
+# full_img.html
+
+msgid "Изображение платы с пинами"
+msgstr "Image of the board with pins"
+
+msgid "ВАХ в точке тестирования"
+msgstr "IVC at the test pin"
+
+msgid "ВАХ эталона"
+msgstr "Reference IVC"
+
+msgid "Тестовая (текущая) ВАХ"
+msgstr "Test (current) IVC"
+
+
+# functions.mako
+
+msgid "Имя"
+msgstr "Name"
+
+msgid "Компонент"
+msgstr "Component"
+
+msgid "ВАХ"
+msgstr "IVC"
+
+msgid "Название элемента"
+msgstr "Component name"
+
+msgid "Индекс элемента"
+msgstr "Component index"
+
+msgid "Индекс пина"
+msgstr "Pin index"
+
+msgid "Выход мультиплексора"
+msgstr "Multiplexer output"
+
+msgid "Номер модуля"
+msgstr "Module number"
+
+msgid "Номер канала"
+msdstr "Channel number"
+
+msgid "Параметры измерения"
+msgstr "Measurement settings"
+
+msgid "Частота"
+msgstr "Frequency"
+
+msgid "Гц"
+msgstr "Hz"
+
+msgid "Напряжение"
+msgstr "Voltage"
+
+msgid "В"
+msgstr "V"
+
+msgid "Внутреннее сопротивление"
+msgstr "Internal resistance"
+
+msgid "Ом"
+msgstr "Ohm"
+
+msgid "Комментарий к измерению"
+msgstr "Measurement comment"
+
+msgid "Легенда ВАХ"
+msgstr "IVC legend"
+
+msgid "Комментарий к пину"
+msgstr "Pin comment"
+
+msgid "ВАХ нет"
+msgstr "No IVC"
+
+msgid "Общая информация"
+msgstr "General information"
+
+msgid "Диагностическая система"
+msgstr "Test system"
+
+msgid "Версия"
+msgstr "Version"
+
+msgid "Дата"
+msgstr "Date"
+
+msgid "Рабочая станция"
+msgstr "Computer"
+
+msgid "Операционная система"
+msgstr "Operating system"
+
+msgid "Длительность тестирования"
+msgstr "Duration of the test"
+
+msgid "Название платы"
+msgstr "Board name"
+
+msgid "Пороговое значение score"
+msgstr "Threshold score"
+
+msgid "Комментарий"
+msgstr "Comment"
+
+msgid "Изображение платы"
+msgstr "Image inspect"
+
+msgid "Гистограмма неисправностей"
+msgstr "Fault histogram"
+
+msgid "Карта неисправных точек тестирования"
+msgstr "Map of faulty test points"
+
+msgid "Количество компонентов"
+msgstr "All components"
+
+msgid "Количество точек тестирования"
+msgstr "All test points"
+
+msgid "Количество неисправных компонентов/количество компонентов"
+msgstr "Number of faulty components/number of all components"
+
+msgid "Доля неисправных компонентов"
+msgstr "Percentage of faulty components"
+
+msgid "Количество неисправных точек тестирования/количество точек тестирования"
+msgstr "Number of faulty test points/number of all test points"
+
+msgid "Доля неисправных точек тестирования"
+msgstr "Percentage of faulty test points"
+
+
+# report.html
+msgid "Отчет"
+msgstr "Report"
+
+
+# report_full.html
+msgid "Полный отчет"
+msgstr "Full report"
