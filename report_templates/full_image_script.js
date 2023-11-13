@@ -1,8 +1,5 @@
 var mouse_x, mouse_y;
-document.addEventListener("mousemove", (event) => {
-    mouse_x = event.clientX;
-    mouse_y = event.clientY;
-});
+document.addEventListener("mousemove", handle_mouse_move_event);
 
 
 /**
@@ -28,6 +25,16 @@ function check_point_inside(object) {
     if (0 <= mouse_x && mouse_x <= img_width && 0 <= mouse_y && mouse_y <= img_height)
         return true;
     return false;
+}
+
+
+/**
+ * Function handles the mouse movement event.
+ * @param event: mouse movement event.
+ */
+function handle_mouse_move_event(event) {
+    mouse_x = event.clientX;
+    mouse_y = event.clientY;
 }
 
 
