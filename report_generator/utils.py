@@ -246,7 +246,6 @@ def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, 
     scores = np.array(scores)
     good_scores = [scores[index[0]] for index in np.argwhere(scores < threshold)]
     bins_number = 100
-    y_values = np.array([])
     if good_scores:
         label = "Good points" if english else "Исправные\nточки"
         y_values, _, _ = ax.hist(good_scores, bins=bins_number, rwidth=0.85, color="#46CB18", alpha=0.7,
@@ -256,7 +255,6 @@ def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, 
         label = "Faulty points" if english else "Неисправные\nточки"
         y_new, _, _ = ax.hist(bad_scores, bins=bins_number, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 100]),
                               label=label)
-        y_values = np.append(y_values, y_new)
     ax.axvline(x=threshold, color="#232B2B", linewidth=2, label="Threshold" if english else "Порог")
     ax.set_xlabel("Fault distribution" if english else "Распределение неисправностей")
     ax.set_xlim(xmin=0, xmax=100)
@@ -264,8 +262,6 @@ def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, 
     ax.set_yscale("symlog")
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.yaxis.set_major_formatter(ScalarFormatter())
-    y_ticks_all = np.array([1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000])
-    ax.set_yticks(y_ticks_all[y_ticks_all <= y_values.max()])
     plt.legend(loc="lower left", bbox_to_anchor=(0, 0.99, 1, 0.2), mode="expand", ncol=3)
     fig.savefig(file_name)
     fig.clear()
