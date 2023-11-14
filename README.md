@@ -118,9 +118,9 @@
 
 ## Добавление перевода
 
-1. Добавьте перевод в файл **translation/locales/en/LC_MESSAGES/translation.po**.
+1. Добавьте перевод в файл **report_generator/locales/en/LC_MESSAGES/translation.po**.
 
-2. В Ubuntu 18 скомпилируйте бинарный файл с переводом. Для этого перейдите в папку **translations/locales/en/LC_MESSAGES** и выполните команду:
+2. В Ubuntu 18 скомпилируйте бинарный файл с переводом. Для этого перейдите в папку **report_generator/locales/en/LC_MESSAGES** и выполните команду:
 
    ```bash
    msgfmt ./translation.po -o ./translation.mo
