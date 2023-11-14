@@ -177,3 +177,29 @@ msgstr "Full report"
 
 msgid "Просмотреть отчет"
 msgstr "View report"
+
+
+# utils.py
+msgid "Исправные\nточки"
+msgstr "Good points"
+
+msgid "Неисправные\nточки"
+msgstr "Faulty points"
+
+msgid "Порог"
+msgstr "Threshold"
+
+msgid "Распределение неисправностей"
+msgstr "Fault distribution"
+
+msgid "Количество неисправностей"
+msgstr "Faults number"
+
+msgid "Напряжение, В"
+msgstr "Voltage, V"
+
+msgid "Ток, мА"
+msgstr "Current, mA"
+
+msgid "{} мин {} сек"
+msgstr "{} min {} sec"

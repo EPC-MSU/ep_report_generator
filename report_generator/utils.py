@@ -228,13 +228,13 @@ def draw_board_with_pins(image: Image, pins_info: list, file_name: str, marker_s
 
 
 @write_time("DRAW FAULT HISTOGRAM")
-def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, english: bool = False) -> None:
+def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, _: Callable[[str], str]) -> None:
     """
     Function draws and saves a histogram of pin faults. The name of the histogram axes was chosen in the ticket #85658.
     :param scores: score values for which to draw a histogram;
     :param threshold: score threshold;
     :param file_name: name of file to save the histogram;
-    :param english: if True histogram labels will be in English.
+    :param _: translation function.
     """
 
     plt.rc("axes", labelsize=30)
@@ -247,18 +247,16 @@ def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, 
     good_scores = [scores[index[0]] for index in np.argwhere(scores < threshold)]
     bins_number = 100
     if good_scores:
-        label = "Good points" if english else "Исправные\nточки"
         y_values, _, _ = ax.hist(good_scores, bins=bins_number, rwidth=0.85, color="#46CB18", alpha=0.7,
-                                 range=([0, 100]), label=label)
+                                 range=([0, 100]), label=_("Исправные\nточки"))
     bad_scores = [scores[index[0]] for index in np.argwhere(scores >= threshold)]
     if bad_scores:
-        label = "Faulty points" if english else "Неисправные\nточки"
         y_new, _, _ = ax.hist(bad_scores, bins=bins_number, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 100]),
-                              label=label)
-    ax.axvline(x=threshold, color="#232B2B", linewidth=2, label="Threshold" if english else "Порог")
-    ax.set_xlabel("Fault distribution" if english else "Распределение неисправностей")
+                              label=_("Неисправные\nточки"))
+    ax.axvline(x=threshold, color="#232B2B", linewidth=2, label=_("Порог"))
+    ax.set_xlabel(_("Распределение неисправностей"))
     ax.set_xlim(xmin=0, xmax=100)
-    ax.set_ylabel("Faults number" if english else "Количество неисправностей")
+    ax.set_ylabel(_("Количество неисправностей"))
     ax.set_yscale("symlog")
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.yaxis.set_major_formatter(ScalarFormatter())
@@ -268,16 +266,14 @@ def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, 
 
 
 def draw_ivc_for_pins(pins_info: List[PinInfo], dir_name: str, signal: pyqtSignal,
-                      scaling_type: ScalingTypes = ScalingTypes.AUTO, english: bool = False,
-                      user_defined_scales: list = None, check_stop: Callable[[], None] = lambda: None,
-                      _: Callable[[str], str] = None) -> None:
+                      scaling_type: ScalingTypes = ScalingTypes.AUTO, user_defined_scales: list = None,
+                      check_stop: Callable[[], None] = lambda: None, _: Callable[[str], str] = None) -> None:
     """
     Function draws and saves the IV-curves for the pins.
     :param pins_info: list with information about pins for which to draw IV-curves;
     :param dir_name: name of directory where images should be saved;
     :param signal: signal;
     :param scaling_type: type of scaling for a graph with IV-curve;
-    :param english: if True, graph labels will be in English;
     :param user_defined_scales: list with user defined scales;
     :param check_stop: function that checks whether the operation is stopped;
     :param _: translation function.
@@ -287,8 +283,8 @@ def draw_ivc_for_pins(pins_info: List[PinInfo], dir_name: str, signal: pyqtSigna
     viewer = Viewer(axis_font=QFont("Times", 10), title_font=QFont("Times", 15))
     viewer.resize(*IV_IMAGE_SIZE)
     viewer.plot.set_min_borders(0.1, 0.1)
-    viewer.plot.set_x_axis_title("Voltage, V" if english else "Напряжение, В")
-    viewer.plot.set_y_axis_title("Current, mA" if english else "Ток, мА")
+    viewer.plot.set_x_axis_title(_("Напряжение, В"))
+    viewer.plot.set_y_axis_title(_("Ток, мА"))
     viewer.plot.setStyleSheet("background: white")
     test_curve = viewer.plot.add_curve(_("Тестовая ВАХ"))
     test_curve.set_curve_params(TEST_CURVE_PEN)
@@ -336,19 +332,18 @@ def get_default_dir_path() -> str:
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def get_duration_in_str(duration: timedelta, english: bool) -> Optional[str]:
+def get_duration_in_str(duration: timedelta, _: Callable[[str], str]) -> Optional[str]:
     """
     Function returns duration in min and sec.
     :param duration: duration;
-    :param english: if True then duration will be in English.
+    :param _: translation function.
     :return: duration in min and sec.
     """
 
-    duration_format = "{} min {} sec" if english else "{} мин {} сек"
     if isinstance(duration, timedelta):
         minutes = int(duration.total_seconds() // 60)
         seconds = int(duration.total_seconds() % 60)
-        return duration_format.format(minutes, seconds)
+        return _("{} мин {} сек").format(minutes, seconds)
     return None
 
 

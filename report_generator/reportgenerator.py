@@ -15,8 +15,8 @@ from PyQt5.QtCore import pyqtSignal, QObject
 from epcore.elements import Board
 from epcore.measurementmanager import IVCComparator
 from report_generator import utils as ut
+from report_generator.translation import install_translation
 from report_generator.version import VERSION
-from translation import install_translation
 
 
 logger = logging.getLogger("report_generator")
@@ -278,7 +278,7 @@ class ReportGenerator(QObject):
         if scores and self._threshold_score is not None:
             self._check_stop_operation()
             img_name = os.path.join(self._static_dir_name, _FAULT_HISTOGRAM_IMAGE)
-            ut.draw_fault_histogram(scores, self._threshold_score, img_name, self._english)
+            ut.draw_fault_histogram(scores, self._threshold_score, img_name, self._translation_function)
             self.step_done.emit()
             logger.info("The fault histogram is saved to '%s'", img_name)
             return True
@@ -298,7 +298,7 @@ class ReportGenerator(QObject):
         logger.info("IV-curves drawing...")
         if len(self._pins_info) > 0:
             img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-            ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done, self._scaling_type, self._english,
+            ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done, self._scaling_type,
                                  self._user_defined_scales, self._check_stop_operation, self._translation_function)
             logger.info("The IV-curve images are saved in the '%s' directory", img_dir_path)
             return True
@@ -521,7 +521,7 @@ class ReportGenerator(QObject):
                                                           [ReportTypes.SHORT_REPORT])))
         self._scaling_type = self._config.get(ConfigAttributes.SCALING_TYPE, ut.ScalingTypes.AUTO)
         self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, None)
-        self._test_duration = ut.get_duration_in_str(self._test_duration, self._english)
+        self._test_duration = ut.get_duration_in_str(self._test_duration, self._translation_function)
         threshold = self._config.get(ConfigAttributes.THRESHOLD_SCORE, None)
         if threshold is not None:
             # The threshold is given in relative units (0 - minimum value, 1 - maximum). Convert this value to %.

@@ -30,6 +30,6 @@ setup(name="ep_report_generator",
           # "git+https://github.com/EPC-MSU/epcore#egg=epcore",
           # "git+https://github.com/EPC-MSU/ivviewer#egg=ivviewer",
       ],
-      package_data={"report_templates": ["*"],
-                    "translation": ["*"]},
+      package_data={"report_generator.locales.en.LC_MESSAGES": ["*"],
+                    "report_templates": ["*"]},
       )
