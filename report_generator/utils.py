@@ -183,7 +183,7 @@ def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
 
 
 @write_time("DRAW BOARD WITH PINS")
-def draw_board_with_pins(image: Image, pins_info: list, file_name: str, marker_size: Optional[int],
+def draw_board_with_pins(image: Image, pins_info: List[PinInfo], file_name: str, marker_size: Optional[int],
                          check_stop: Callable[[], None] = lambda: None) -> None:
     """
     Function draws and saves an image of board with pins. Function was borrowed from
@@ -203,10 +203,9 @@ def draw_board_with_pins(image: Image, pins_info: list, file_name: str, marker_s
                PinTypes.TEST_LOW_SCORE: [[], []]}
     for pin_info in pins_info:
         check_stop()
-        _, _, _, x, y, _, _, pin_type, _, _, _ = pin_info
-        pin_xy = pins_xy[pin_type]
-        pin_xy[0].append(x)
-        pin_xy[1].append(y)
+        pin_xy = pins_xy[pin_info.pin_type]
+        pin_xy[0].append(pin_info.x)
+        pin_xy[1].append(pin_info.y)
 
     check_stop()
     dpi = float(plt.rcParams["figure.dpi"])
@@ -219,9 +218,11 @@ def draw_board_with_pins(image: Image, pins_info: list, file_name: str, marker_s
 
     if marker_size is None:
         marker_size = width // 38
+    line_width = 1
     for pin_type, x_and_y in pins_xy.items():
         check_stop()
-        ax.scatter(*x_and_y, s=marker_size, c=PIN_COLORS[pin_type], zorder=1)
+        ax.scatter(np.array(x_and_y[0]) - line_width, np.array(x_and_y[1]) - line_width, s=marker_size,
+                   c=PIN_COLORS[pin_type], zorder=1, linewidths=line_width)
 
     check_stop()
     fig.savefig(file_name, dpi=dpi, transparent=True)
