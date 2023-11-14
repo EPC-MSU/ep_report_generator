@@ -419,4 +419,8 @@ def save_board(image: Image, file_name: str) -> None:
     :param file_name: name of the file in which to save the board image.
     """
 
-    image.save(file_name, "JPEG")
+    if image.mode in ("RGBA", "P"):
+        image_to_save = image.convert("RGB")
+    else:
+        image_to_save = image
+    image_to_save.save(file_name, "JPEG")
