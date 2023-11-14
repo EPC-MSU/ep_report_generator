@@ -247,12 +247,12 @@ def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, 
     good_scores = [scores[index[0]] for index in np.argwhere(scores < threshold)]
     bins_number = 100
     if good_scores:
-        y_values, _, _ = ax.hist(good_scores, bins=bins_number, rwidth=0.85, color="#46CB18", alpha=0.7,
-                                 range=([0, 100]), label=_("Исправные\nточки"))
+        ax.hist(good_scores, bins=bins_number, rwidth=0.85, color="#46CB18", alpha=0.7, range=([0, 100]),
+                label=_("Исправные\nточки"))
     bad_scores = [scores[index[0]] for index in np.argwhere(scores >= threshold)]
     if bad_scores:
-        y_new, _, _ = ax.hist(bad_scores, bins=bins_number, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 100]),
-                              label=_("Неисправные\nточки"))
+        ax.hist(bad_scores, bins=bins_number, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 100]),
+                label=_("Неисправные\nточки"))
     ax.axvline(x=threshold, color="#232B2B", linewidth=2, label=_("Порог"))
     ax.set_xlabel(_("Распределение неисправностей"))
     ax.set_xlim(xmin=0, xmax=100)
