@@ -30,12 +30,6 @@ msgstr "Image of the board with pins"
 msgid "ВАХ в точке тестирования"
 msgstr "IVC at the test pin"
 
-msgid "ВАХ эталона"
-msgstr "Reference IVC"
-
-msgid "Тестовая ВАХ"
-msgstr "Test (current) IVC"
-
 
 # functions.mako
 
@@ -92,9 +86,6 @@ msgstr "Ohm"
 
 msgid "Комментарий к измерению"
 msgstr "Measurement comment"
-
-msgid "Легенда ВАХ"
-msgstr "IVC legend"
 
 msgid "Комментарий к пину"
 msgstr "Pin comment"
@@ -179,7 +170,14 @@ msgid "Просмотреть отчет"
 msgstr "View report"
 
 
-# utils.py
+# plot.py
+
+msgid "ВАХ эталона"
+msgstr "Reference IVC"
+
+msgid "Тестовая ВАХ"
+msgstr "Test IVC"
+
 msgid "Исправные\nточки"
 msgstr "Good points"
 
@@ -200,6 +198,9 @@ msgstr "Voltage, V"
 
 msgid "Ток, мА"
 msgstr "Current, mA"
+
+
+# utils.py
 
 msgid "{} мин {} сек"
 msgstr "{} min {} sec"
