@@ -10,7 +10,7 @@ import sys
 import webbrowser
 from datetime import datetime, timedelta
 from enum import auto, Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from PyQt5.QtCore import pyqtSignal, QObject
 from epcore.elements import Board
 from epcore.measurementmanager import IVCComparator
@@ -58,10 +58,33 @@ class ConfigAttributes(Enum):
     THRESHOLD_SCORE = auto()
     USER_DEFINED_SCALES = auto()
 
+    @classmethod
+    def get_default_config(cls, board: Optional[Board]) -> Dict["ConfigAttributes", Any]:
+        """
+        :param board:
+        :return:
+        """
+
+        return {ConfigAttributes.APP_NAME: None,
+                ConfigAttributes.APP_VERSION: None,
+                ConfigAttributes.BOARD: board,
+                ConfigAttributes.DIRECTORY: ut.get_default_dir_path(),
+                ConfigAttributes.ENGLISH: False,
+                ConfigAttributes.IS_REPORT_FOR_TEST_BOARD: None,
+                ConfigAttributes.NOISE_AMPLITUDES: None,
+                ConfigAttributes.OBJECTS: {},
+                ConfigAttributes.OPEN_REPORT_AT_FINISH: False,
+                ConfigAttributes.PIN_SIZE: _PIN_WIDTH,
+                ConfigAttributes.REPORTS_TO_OPEN: [ReportTypes.SHORT_REPORT],
+                ConfigAttributes.SCALING_TYPE: ut.ScalingTypes.AUTO,
+                ConfigAttributes.TEST_DURATION: None,
+                ConfigAttributes.THRESHOLD_SCORE: None,
+                ConfigAttributes.USER_DEFINED_SCALES: None}
+
 
 class ObjectsForReport(Enum):
     """
-    Objects for which report should be created.
+    Objects for which report should be generated.
     """
 
     BOARD = auto()
@@ -69,32 +92,21 @@ class ObjectsForReport(Enum):
     PIN = auto()
 
 
-class ReportCreationSteps(Enum):
+class ReportGenerationSteps(Enum):
     """
-    Stages of creating report.
+    Stages of report generation.
     """
 
-    DRAW_BOARD = auto()
+    COPY_STATIC_FILES = auto()
+    CREATE_DIRS = auto()
     DRAW_BOARD_WITH_BAD_PINS = auto()
+    DRAW_BOARD_WITH_PINS = auto()
     DRAW_CLEAR_BOARD = auto()
     DRAW_FAULT_HISTOGRAM = auto()
-    DRAW_IV = auto()
-    DRAW_PINS = auto()
-    CREATE_MAP_REPORT = auto()
-    CREATE_REPORT = auto()
-
-    @classmethod
-    def get_dict(cls) -> Dict["ReportCreationSteps", Optional[bool]]:
-        """
-        Method returns dictionary for results by stages of report creation.
-        :return: dictionary for results by stages.
-        """
-
-        return {cls.DRAW_BOARD: None,
-                cls.DRAW_IV: None,
-                cls.DRAW_PINS: None,
-                cls.CREATE_MAP_REPORT: None,
-                cls.CREATE_REPORT: None}
+    DRAW_IVC = auto()
+    GENERATE_FULL_REPORT = auto()
+    GENERATE_MAP_REPORT = auto()
+    GENERATE_REPORT = auto()
 
 
 class ReportTypes(Enum):
@@ -123,20 +135,17 @@ class ReportGenerator(QObject):
     step_started: pyqtSignal = pyqtSignal(str)
     total_number_of_steps_calculated: pyqtSignal = pyqtSignal(int)
 
-    def __init__(self, parent=None, board: Optional[Board] = None, config: Optional[Dict[ConfigAttributes, Any]] = None
-                 ) -> None:
+    def __init__(self, parent=None) -> None:
         """
-        :param parent: parent object;
-        :param board: board for which report should be generated;
-        :param config: dictionary with full information about required report.
+        :param parent: parent object.
         """
 
         super().__init__(parent=parent)
         self._app_name: str = None
         self._app_version: str = None
         self._bad_pins_info: List[ut.PinInfo] = []
-        self._board: Board = board
-        self._config: Dict[ConfigAttributes, Any] = config
+        self._board: Board = None
+        self._config: Dict[ConfigAttributes, Any] = None
         self._dir_name: str = ut.get_default_dir_path()
         self._dir_template: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                                _TEMPLATES_DIR_NAME)
@@ -151,12 +160,11 @@ class ReportGenerator(QObject):
         self._required_board: bool = False
         self._required_elements: List[int] = []
         self._required_pins: List[int] = []
-        self._results_by_steps: Dict = ReportCreationSteps.get_dict()
+        self._results_by_steps: Dict[ReportGenerationSteps, bool] = dict()
         self._scaling_type: ut.ScalingTypes = ut.ScalingTypes.AUTO
         self._static_dir_name: str = None
         self._test_duration: timedelta = None
         self._threshold_score: Optional[float] = None
-        self._translation_function: Callable[[str], str] = lambda x: x
         self._user_defined_scales: Optional[List[Tuple[float, float]]] = None
         self.stop: bool = False
 
@@ -175,18 +183,34 @@ class ReportGenerator(QObject):
                         for measurement in pin.measurements:
                             if not measurement.is_reference:
                                 self._is_report_for_test_board = True
-                                break
+                                return
+
+    def _calculate_total_number_of_steps(self) -> None:
+        """
+        Method calculates the total number of steps to generate a report.
+        """
+
+        pins_number = len(self._pins_info)
+        processes = (self._copy_static_files, self._create_required_dirs, self._draw_board, self._draw_board_with_pins,
+                     self._draw_board_with_pins, self._draw_fault_histogram, self._generate_report_with_map,
+                     self._generate_full_report, self._generate_report)
+        processes_for_pins = (self._draw_ivc,)
+        number_of_steps = len(processes) + pins_number * len(processes_for_pins)
+        self.total_number_of_steps_calculated.emit(number_of_steps)
 
     def _check_stop_operation(self) -> None:
         if self.stop:
             raise UserStop()
 
-    def _copy_favicon_and_styles(self) -> None:
+    def _copy_static_files(self) -> None:
         """
-        Method copies favicons and style files to the directory with generated report.
+        Method copies favicons, style and script files to the directory with generated report.
         """
 
         self._check_stop_operation()
+        self.step_started.emit("Copying static files")
+        logger.info("Copying static files...")
+
         files_info = [{"file_names": ["style_for_map.css", "style_for_report.css"],
                        "dir_name": _STYLES_DIR_NAME},
                       {"file_names": ["favicon-16x16.png", "favicon-32x32.png"],
@@ -198,18 +222,29 @@ class ReportGenerator(QObject):
             dir_name = file_info["dir_name"]
             for file_name in file_info["file_names"]:
                 self._check_stop_operation()
-                file_path = os.path.join(self._dir_template, file_name)
-                shutil.copyfile(file_path, os.path.join(self._static_dir_name, dir_name, file_name))
+                src_path = os.path.join(self._dir_template, file_name)
+                dst_path = os.path.join(self._static_dir_name, dir_name, file_name)
+                shutil.copyfile(src_path, dst_path)
+
+        logger.info("Copying static files completed")
+        self.step_done.emit()
 
     def _create_required_dirs(self) -> None:
         """
         Method checks for the presence of the required directories and creates them if necessary.
         """
 
+        self._check_stop_operation()
+        self.step_started.emit("Creating directories")
+        logger.info("Creating directories...")
+
         self._static_dir_name = os.path.join(self._dir_name, _STATIC_DIR_NAME)
         for dir_name in (_IMG_DIR_NAME, _SCRIPTS_DIR_NAME, _STYLES_DIR_NAME):
             self._check_stop_operation()
             os.makedirs(os.path.join(self._static_dir_name, dir_name), exist_ok=True)
+
+        logger.info("Creating directories completed")
+        self.step_done.emit()
 
     def _draw_board(self) -> bool:
         """
@@ -218,19 +253,20 @@ class ReportGenerator(QObject):
         """
 
         self._check_stop_operation()
-        self.step_started.emit("Board drawing")
-        logger.info("Board drawing...")
+        self.step_started.emit("Saving a board image")
+        logger.info("Saving a board image...")
 
         if self._board.image:
             file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, _BOARD_IMAGE)
             ut.save_board(self._board.image, file_name)
-            self.step_done.emit()
+            result = True
             logger.info("The board image is saved to '%s'", os.path.basename(file_name))
-            return True
+        else:
+            result = False
+            logger.info("The board image is not saved: the board has no image")
 
         self.step_done.emit()
-        logger.info("The board image was not drawn")
-        return False
+        return result
 
     def _draw_board_with_pins(self, bad_pins: bool = False) -> bool:
         """
@@ -241,28 +277,30 @@ class ReportGenerator(QObject):
 
         self._check_stop_operation()
         if bad_pins:
-            pins_name = "faulty points"
+            pins_name = "faulty pins"
             board_file_name = _BOARD_WITH_BAD_PINS_IMAGE
             pins = self._bad_pins_info
         else:
-            pins_name = "points"
+            pins_name = "pins"
             board_file_name = _BOARD_WITH_PINS_IMAGE
             pins = self._pins_info
-        self.step_started.emit(f"Board drawing with {pins_name}")
-        logger.info("Board drawing with %s...", pins_name)
 
         self._check_stop_operation()
+        self.step_started.emit(f"Drawing and saving an image of a board with {pins_name}")
+        logger.info("Drawing and saving an image of a board with %s...", pins_name)
+
         if self._board.image:
             self._pin_diameter = ut.get_pin_diameter(self._board.image)
             file_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME, board_file_name)
             ut.draw_board_with_pins(self._board.image, pins, file_name, self._pin_diameter, self._check_stop_operation)
-            self.step_done.emit()
+            result = True
             logger.info("The board image with %s is saved to '%s'", pins_name, os.path.basename(file_name))
-            return True
+        else:
+            result = False
+            logger.info("The board image with %s is not saved: the board has no image", pins_name)
 
         self.step_done.emit()
-        logger.info("The board image with %s was not drawn", pins_name)
-        return False
+        return result
 
     def _draw_fault_histogram(self) -> bool:
         """
@@ -271,21 +309,24 @@ class ReportGenerator(QObject):
         """
 
         self._check_stop_operation()
-        self.step_started.emit("Fault histogram drawing")
-        logger.info("Fault histogram drawing...")
+        self.step_started.emit("Drawing and saving a fault histogram")
+        logger.info("Drawing and saving a fault histogram...")
 
         scores = [pin_info.score for pin_info in self._pins_info if pin_info.score is not None]
         if scores and self._threshold_score is not None:
             self._check_stop_operation()
-            img_name = os.path.join(self._static_dir_name, _FAULT_HISTOGRAM_IMAGE)
-            ut.draw_fault_histogram(scores, self._threshold_score, img_name, self._translation_function)
-            self.step_done.emit()
-            logger.info("The fault histogram is saved to '%s'", img_name)
-            return True
+            file_name = os.path.join(self._static_dir_name, _FAULT_HISTOGRAM_IMAGE)
+            ut.draw_fault_histogram(scores, self._threshold_score, file_name)
+            result = True
+            logger.info("The fault histogram is saved to '%s'", file_name)
+        else:
+            result = False
+            comment = "there is no threshold score" if self._threshold_score is None else \
+                "there are no pins with test and reference IV-curves"
+            logger.info("The fault histogram is not saved: %s", comment)
 
         self.step_done.emit()
-        logger.info("The fault histogram was not drawn")
-        return False
+        return result
 
     def _draw_ivc(self) -> bool:
         """
@@ -294,17 +335,20 @@ class ReportGenerator(QObject):
         """
 
         self._check_stop_operation()
-        self.step_started.emit("IV-curves drawing")
-        logger.info("IV-curves drawing...")
-        if len(self._pins_info) > 0:
-            img_dir_path = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-            ut.draw_ivc_for_pins(self._pins_info, img_dir_path, self.step_done, self._scaling_type,
-                                 self._user_defined_scales, self._check_stop_operation, self._translation_function)
-            logger.info("The IV-curve images are saved in the '%s' directory", img_dir_path)
-            return True
+        self.step_started.emit("Drawing and saving IV-curves of pins")
+        logger.info("Drawing and saving IV-curves of pins...")
 
-        logger.info("There are no IV-curves to draw")
-        return False
+        if len(self._pins_info) > 0:
+            dir_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
+            ut.draw_ivc_for_pins(self._pins_info, dir_name, self.step_done, self._scaling_type,
+                                 self._user_defined_scales, self._check_stop_operation)
+            result = True
+            logger.info("The IV-curve images are saved in the '%s' directory", dir_name)
+        else:
+            result = False
+            logger.info("There are no IV-curves to draw")
+
+        return result
 
     def _generate_full_report(self) -> str:
         """
@@ -316,15 +360,16 @@ class ReportGenerator(QObject):
         self.step_started.emit("Generating a full report")
         logger.info("Generating a full report...")
 
+        self._check_stop_operation()
         data = self._get_general_info()
 
         self._check_stop_operation()
-        report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_FULL_REPORT)
-        ut.generate_report(self._dir_template, _TEMPLATE_FILE_WITH_FULL_REPORT, report_file_name, **data)
+        file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_FULL_REPORT)
+        ut.generate_report(self._dir_template, _TEMPLATE_FILE_WITH_FULL_REPORT, file_name, **data)
 
+        logger.info("The full report is saved to '%s'", file_name)
         self.step_done.emit()
-        logger.info("The full report is saved to '%s'", report_file_name)
-        return report_file_name
+        return file_name
 
     def _generate_report(self) -> str:
         """
@@ -336,17 +381,19 @@ class ReportGenerator(QObject):
         self.step_started.emit("Generating a report")
         logger.info("Generating a report...")
 
+        self._check_stop_operation()
         data = self._get_general_info()
+        self._check_stop_operation()
         data.update(self._get_info_about_faulty_elements_and_pins())
 
         self._check_stop_operation()
-        report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_REPORT)
-        ut.generate_report(self._dir_template, _TEMPLATE_FILE_WITH_REPORT, report_file_name, **data)
+        file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_REPORT)
+        ut.generate_report(self._dir_template, _TEMPLATE_FILE_WITH_REPORT, file_name, **data)
 
+        logger.info("The report is saved to '%s'", file_name)
         self.step_done.emit()
-        self.generation_finished.emit(os.path.dirname(report_file_name))
-        logger.info("The report is saved to '%s'", report_file_name)
-        return report_file_name
+        self.generation_finished.emit(os.path.dirname(file_name))
+        return file_name
 
     def _generate_report_with_map(self) -> Optional[str]:
         """
@@ -354,7 +401,7 @@ class ReportGenerator(QObject):
         :return: name of file with generated report.
         """
 
-        if not self._results_by_steps[ReportCreationSteps.DRAW_BOARD]:
+        if not self._results_by_steps[ReportGenerationSteps.DRAW_BOARD_WITH_PINS]:
             self.step_done.emit()
             return
 
@@ -362,13 +409,12 @@ class ReportGenerator(QObject):
         self.step_started.emit("Generating a report with board map")
         logger.info("Generating a report with board map...")
 
-        report_file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_MAP)
-        ut.generate_report(self._dir_template, _TEMPLATE_FILE_WITH_MAP, report_file_name, pins=self._pins_info,
-                           _=self._translation_function)
+        file_name = os.path.join(self._dir_name, _TEMPLATE_FILE_WITH_MAP)
+        ut.generate_report(self._dir_template, _TEMPLATE_FILE_WITH_MAP, file_name, pins=self._pins_info, _=_)
 
+        logger.info("The report with board map is saved to '%s'", file_name)
         self.step_done.emit()
-        logger.info("The report with board map is saved to '%s'", report_file_name)
-        return report_file_name
+        return file_name
 
     def _get_faulty_pins(self) -> List[ut.PinInfo]:
         """
@@ -388,7 +434,6 @@ class ReportGenerator(QObject):
         :return: dictionary with general information.
         """
 
-        self._check_stop_operation()
         if self._board.image is None:
             board_image_width = None
             pin_img_size = None
@@ -403,13 +448,13 @@ class ReportGenerator(QObject):
             if self._board.pcb.comment is not None:
                 pcb_comment = self._board.pcb.comment
 
-        self._check_stop_operation()
         return {"app_name": self._app_name,
                 "app_version": self._app_version,
                 "board_img_width": board_image_width,
-                "computer": os.environ.get("COMPUTERNAME", "Unknown"),
+                "computer": os.environ.get("COMPUTERNAME", _("Unknown")),
                 "date": datetime.strftime(datetime.now(), "%Y.%m.%d %H:%M:%S"),
                 "elements_number": ut.get_elements_number(self._pins_info),
+                "fault_histogram": self._results_by_steps[ReportGenerationSteps.DRAW_FAULT_HISTOGRAM],
                 "operating_system": f"{platform.system()} {platform.release()} {platform.architecture()[0]}",
                 "pcb_comment": pcb_comment,
                 "pcb_name": pcb_name,
@@ -417,10 +462,9 @@ class ReportGenerator(QObject):
                 "pin_radius": _PIN_RADIUS if self._pin_diameter is None else int(self._pin_diameter / 2),
                 "pins": self._pins_info,
                 "pins_number": len(self._pins_info),
-                "fault_histogram": self._results_by_steps[ReportCreationSteps.DRAW_FAULT_HISTOGRAM],
-                "test_duration": self._test_duration,
+                "test_duration": ut.get_duration_in_str(self._test_duration),
                 "threshold_score": self._threshold_score,
-                "_": self._translation_function}
+                "_": _}
 
     def _get_info_about_faulty_elements_and_pins(self) -> Dict[str, Any]:
         """
@@ -428,7 +472,6 @@ class ReportGenerator(QObject):
         greater or equal to the threshold. Faulty element has at least one faulty pin.
         """
 
-        self._check_stop_operation()
         return {"bad_elements_number": ut.get_elements_number(self._bad_pins_info),
                 "bad_pins": self._bad_pins_info,
                 "bad_pins_number": len(self._bad_pins_info)}
@@ -465,21 +508,7 @@ class ReportGenerator(QObject):
                     pins_info.append(info)
                     accounted_pin_index += 1
                 total_pin_index += 1
-        pin_number = len(pins_info)
-        self.total_number_of_steps_calculated.emit(self._get_total_number_of_steps(pin_number))
         return pins_info
-
-    def _get_total_number_of_steps(self, pin_number: int) -> int:
-        """
-        :param pin_number: number of pins on the board.
-        :return: total number of steps to generate all reports.
-        """
-
-        processes = (self._draw_board, self._draw_board_with_pins, self._draw_board_with_pins,
-                     self._draw_fault_histogram, self._generate_report_with_map, self._generate_full_report,
-                     self._generate_report)
-        processes_for_pins = (self._draw_ivc,)
-        return len(processes) + pin_number * len(processes_for_pins)
 
     def _read_config(self, config: Dict[ConfigAttributes, Any]) -> None:
         """
@@ -488,29 +517,14 @@ class ReportGenerator(QObject):
         """
 
         if not isinstance(config, dict):
-            if not isinstance(self._config, dict):
-                config = {ConfigAttributes.APP_NAME: None,
-                          ConfigAttributes.APP_VERSION: None,
-                          ConfigAttributes.BOARD: self._board,
-                          ConfigAttributes.DIRECTORY: self._dir_name,
-                          ConfigAttributes.ENGLISH: False,
-                          ConfigAttributes.IS_REPORT_FOR_TEST_BOARD: None,
-                          ConfigAttributes.NOISE_AMPLITUDES: None,
-                          ConfigAttributes.OBJECTS: {},
-                          ConfigAttributes.OPEN_REPORT_AT_FINISH: False,
-                          ConfigAttributes.PIN_SIZE: _PIN_WIDTH,
-                          ConfigAttributes.REPORTS_TO_OPEN: [ReportTypes.SHORT_REPORT],
-                          ConfigAttributes.SCALING_TYPE: ut.ScalingTypes.AUTO,
-                          ConfigAttributes.TEST_DURATION: None,
-                          ConfigAttributes.THRESHOLD_SCORE: None,
-                          ConfigAttributes.USER_DEFINED_SCALES: None}
-            else:
-                config = self._config
+            config = ConfigAttributes.get_default_config(self._board) if not isinstance(self._config, dict) else \
+                self._config
+
         self._config = config
         self._app_name = self._config.get(ConfigAttributes.APP_NAME, None)
         self._app_version = self._config.get(ConfigAttributes.APP_VERSION, None)
-        self._board = self._config.get(ConfigAttributes.BOARD, self._board)
-        parent_directory = self._config.get(ConfigAttributes.DIRECTORY, self._dir_name)
+        self._board = self._config.get(ConfigAttributes.BOARD, None)
+        parent_directory = self._config.get(ConfigAttributes.DIRECTORY, ut.get_default_dir_path())
         self._dir_name = ut.create_report_directory_name(parent_directory, _DEFAULT_REPORT_DIR_NAME)
         self._english = self._config.get(ConfigAttributes.ENGLISH, False)
         self._is_report_for_test_board = self._config.get(ConfigAttributes.IS_REPORT_FOR_TEST_BOARD, None)
@@ -521,7 +535,6 @@ class ReportGenerator(QObject):
                                                           [ReportTypes.SHORT_REPORT])))
         self._scaling_type = self._config.get(ConfigAttributes.SCALING_TYPE, ut.ScalingTypes.AUTO)
         self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, None)
-        self._test_duration = ut.get_duration_in_str(self._test_duration, self._translation_function)
         threshold = self._config.get(ConfigAttributes.THRESHOLD_SCORE, None)
         if threshold is not None:
             # The threshold is given in relative units (0 - minimum value, 1 - maximum). Convert this value to %.
@@ -544,26 +557,33 @@ class ReportGenerator(QObject):
         if not isinstance(self._board, Board):
             return
 
-        self._create_required_dirs()
         self._analyze_required_report_type()
         self._pins_info = self._get_pins()
+        self._calculate_total_number_of_steps()
         self._bad_pins_info = self._get_faulty_pins()
         if not self._pins_info:
             logger.info("There are no objects for which report should be created")
-        methods = {ReportCreationSteps.DRAW_CLEAR_BOARD: self._draw_board,
-                   ReportCreationSteps.DRAW_BOARD: (lambda: self._draw_board_with_pins(False)),
-                   ReportCreationSteps.DRAW_BOARD_WITH_BAD_PINS: (lambda: self._draw_board_with_pins(True)),
-                   ReportCreationSteps.DRAW_FAULT_HISTOGRAM: self._draw_fault_histogram,
-                   ReportCreationSteps.DRAW_IV: self._draw_ivc}
-        for step, method in methods.items():
+
+        self._results_by_steps = dict()
+        methods = ((ReportGenerationSteps.CREATE_DIRS, self._create_required_dirs),
+                   (ReportGenerationSteps.DRAW_CLEAR_BOARD, self._draw_board),
+                   (ReportGenerationSteps.DRAW_BOARD_WITH_PINS, (lambda: self._draw_board_with_pins(False))),
+                   (ReportGenerationSteps.DRAW_BOARD_WITH_BAD_PINS, (lambda: self._draw_board_with_pins(True))),
+                   (ReportGenerationSteps.DRAW_FAULT_HISTOGRAM, self._draw_fault_histogram),
+                   (ReportGenerationSteps.DRAW_IVC, self._draw_ivc),
+                   (ReportGenerationSteps.COPY_STATIC_FILES, self._copy_static_files),
+                   (ReportGenerationSteps.GENERATE_MAP_REPORT, self._generate_report_with_map),
+                   (ReportGenerationSteps.GENERATE_REPORT, self._generate_report),
+                   (ReportGenerationSteps.GENERATE_FULL_REPORT, self._generate_full_report))
+        for step, method in methods:
             self._results_by_steps[step] = method()
-        self._copy_favicon_and_styles()
-        created_reports = {ReportTypes.MAP_REPORT: self._generate_report_with_map(),
-                           ReportTypes.FULL_REPORT: self._generate_full_report(),
-                           ReportTypes.SHORT_REPORT: self._generate_report()}
+
+        correspondence_dict = {ReportTypes.MAP_REPORT: ReportGenerationSteps.GENERATE_MAP_REPORT,
+                               ReportTypes.FULL_REPORT: ReportGenerationSteps.GENERATE_FULL_REPORT,
+                               ReportTypes.SHORT_REPORT: ReportGenerationSteps.GENERATE_REPORT}
         if self._open_report_at_finish:
             for report_to_open in self._reports_to_open:
-                report_file_name = created_reports.get(report_to_open, None)
+                report_file_name = self._results_by_steps.get(correspondence_dict.get(report_to_open, None), None)
                 if report_file_name:
                     webbrowser.open(report_file_name, new=2)
 
@@ -582,7 +602,7 @@ class ReportGenerator(QObject):
         """
 
         self._read_config(config)
-        self._translation_function = install_translation(self._english)
+        install_translation(self._english)
         try:
             self._run()
             if self.stop:

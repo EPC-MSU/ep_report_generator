@@ -10,15 +10,18 @@ from collections import namedtuple
 from datetime import datetime, timedelta
 from enum import auto, Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
-import matplotlib.pyplot as plt
-import numpy as np
-from mako.lookup import TemplateLookup
-from matplotlib.ticker import MaxNLocator, ScalarFormatter
-from PIL.Image import Image
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QBrush, QColor, QFont, QPen
-from epcore.elements import Pin
-from ivviewer import Curve, Viewer
+import matplotlib
+matplotlib.use("Agg")
+if True:
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from mako.lookup import TemplateLookup
+    from matplotlib.ticker import MaxNLocator, ScalarFormatter
+    from PIL.Image import Image
+    from PyQt5.QtCore import pyqtSignal
+    from PyQt5.QtGui import QBrush, QColor, QFont, QPen
+    from epcore.elements import Pin
+    from ivviewer import Curve, Viewer
 
 
 logger = logging.getLogger("report_generator")
@@ -229,13 +232,12 @@ def draw_board_with_pins(image: Image, pins_info: List[PinInfo], file_name: str,
 
 
 @write_time("DRAW FAULT HISTOGRAM")
-def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, _: Callable[[str], str]) -> None:
+def draw_fault_histogram(scores: List[float], threshold: float, file_name: str) -> None:
     """
     Function draws and saves a histogram of pin faults. The name of the histogram axes was chosen in the ticket #85658.
     :param scores: score values for which to draw a histogram;
     :param threshold: score threshold;
-    :param file_name: name of file to save the histogram;
-    :param _: translation function.
+    :param file_name: name of file to save the histogram.
     """
 
     plt.rc("axes", labelsize=30)
@@ -268,7 +270,7 @@ def draw_fault_histogram(scores: List[float], threshold: float, file_name: str, 
 
 def draw_ivc_for_pins(pins_info: List[PinInfo], dir_name: str, signal: pyqtSignal,
                       scaling_type: ScalingTypes = ScalingTypes.AUTO, user_defined_scales: list = None,
-                      check_stop: Callable[[], None] = lambda: None, _: Callable[[str], str] = None) -> None:
+                      check_stop: Callable[[], None] = lambda: None) -> None:
     """
     Function draws and saves the IV-curves for the pins.
     :param pins_info: list with information about pins for which to draw IV-curves;
@@ -276,8 +278,7 @@ def draw_ivc_for_pins(pins_info: List[PinInfo], dir_name: str, signal: pyqtSigna
     :param signal: signal;
     :param scaling_type: type of scaling for a graph with IV-curve;
     :param user_defined_scales: list with user defined scales;
-    :param check_stop: function that checks whether the operation is stopped;
-    :param _: translation function.
+    :param check_stop: function that checks whether the operation is stopped.
     """
 
     check_stop()
@@ -333,11 +334,10 @@ def get_default_dir_path() -> str:
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def get_duration_in_str(duration: timedelta, _: Callable[[str], str]) -> Optional[str]:
+def get_duration_in_str(duration: timedelta) -> Optional[str]:
     """
     Function returns duration in min and sec.
-    :param duration: duration;
-    :param _: translation function.
+    :param duration: duration.
     :return: duration in min and sec.
     """
 
