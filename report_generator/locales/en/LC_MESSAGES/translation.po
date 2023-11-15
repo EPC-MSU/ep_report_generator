@@ -42,10 +42,10 @@ msgstr "Component"
 msgid "ВАХ"
 msgstr "IVC"
 
-msgid "Название элемента"
+msgid "Название компонента"
 msgstr "Component name"
 
-msgid "Индекс элемента"
+msgid "Индекс компонента"
 msgstr "Component index"
 
 msgid "Индекс пина"
@@ -155,6 +155,7 @@ msgstr "Percentage of faulty test points"
 
 
 # report.html
+
 msgid "Отчет"
 msgstr "Report"
 
@@ -163,6 +164,7 @@ msgstr "View full report"
 
 
 # report_full.html
+
 msgid "Полный отчет"
 msgstr "Full report"
 
