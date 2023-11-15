@@ -34,9 +34,9 @@ class Analyzer:
 
         start_time, finish_time = None, None
         for line in lines:
-            if "Board drawing..." in line:
+            if "Creating directories..." in line:
                 start_time = self._get_datetime(line)
-            elif "Generating a report..." in line:
+            elif "The full report is saved" in line:
                 finish_time = self._get_datetime(line)
             elif "[TIME_SPENT]" in line:
                 self._analyze_time(line)
