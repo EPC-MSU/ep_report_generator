@@ -20,6 +20,16 @@ class PinTypes(Enum):
     TEST_LOW_SCORE = auto()
 
 
+class ReportTypes(Enum):
+    """
+    Types of report.
+    """
+
+    FULL_REPORT = auto()
+    MAP_REPORT = auto()
+    SHORT_REPORT = auto()
+
+
 class ScalingTypes(Enum):
     """
     Types of scaling of a graph with IV-curves.

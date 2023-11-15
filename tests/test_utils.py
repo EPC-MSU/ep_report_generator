@@ -16,10 +16,8 @@ class TestUtilsFunctions(unittest.TestCase):
         self.assertTrue(report_dir_name.startswith(os.path.join(dir_name, base_name)))
 
     def test_get_duration_in_str(self) -> None:
-        self.assertEqual(ut.get_duration_in_str(timedelta(hours=1, minutes=1, seconds=3), lambda x: x),
-                         "61 мин 3 сек")
-        self.assertEqual(ut.get_duration_in_str(timedelta(hours=2, minutes=31, seconds=43), lambda x: x),
-                         "151 мин 43 сек")
+        self.assertEqual(ut.get_duration_in_str(timedelta(hours=1, minutes=1, seconds=3)), "61 мин 3 сек")
+        self.assertEqual(ut.get_duration_in_str(timedelta(hours=2, minutes=31, seconds=43)), "151 мин 43 сек")
 
     def test_get_elements_number(self) -> None:
         pins = [ut.PinInfo("name_1", 1, 1, 0, 0, [], 0, None, 0, None, None),

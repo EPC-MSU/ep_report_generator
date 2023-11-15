@@ -15,6 +15,7 @@ from PyQt5.QtCore import pyqtSignal, QObject
 from epcore.elements import Board
 from epcore.measurementmanager import IVCComparator
 from report_generator import utils as ut
+from report_generator.definitions import ReportTypes, ScalingTypes
 from report_generator.translation import install_translation
 from report_generator.version import VERSION
 from report_generator.plot import draw_board_with_pins, draw_fault_histogram, draw_ivc_for_pins, save_board
@@ -77,7 +78,7 @@ class ConfigAttributes(Enum):
                 ConfigAttributes.OPEN_REPORT_AT_FINISH: False,
                 ConfigAttributes.PIN_SIZE: _PIN_WIDTH,
                 ConfigAttributes.REPORTS_TO_OPEN: [ReportTypes.SHORT_REPORT],
-                ConfigAttributes.SCALING_TYPE: ut.ScalingTypes.AUTO,
+                ConfigAttributes.SCALING_TYPE: ScalingTypes.AUTO,
                 ConfigAttributes.TEST_DURATION: None,
                 ConfigAttributes.THRESHOLD_SCORE: None,
                 ConfigAttributes.USER_DEFINED_SCALES: None}
@@ -108,16 +109,6 @@ class ReportGenerationSteps(Enum):
     GENERATE_FULL_REPORT = auto()
     GENERATE_MAP_REPORT = auto()
     GENERATE_REPORT = auto()
-
-
-class ReportTypes(Enum):
-    """
-    Types of report.
-    """
-
-    FULL_REPORT = auto()
-    MAP_REPORT = auto()
-    SHORT_REPORT = auto()
 
 
 class UserStop(Exception):
@@ -162,7 +153,7 @@ class ReportGenerator(QObject):
         self._required_elements: List[int] = []
         self._required_pins: List[int] = []
         self._results_by_steps: Dict[ReportGenerationSteps, bool] = dict()
-        self._scaling_type: ut.ScalingTypes = ut.ScalingTypes.AUTO
+        self._scaling_type: ScalingTypes = ScalingTypes.AUTO
         self._static_dir_name: str = None
         self._test_duration: timedelta = None
         self._threshold_score: Optional[float] = None
@@ -534,7 +525,7 @@ class ReportGenerator(QObject):
         self._pin_width = self._config.get(ConfigAttributes.PIN_SIZE, _PIN_WIDTH)
         self._reports_to_open = list(set(self._config.get(ConfigAttributes.REPORTS_TO_OPEN,
                                                           [ReportTypes.SHORT_REPORT])))
-        self._scaling_type = self._config.get(ConfigAttributes.SCALING_TYPE, ut.ScalingTypes.AUTO)
+        self._scaling_type = self._config.get(ConfigAttributes.SCALING_TYPE, ScalingTypes.AUTO)
         self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, None)
         threshold = self._config.get(ConfigAttributes.THRESHOLD_SCORE, None)
         if threshold is not None:
