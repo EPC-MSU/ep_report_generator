@@ -418,7 +418,7 @@ class ReportGenerator(QObject):
         faulty_pins = []
         if self._threshold_score is not None:
             faulty_pins = [pin_info for pin_info in self._pins_info
-                           if pin_info.score is not None and pin_info.score >= self._threshold_score]
+                           if pin_info.score is not None and pin_info.score > self._threshold_score]
         return faulty_pins
 
     def _get_general_info(self) -> Dict[str, Any]:
