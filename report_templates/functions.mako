@@ -33,8 +33,8 @@
                 <td class="align_left">
                     <a class="anchor" id="top" name="point_${pin.x}_${pin.y}"></a>
                     <span>#${pin.total_pin_index}</span><br>
-                    <span>${_("Название элемента")}: ${pin.element_name}</span><br>
-                    <span>${_("Индекс элемента")}: ${pin.element_index}</span><br>
+                    <span>${_("Название компонента")}: ${pin.element_name}</span><br>
+                    <span>${_("Индекс компонента")}: ${pin.element_index}</span><br>
                     <span>${_("Индекс пина")}: ${pin.pin_index}</span><br>
                     <span>X = ${round(pin.x, 2)} ${_("пк")}</span><br>
                     <span>Y = ${round(pin.y, 2)} ${_("пк")}</span><br>
@@ -161,7 +161,11 @@
             % else:
                 <th>
             % endif
+                % if full_report:
+                    <h2>${_("Карта точек тестирования")}</h2>
+                % else:
                     <h2>${_("Карта неисправных точек тестирования")}</h2>
+                % endif
                 </th>
             </tr>
 
