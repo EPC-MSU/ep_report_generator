@@ -51,9 +51,9 @@
                 % if pin.measurements:
                     <button class="collapsible" onclick="handle_click(this)">${_("Параметры измерения")}</button>
                     <div class="hidden_options">
-                        <span>${_("Частота")} = ${pin.measurements[0].settings.probe_signal_frequency} ${_("Гц")}</span><br>
-                        <span>${_("Напряжение")} = ${pin.measurements[0].settings.max_voltage} ${_("В")}</span><br>
-                        <span>${_("Внутреннее сопротивление")} = ${pin.measurements[0].settings.internal_resistance} ${_("Ом")}</span><br>
+                        <span>${_("Частота")} = ${round(pin.measurements[0].settings.probe_signal_frequency, 2)} ${_("Гц")}</span><br>
+                        <span>${_("Напряжение")} = ${round(pin.measurements[0].settings.max_voltage, 2)} ${_("В")}</span><br>
+                        <span>${_("Внутреннее сопротивление")} = ${round(pin.measurements[0].settings.internal_resistance, 2)} ${_("Ом")}</span><br>
                     </div><br>
                     <%
                         comments = [measurement.comment for measurement in pin.measurements if measurement.comment]
