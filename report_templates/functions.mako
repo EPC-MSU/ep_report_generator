@@ -24,7 +24,7 @@
             %>
             <tr>
                 <td class="element_name" colspan="3">
-                    <h2>#${pin.element_index} - ${pin.element_name}</h2>
+                    <h2>#${pin.element_index + 1} - ${pin.element_name}</h2>
                 </td>
             </tr>
             % endif
@@ -32,10 +32,10 @@
             <tr>
                 <td class="align_left">
                     <a class="anchor" id="top" name="point_${pin.x}_${pin.y}"></a>
-                    <span>#${pin.total_pin_index}</span><br>
+                    <span>#${pin.total_pin_index + 1}</span><br>
                     <span>${_("Название компонента")}: ${pin.element_name}</span><br>
-                    <span>${_("Индекс компонента")}: ${pin.element_index}</span><br>
-                    <span>${_("Индекс пина")}: ${pin.pin_index}</span><br>
+                    <span>${_("Индекс компонента")}: ${pin.element_index + 1}</span><br>
+                    <span>${_("Индекс пина")}: ${pin.pin_index + 1}</span><br>
                     <span>X = ${round(pin.x, 2)} ${_("пк")}</span><br>
                     <span>Y = ${round(pin.y, 2)} ${_("пк")}</span><br>
                 % if pin.score is not None:
