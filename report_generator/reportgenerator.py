@@ -491,7 +491,7 @@ class ReportGenerator(QObject):
                         comparator.set_min_ivc(voltage_noise, current_noise)
                         # Score is in relative units (0 - minimum value, 1 - maximum). Convert this value to %.
                         # The transition to percentages is carried out in the task # 85658
-                        score = 100 * comparator.compare_ivc(pin.measurements[0].ivc, pin.measurements[1].ivc)
+                        score = round(100 * comparator.compare_ivc(pin.measurements[0].ivc, pin.measurements[1].ivc), 1)
                     else:
                         score = None
                     pin_type = ut.get_pin_type(pin, score, self._threshold_score, self._is_report_for_test_board)
