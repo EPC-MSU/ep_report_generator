@@ -54,6 +54,9 @@ msgstr "Pin index"
 msgid "пк"
 msgstr "px"
 
+msgid "Различие"
+msgstr "Difference"
+
 msgid "Выход мультиплексора"
 msgstr "Multiplexer output"
 
@@ -117,8 +120,8 @@ msgstr "Duration of the test"
 msgid "Название платы"
 msgstr "Board name"
 
-msgid "Пороговое значение score"
-msgstr "Threshold score"
+msgid "Допуск"
+msgstr "Tolerance"
 
 msgid "Комментарий"
 msgstr "Comment"

@@ -39,7 +39,7 @@
                     <span>X = ${round(pin.x, 2)} ${_("пк")}</span><br>
                     <span>Y = ${round(pin.y, 2)} ${_("пк")}</span><br>
                 % if pin.score is not None:
-                    <span>score = ${round(pin.score, 1)}%</span><br>
+                    <span>${_("Различие")} = ${round(pin.score, 1)}%</span><br>
                 % endif
                 % if pin.multiplexer_output:
                     <button class="collapsible" onclick="handle_click(this)">${_("Выход мультиплексора")}</button>
@@ -136,7 +136,7 @@
                 % endif
                 ${write_component_info(full_report)}
                 % if threshold_score:
-                    <span>${_("Пороговое значение score")}: ${round(threshold_score, 2)}%</span><br>
+                    <span>${_("Допуск")}: ${round(threshold_score, 2)}%</span><br>
                 % endif
                 % if pcb_comment:
                     <span>${_("Комментарий")}: ${pcb_comment}</span><br>
