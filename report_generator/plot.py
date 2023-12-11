@@ -1,3 +1,4 @@
+import gc
 import logging
 import os
 from typing import Callable, List, Optional
@@ -63,6 +64,10 @@ def draw_board_with_pins(image: Image, pins_info: List[PinInfo], file_name: str,
 
     check_stop()
     fig.savefig(file_name, dpi=dpi, transparent=True)
+    fig.clf()
+    plt.close("all")
+    del fig
+    gc.collect()
 
 
 @ut.write_time("DRAW FAULT HISTOGRAM")
@@ -100,6 +105,10 @@ def draw_fault_histogram(scores: List[float], tolerance: float, file_name: str) 
     plt.legend(loc="lower left", bbox_to_anchor=(0, 0.99, 1, 0.2), mode="expand", ncol=3)
     fig.savefig(file_name)
     fig.clear()
+    fig.clf()
+    plt.close("all")
+    del fig
+    gc.collect()
 
 
 @ut.write_time("DRAW IVC FOR PIN")
