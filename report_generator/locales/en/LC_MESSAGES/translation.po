@@ -189,9 +189,6 @@ msgstr "Good points"
 msgid "Неисправные\nточки"
 msgstr "Faulty points"
 
-msgid "Порог"
-msgstr "Threshold"
-
 msgid "Распределение неисправностей"
 msgstr "Fault distribution"
 

@@ -90,7 +90,7 @@ def draw_fault_histogram(scores: List[float], tolerance: float, file_name: str) 
     if bad_scores:
         ax.hist(bad_scores, bins=bins_number, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 100]),
                 label=_("Неисправные\nточки"))
-    ax.axvline(x=tolerance, color="#232B2B", linewidth=2, label=_("Порог"))
+    ax.axvline(x=tolerance, color="#232B2B", linewidth=2, label=_("Допуск"))
     ax.set_xlabel(_("Распределение неисправностей"))
     ax.set_xlim(xmin=0, xmax=100)
     ax.set_ylabel(_("Количество неисправностей"))
