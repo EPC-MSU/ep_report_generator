@@ -40,7 +40,7 @@ if __name__ == "__main__":
               ConfigAttributes.DIRECTORY: dir_for_report,
               ConfigAttributes.OBJECTS: {ObjectsForReport.ELEMENT: [0, 2],
                                          ObjectsForReport.PIN: []},
-              ConfigAttributes.THRESHOLD_SCORE: 0.15,
+              ConfigAttributes.TOLERANCE: 0.15,
               ConfigAttributes.OPEN_REPORT_AT_FINISH: True,
               ConfigAttributes.REPORTS_TO_OPEN: [ReportTypes.FULL_REPORT, ReportTypes.SHORT_REPORT]}
     report_generator.run(config)
@@ -66,7 +66,7 @@ if __name__ == "__main__":
               ConfigAttributes.OBJECTS: {ObjectsForReport.ELEMENT: [],
                                          ObjectsForReport.PIN: required_pins},
               ConfigAttributes.SCALING_TYPE: ScalingTypes.USER_DEFINED,
-              ConfigAttributes.THRESHOLD_SCORE: 0.15,
+              ConfigAttributes.TOLERANCE: 0.15,
               ConfigAttributes.USER_DEFINED_SCALES: user_defined_scales}
     report_generator.run(config)
 

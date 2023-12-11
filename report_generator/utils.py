@@ -141,13 +141,13 @@ def get_pin_diameter(image: Image) -> Optional[int]:
     return image.width // 38 if image else None
 
 
-def get_pin_type(pin: Pin, score: Optional[float], threshold_score: Optional[float], is_report_for_test_board: bool
+def get_pin_type(pin: Pin, score: Optional[float], tolerance: Optional[float], is_report_for_test_board: bool
                  ) -> PinTypes:
     """
     Function determines type of pin.
     :param pin: pin;
-    :param score: score of test measurement in pin;
-    :param threshold_score: threshold score;
+    :param score: difference of test measurement in pin;
+    :param tolerance: tolerance;
     :param is_report_for_test_board: if True then report should be generated for test board, otherwise for reference
     board.
     :return: type of pin.
@@ -158,8 +158,8 @@ def get_pin_type(pin: Pin, score: Optional[float], threshold_score: Optional[flo
         if len(pin.measurements) < 2:
             return PinTypes.TEST_EMPTY
         if score is not None:
-            if threshold_score is not None:
-                return PinTypes.TEST_HIGH_SCORE if threshold_score <= score else PinTypes.TEST_LOW_SCORE
+            if tolerance is not None:
+                return PinTypes.TEST_HIGH_SCORE if tolerance < score else PinTypes.TEST_LOW_SCORE
             return PinTypes.TEST_LOW_SCORE
         return PinTypes.TEST_LOW_SCORE
 

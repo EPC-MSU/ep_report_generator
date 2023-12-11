@@ -35,7 +35,7 @@
              ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: нужно ли создать отчет для всей платы целиком True или False,
                                         ObjectsForReport.ELEMENT: [индексы элементов, которые должны быть включены в отчет],
                                         ObjectsForReport.PIN: [индексы пинов, которые должны быть включены в отчет]},
-             ConfigAttributes.THRESHOLD_SCORE: пороговое значение score,
+             ConfigAttributes.TOLERANCE: допуск,
              ConfigAttributes.PIN_SIZE: высота изображения пина в пикселях для отчета,
              ConfigAttributes.OPEN_REPORT_AT_FINISH: если True, то по завершении создания отчета отчет будет открыт,
              ConfigAttributes.REPORTS_TO_OPEN: список отчетов, которые нужно открыть в браузере по завершении создания отчетов,

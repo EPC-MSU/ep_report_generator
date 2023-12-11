@@ -66,11 +66,11 @@ def draw_board_with_pins(image: Image, pins_info: List[PinInfo], file_name: str,
 
 
 @ut.write_time("DRAW FAULT HISTOGRAM")
-def draw_fault_histogram(scores: List[float], threshold: float, file_name: str) -> None:
+def draw_fault_histogram(scores: List[float], tolerance: float, file_name: str) -> None:
     """
     Function draws and saves a histogram of pin faults. The name of the histogram axes was chosen in the ticket #85658.
-    :param scores: score values for which to draw a histogram;
-    :param threshold: score threshold;
+    :param scores: difference values for which to draw a histogram;
+    :param tolerance: tolerance;
     :param file_name: name of file to save the histogram.
     """
 
@@ -81,16 +81,16 @@ def draw_fault_histogram(scores: List[float], threshold: float, file_name: str) 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111)
     scores = np.array(scores)
-    good_scores = [scores[index[0]] for index in np.argwhere(scores < threshold)]
+    good_scores = [scores[index[0]] for index in np.argwhere(scores < tolerance)]
     bins_number = 100
     if good_scores:
         ax.hist(good_scores, bins=bins_number, rwidth=0.85, color="#46CB18", alpha=0.7, range=([0, 100]),
                 label=_("Исправные\nточки"))
-    bad_scores = [scores[index[0]] for index in np.argwhere(scores >= threshold)]
+    bad_scores = [scores[index[0]] for index in np.argwhere(scores >= tolerance)]
     if bad_scores:
         ax.hist(bad_scores, bins=bins_number, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 100]),
                 label=_("Неисправные\nточки"))
-    ax.axvline(x=threshold, color="#232B2B", linewidth=2, label=_("Порог"))
+    ax.axvline(x=tolerance, color="#232B2B", linewidth=2, label=_("Порог"))
     ax.set_xlabel(_("Распределение неисправностей"))
     ax.set_xlim(xmin=0, xmax=100)
     ax.set_ylabel(_("Количество неисправностей"))

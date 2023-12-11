@@ -57,7 +57,7 @@ class ConfigAttributes(Enum):
     REPORTS_TO_OPEN = auto()
     SCALING_TYPE = auto()
     TEST_DURATION = auto()
-    THRESHOLD_SCORE = auto()
+    TOLERANCE = auto()
     USER_DEFINED_SCALES = auto()
 
     @classmethod
@@ -80,7 +80,7 @@ class ConfigAttributes(Enum):
                 ConfigAttributes.REPORTS_TO_OPEN: [ReportTypes.SHORT_REPORT],
                 ConfigAttributes.SCALING_TYPE: ScalingTypes.AUTO,
                 ConfigAttributes.TEST_DURATION: None,
-                ConfigAttributes.THRESHOLD_SCORE: None,
+                ConfigAttributes.TOLERANCE: None,
                 ConfigAttributes.USER_DEFINED_SCALES: None}
 
 
@@ -156,7 +156,7 @@ class ReportGenerator(QObject):
         self._scaling_type: ScalingTypes = ScalingTypes.AUTO
         self._static_dir_name: str = None
         self._test_duration: timedelta = None
-        self._threshold_score: Optional[float] = None
+        self._tolerance: Optional[float] = None
         self._user_defined_scales: Optional[List[Tuple[float, float]]] = None
         self.stop: bool = False
 
@@ -305,15 +305,15 @@ class ReportGenerator(QObject):
         logger.info("Drawing and saving a fault histogram...")
 
         scores = [pin_info.score for pin_info in self._pins_info if pin_info.score is not None]
-        if scores and self._threshold_score is not None:
+        if scores and self._tolerance is not None:
             self._check_stop_operation()
             file_name = os.path.join(self._static_dir_name, _FAULT_HISTOGRAM_IMAGE)
-            draw_fault_histogram(scores, self._threshold_score, file_name)
+            draw_fault_histogram(scores, self._tolerance, file_name)
             result = True
             logger.info("The fault histogram is saved to '%s'", file_name)
         else:
             result = False
-            comment = "there is no threshold score" if self._threshold_score is None else \
+            comment = "there is no tolerance" if self._tolerance is None else \
                 "there are no pins with test and reference IV-curves"
             logger.info("The fault histogram is not saved: %s", comment)
 
@@ -411,14 +411,14 @@ class ReportGenerator(QObject):
     def _get_faulty_pins(self) -> List[ut.PinInfo]:
         """
         :return: list with information about faulty pins. Faulty pins are pins whose score is greater or equal to
-        the threshold.
+        the tolerance.
         """
 
         self._check_stop_operation()
         faulty_pins = []
-        if self._threshold_score is not None:
+        if self._tolerance is not None:
             faulty_pins = [pin_info for pin_info in self._pins_info
-                           if pin_info.score is not None and pin_info.score > self._threshold_score]
+                           if pin_info.score is not None and pin_info.score > self._tolerance]
         return faulty_pins
 
     def _get_general_info(self) -> Dict[str, Any]:
@@ -455,13 +455,13 @@ class ReportGenerator(QObject):
                 "pins": self._pins_info,
                 "pins_number": len(self._pins_info),
                 "test_duration": ut.get_duration_in_str(self._test_duration),
-                "threshold_score": self._threshold_score,
+                "tolerance": self._tolerance,
                 "_": _}
 
     def _get_info_about_faulty_elements_and_pins(self) -> Dict[str, Any]:
         """
         :return: dictionary with information about faulty elements and pins. Faulty pins are pins whose score is
-        greater or equal to the threshold. Faulty element has at least one faulty pin.
+        greater or equal to the tolerance. Faulty element has at least one faulty pin.
         """
 
         return {"bad_elements_number": ut.get_elements_number(self._bad_pins_info),
@@ -494,7 +494,7 @@ class ReportGenerator(QObject):
                         score = round(100 * comparator.compare_ivc(pin.measurements[0].ivc, pin.measurements[1].ivc), 1)
                     else:
                         score = None
-                    pin_type = ut.get_pin_type(pin, score, self._threshold_score, self._is_report_for_test_board)
+                    pin_type = ut.get_pin_type(pin, score, self._tolerance, self._is_report_for_test_board)
                     info = ut.PinInfo(element.name, element_index, pin_index, pin.x, pin.y, pin.measurements, score,
                                       pin_type, total_pin_index, pin.comment, pin.multiplexer_output)
                     pins_info.append(info)
@@ -527,11 +527,11 @@ class ReportGenerator(QObject):
                                                           [ReportTypes.SHORT_REPORT])))
         self._scaling_type = self._config.get(ConfigAttributes.SCALING_TYPE, ScalingTypes.AUTO)
         self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, None)
-        threshold = self._config.get(ConfigAttributes.THRESHOLD_SCORE, None)
-        if threshold is not None:
-            # The threshold is given in relative units (0 - minimum value, 1 - maximum). Convert this value to %.
+        tolerance = self._config.get(ConfigAttributes.TOLERANCE, None)
+        if tolerance is not None:
+            # The tolerance is given in relative units (0 - minimum value, 1 - maximum). Convert this value to %.
             # The transition to percentages is carried out in the task #85658
-            self._threshold_score = 100 * threshold
+            self._tolerance = 100 * tolerance
         self._user_defined_scales = self._config.get(ConfigAttributes.USER_DEFINED_SCALES, None)
         required_objects = self._config.get(ConfigAttributes.OBJECTS, {})
         if required_objects.get(ObjectsForReport.BOARD):

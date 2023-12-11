@@ -135,8 +135,8 @@
                     <span>${_("Название платы")}: ${pcb_name}</span><br>
                 % endif
                 ${write_component_info(full_report)}
-                % if threshold_score:
-                    <span>${_("Допуск")}: ${round(threshold_score, 2)}%</span><br>
+                % if tolerance:
+                    <span>${_("Допуск")}: ${round(tolerance, 1)}%</span><br>
                 % endif
                 % if pcb_comment:
                     <span>${_("Комментарий")}: ${pcb_comment}</span><br>

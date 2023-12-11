@@ -47,7 +47,7 @@ class TestGenerator(unittest.TestCase):
                   ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True,
                                              ObjectsForReport.ELEMENT: [],
                                              ObjectsForReport.PIN: []},
-                  ConfigAttributes.THRESHOLD_SCORE: 0.2,
+                  ConfigAttributes.TOLERANCE: 0.2,
                   ConfigAttributes.OPEN_REPORT_AT_FINISH: False}
         report_generator = ReportGenerator()
         report_generator.generation_finished.connect(self._check_reports_creation)
