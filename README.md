@@ -127,3 +127,51 @@
    ```
 
 3. Добавьте новый бинарный файл в репозиторий и запушьте изменения.
+
+## Дополнение
+
+#### 1. Тестирование утечки памяти
+
+Можно проверить, утекает ли память при генерации отчетов. Чтобы запустить тест:
+
+1. Установите необходимые зависимости, перейдя в папку **scripts** и выполнив скрипт:
+
+   - **install.bat**, если Вы работаете в *Windows*;
+
+   - **install.sh**, если Вы работаете в *Linux*:
+
+     ```bash
+     bash install.sh
+     ```
+
+2. Перейдите в корень репозитория.
+
+3. Установите дополнительно модуль **psutil**:
+
+   - если Вы работаете в *Windows*:
+
+     ```batch
+     venv\Scripts\python -m pip install psutil
+     ```
+
+   - если Вы работаете в *Linux*:
+
+     ```bash
+     venv/bin/python -m pip install psutil
+     ```
+
+4. Выполните команду:
+
+   - если Вы работаете в *Windows*:
+
+     ```batch
+     venv\Scripts\python additional_tests\memoryleakstest.py REPORTS_NUMBER
+     ```
+
+   - если Вы работаете в *Linux*:
+
+     ```bash
+     venv/bin/python additional_tests/memoryleakstest.py REPORTS_NUMBER
+     ```
+
+   Здесь *REPORTS_NUMBER* - количество ответов, которые нужно сгенерировать при тестировании утечки памяти.
