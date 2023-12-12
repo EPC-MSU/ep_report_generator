@@ -53,8 +53,7 @@ def run_test(reports_number: int) -> None:
     """
 
     # Report for board from P10 file
-    dir_name = os.path.dirname(os.path.abspath(__file__))
-    dir_for_report = os.path.join(dir_name, "examples", "report_for_p10_board")
+    dir_for_report = os.path.join(os.getcwd(), "examples", "report_for_p10_board")
     config = {ConfigAttributes.BOARD: load_board_from_ufiv(os.path.join("example_board", "elements.json")),
               ConfigAttributes.DIRECTORY: dir_for_report,
               ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True},
@@ -83,6 +82,6 @@ if __name__ == "__main__":
     parsed_args = parser.parse_args(sys.argv[1:])
 
     set_logging_level(logging.ERROR)
-    set_logger_for_analyzer("log_analyzer.txt")
+    set_logger_for_analyzer("memory_leak_log.txt")
     app = QApplication(sys.argv)
     run_test(parsed_args.reports_number)

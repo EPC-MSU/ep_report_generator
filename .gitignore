@@ -136,3 +136,4 @@ report_for_manual_board_with_user_defined_scales/
 report_for_p10_board/
 test_report/
 log.txt
+memory_leak_log.txt
