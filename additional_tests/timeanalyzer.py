@@ -1,8 +1,9 @@
 import argparse
 import re
 import sys
+from collections import namedtuple
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Generator, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import utils as ut
 
@@ -18,48 +19,47 @@ class TimeAnalyzer:
                               "DRAW PIN": "Пины",
                               "GENERATE REPORT": "Генерация отчета",
                               "SAVE BOARD": "Плата"}
+    Data = namedtuple("Data", ["times", "total_times", "total_time", "total_time_from_log"])
 
-    def __init__(self) -> None:
-        self._times: Dict[str, Any] = {"DRAW BOARD WITH PINS": [],
-                                       "DRAW IVC FOR PIN": [],
-                                       "DRAW FAULT HISTOGRAM": [],
-                                       "DRAW PIN": [],
-                                       "GENERATE REPORT": [],
-                                       "SAVE BOARD": []}
-        self._total_time: float = None
-        self._total_time_from_log = None
-        self._total_times: Dict[str, float] = dict()
-
-    def _analyze(self, lines: List[str]) -> None:
+    def _analyze(self, lines: List[str]) -> Generator["Data", None, None]:
         """
         :param lines: list of messages to be analyzed.
+        :return:
         """
 
-        start_time, finish_time = None, None
+        start_time, finish_time, times = self._init_data()
+        there_is_time = False
         for line in lines:
-            if "Creating directories..." in line:
+            if "Start report generation" in line:
+                if there_is_time:
+                    total_time, total_times = self._sum_times(times)
+                    print(f"Total time from analysis: {total_time:.3f} sec")
+                    if None not in (start_time, finish_time):
+                        total_time_from_log = finish_time - start_time
+                        print(f"Total time from log file: {total_time_from_log.seconds} sec")
+                    else:
+                        total_time_from_log = None
+                    yield self.Data(times, total_times, total_time, total_time_from_log)
+
+                start_time, finish_time, times = self._init_data()
+                there_is_time = False
+
+            if "Start report generation" in line:
                 start_time = self._get_datetime(line)
             elif "The full report is saved" in line:
                 finish_time = self._get_datetime(line)
             elif "[TIME_SPENT]" in line:
-                self._analyze_time(line)
+                there_is_time = True
+                self._analyze_time(line, times)
 
-        self._sum_times()
-
-        if self._total_time is not None:
-            print(f"Total time from analysis: {self._total_time:.3f} sec")
-        if None not in (start_time, finish_time):
-            self._total_time_from_log = finish_time - start_time
-            print(f"Total time from log file: {self._total_time_from_log.seconds} sec")
-
-    def _analyze_time(self, line: str) -> None:
+    def _analyze_time(self, line: str, times: Dict[str, Any]) -> None:
         """
         :param line: message to be analyzed.
         """
 
-        for key in self._times:
+        for key in times:
             if f"'{key}'" in line:
-                self._times[key].append(self._get_time(line))
+                times[key].append(self._get_time(line))
                 break
 
     @staticmethod
@@ -86,32 +86,46 @@ class TimeAnalyzer:
             return float(result["time"])
         return None
 
-    def _plot(self) -> None:
+    @staticmethod
+    def _init_data() -> Tuple[None, None, Dict[str, Any]]:
+        times = {"DRAW BOARD WITH PINS": [],
+                 "DRAW IVC FOR PIN": [],
+                 "DRAW FAULT HISTOGRAM": [],
+                 "DRAW PIN": [],
+                 "GENERATE REPORT": [],
+                 "SAVE BOARD": []}
+        return None, None, times
+
+    @staticmethod
+    def _plot(time_data: "Data") -> None:
         _, ax = plt.subplots()
         labels = []
         values = []
-        for key, value in self._total_times.items():
+        for key, value in time_data.total_times.items():
             if value > 0:
-                labels.append(f"{TimeAnalyzer.LABELS[key]} ({len(self._times[key])} шт.)")
+                labels.append(f"{TimeAnalyzer.LABELS[key]} ({len(time_data.times[key])} шт.)")
                 values.append(value)
-        if self._total_time_from_log.seconds > self._total_time:
-            total_time = self._total_time_from_log.seconds
+
+        if time_data.total_time_from_log.seconds > time_data.total_time:
+            total_time = time_data.total_time_from_log.seconds
             labels.append("Остальное")
-            values.append(self._total_time_from_log.seconds - self._total_time)
+            values.append(time_data.total_time_from_log.seconds - time_data.total_time)
         else:
-            total_time = self._total_time
+            total_time = time_data.total_time
 
         wedges, _, autotexts = ax.pie(values, labels=labels, textprops=dict(color="w"),
-                                      autopct=lambda x: f"{x:.2f}%\n{x * total_time / 100:.3f} сек")
-        ax.set_title(f"Полное затраченное время {self._total_time_from_log.seconds} сек")
+                                      autopct=lambda x: f"{x:.2f}%\n{x * total_time / 100:.3f} сек", normalize=True)
+        ax.set_title(f"Полное затраченное время {time_data.total_time_from_log.seconds} сек")
         ax.legend(wedges, labels, loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
         plt.setp(autotexts, size=8)
         plt.show()
 
-    def _sum_times(self) -> None:
-        for key, values in self._times.items():
-            self._total_times[key] = sum(values)
-        self._total_time = sum(self._total_times.values())
+    @staticmethod
+    def _sum_times(times: Dict[str, Any]) -> Tuple[float, Dict[str, float]]:
+        total_times = dict()
+        for key, values in times.items():
+            total_times[key] = sum(values)
+        return sum(total_times.values()), total_times
 
     def run(self, log_file: str) -> None:
         """
@@ -120,8 +134,8 @@ class TimeAnalyzer:
         """
 
         lines = ut.read_log_file(log_file)
-        self._analyze(lines)
-        self._plot()
+        for time_data in self._analyze(lines):
+            self._plot(time_data)
 
 
 if __name__ == "__main__":
