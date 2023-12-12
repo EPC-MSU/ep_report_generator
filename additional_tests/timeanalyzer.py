@@ -24,7 +24,7 @@ class TimeAnalyzer:
     def _analyze(self, lines: List[str]) -> Generator["Data", None, None]:
         """
         :param lines: list of messages to be analyzed.
-        :return:
+        :return: time distribution data when generating a separate report.
         """
 
         start_time, finish_time, times = self._init_data()
@@ -54,7 +54,8 @@ class TimeAnalyzer:
 
     def _analyze_time(self, line: str, times: Dict[str, Any]) -> None:
         """
-        :param line: message to be analyzed.
+        :param line: message to be analyzed;
+        :param times: a dictionary in which the times of individual stages parsed from the message.
         """
 
         for key in times:
@@ -98,6 +99,10 @@ class TimeAnalyzer:
 
     @staticmethod
     def _plot(time_data: "Data") -> None:
+        """
+        :param time_data: time distribution data when generating a separate report.
+        """
+
         _, ax = plt.subplots()
         labels = []
         values = []
@@ -122,6 +127,11 @@ class TimeAnalyzer:
 
     @staticmethod
     def _sum_times(times: Dict[str, Any]) -> Tuple[float, Dict[str, float]]:
+        """
+        :param times:
+        :return:
+        """
+
         total_times = dict()
         for key, values in times.items():
             total_times[key] = sum(values)
