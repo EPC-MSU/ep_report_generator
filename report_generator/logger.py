@@ -25,3 +25,8 @@ def set_logger() -> None:
     package_logger.setLevel(logging.INFO)
     package_logger.addHandler(handler)
     package_logger.propagate = False
+
+
+def set_logging_level(level: int) -> None:
+    package_logger = logging.getLogger("report_generator")
+    package_logger.setLevel(level)

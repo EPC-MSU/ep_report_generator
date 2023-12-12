@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 import matplotlib.pyplot as plt
+from analyzer import utils as ut
 
 
 class Analyzer:
@@ -105,23 +106,17 @@ class Analyzer:
         plt.setp(autotexts, size=8)
         plt.show()
 
-    @staticmethod
-    def _read_log_file(file_name: str) -> List[str]:
-        """
-        :param file_name: file name with report generator logs.
-        :return: list of messages from file.
-        """
-
-        with open(file_name, "r", encoding="utf-8") as file:
-            content = file.read()
-        return content.split("\n")
-
     def _sum_times(self) -> None:
         for key, values in self._times.items():
             self._total_times[key] = sum(values)
         self._total_time = sum(self._total_times.values())
 
     def run(self, log_file: str) -> None:
-        lines = self._read_log_file(log_file)
+        """
+        :param log_file: the name of the log file that needs to be analyzed and from which to obtain information about
+        the execution time of individual operations when creating a report.
+        """
+
+        lines = ut.read_log_file(log_file)
         self._analyze(lines)
         self._plot()
