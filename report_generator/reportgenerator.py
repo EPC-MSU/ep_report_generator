@@ -593,6 +593,7 @@ class ReportGenerator(QObject):
         :param config: dictionary with full information about required report.
         """
 
+        logger.info("Start report generation")
         self._read_config(config)
         install_translation(self._english)
         try:

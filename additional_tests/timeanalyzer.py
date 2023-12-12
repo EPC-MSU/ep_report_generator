@@ -1,11 +1,13 @@
+import argparse
 import re
+import sys
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 import matplotlib.pyplot as plt
-from analyzer import utils as ut
+import utils as ut
 
 
-class Analyzer:
+class TimeAnalyzer:
     """
     Class for analyzing the distribution of time spent generating reports.
     """
@@ -90,7 +92,7 @@ class Analyzer:
         values = []
         for key, value in self._total_times.items():
             if value > 0:
-                labels.append(f"{Analyzer.LABELS[key]} ({len(self._times[key])} шт.)")
+                labels.append(f"{TimeAnalyzer.LABELS[key]} ({len(self._times[key])} шт.)")
                 values.append(value)
         if self._total_time_from_log.seconds > self._total_time:
             total_time = self._total_time_from_log.seconds
@@ -120,3 +122,12 @@ class Analyzer:
         lines = ut.read_log_file(log_file)
         self._analyze(lines)
         self._plot()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--log_file", help="File with logs about time spent")
+    parsed_args = parser.parse_args(sys.argv[1:])
+
+    analyzer = TimeAnalyzer()
+    analyzer.run(parsed_args.log_file)
