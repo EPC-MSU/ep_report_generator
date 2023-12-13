@@ -2,6 +2,7 @@
 File with class to generate report.
 """
 
+import gc
 import logging
 import os
 import platform
@@ -579,6 +580,45 @@ class ReportGenerator(QObject):
                 if report_file_name:
                     webbrowser.open(report_file_name, new=2)
 
+    def _set_to_init_state(self) -> None:
+        """
+        Method returns the generator to its initial state.
+        """
+
+        self._app_name = None
+        self._app_version = None
+        self._bad_pins_info.clear()
+        del self._board
+        self._board = None
+        self._config = None
+        self._dir_name = ut.get_default_dir_path()
+        self._english = False
+        self._is_report_for_test_board = None
+        self._noise_amplitudes = None
+        self._open_report_at_finish = False
+        self._pin_diameter = None
+        self._pin_width = _PIN_WIDTH
+        self._pins_info.clear()
+        self._reports_to_open.clear()
+        self._required_board = False
+        self._required_elements.clear()
+        self._required_pins.clear()
+        self._results_by_steps.clear()
+        self._scaling_type = ScalingTypes.AUTO
+        self._static_dir_name = None
+        self._test_duration = None
+        self._tolerance = None
+        self._user_defined_scales = None
+        self.stop = False
+
+    def clear(self) -> None:
+        """
+        Method clears all data from the generator.
+        """
+
+        self._set_to_init_state()
+        gc.collect()
+
     @classmethod
     def get_version(cls) -> str:
         """
@@ -607,6 +647,8 @@ class ReportGenerator(QObject):
             exception_text = f"An error occurred while generating the report{error_str}"
             self.exception_raised.emit(exception_text)
             logger.error(exception_text, exc_info=sys.exc_info())
+
+        self.clear()
 
     def stop_process(self) -> None:
         """
