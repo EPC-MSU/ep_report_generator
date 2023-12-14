@@ -34,7 +34,7 @@
                     <span>#${pin.total_pin_index + 1}</span><br>
                     <span>${_("Название компонента")}: ${pin.element_name}</span><br>
                     <span>${_("Индекс компонента")}: ${pin.element_index + 1}</span><br>
-                    <span>${_("Индекс пина")}: ${pin.pin_index + 1}</span><br>
+                    <span>${_("Индекс точки")}: ${pin.pin_index + 1}</span><br>
                     <span>X = ${round(pin.x, 2)} ${_("пк")}</span><br>
                     <span>Y = ${round(pin.y, 2)} ${_("пк")}</span><br>
                 % if pin.score is not None:
@@ -159,11 +159,10 @@
             % else:
                 <th>
             % endif
-                % if full_report:
-                    <h2>${_("Карта точек тестирования")}</h2>
-                % else:
-                    <h2>${_("Карта неисправных точек тестирования")}</h2>
-                % endif
+                <%
+                    points_map_name = _("Карта точек тестирования") if full_report else _("Карта неисправных точек тестирования")
+                %>
+                    <h2>${points_map_name}</h2>
                 </th>
             </tr>
 
@@ -173,7 +172,7 @@
             % else:
                 <td>
             % endif
-                    <img id="board" src="static/img/${board_image_file}" usemap="#map" alt="${_('Карта неисправных точек тестирования')}" title="${_('Карта неисправных точек тестирования')}">
+                    <img id="board" src="static/img/${board_image_file}" usemap="#map" alt="${points_map_name}" title="${points_map_name}">
                     <p>
                         <map name="map">
                         % for pin in pins_info:

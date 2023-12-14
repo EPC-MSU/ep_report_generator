@@ -22,7 +22,7 @@ msgstr ""
 # full_img.html
 
 msgid "Карта точек тестирования"
-msgstr "Test pins map"
+msgstr "Test points map"
 
 msgid "Изображение платы с пинами"
 msgstr "Image of the board with pins"
@@ -48,8 +48,8 @@ msgstr "Component name"
 msgid "Индекс компонента"
 msgstr "Component index"
 
-msgid "Индекс пина"
-msgstr "Pin index"
+msgid "Индекс точки"
+msgstr "Point index"
 
 msgid "пк"
 msgstr "px"
@@ -177,7 +177,7 @@ msgstr "View report"
 
 # plot.py
 
-msgid "Этал"
+msgid "Эталон"
 msgstr "Reference"
 
 msgid "Тест"
