@@ -15,7 +15,7 @@ def create_simple_board() -> Board:
     pins_number = 2
     elements = []
     for element_index in range(elements_number):
-        pins = []
+        pins = [Pin(x=0, y=0)]
         for pin_index in range(pins_number):
             settings = MeasurementSettings(sampling_rate=100 * frequency,
                                            internal_resistance=internal_resistance,
@@ -31,3 +31,13 @@ def create_simple_board() -> Board:
     board = Board()
     board.elements = elements
     return board
+
+
+def read_file(file_name: str) -> str:
+    """
+    :param file_name: name of the file to read.
+    :return: content.
+    """
+
+    with open(file_name, "r", encoding="utf-8") as file:
+        return file.read()
