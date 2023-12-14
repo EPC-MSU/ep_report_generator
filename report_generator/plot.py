@@ -165,6 +165,12 @@ def draw_ivc_for_pin(pin_info: PinInfo, index: int, file_name: str, scaling_type
     else:
         test_curve.clear_curve()
 
+    for curve in viewer.plot.curves:
+        if curve.curve is None:
+            curve.detach()
+        else:
+            curve.attach(viewer.plot)
+
     viewer.plot.grab().save(file_name, format="PNG")
 
 
