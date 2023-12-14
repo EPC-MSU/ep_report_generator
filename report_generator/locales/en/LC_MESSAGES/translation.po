@@ -33,11 +33,11 @@ msgstr "Signatures at the test pin"
 
 # functions.mako
 
-msgid "Имя"
-msgstr "Name"
+msgid "Точка"
+msgstr "Point"
 
-msgid "Компонент"
-msgstr "Component"
+msgid "Изображение"
+msgstr "Image"
 
 msgid "Сигнатура"
 msgstr "Signature"

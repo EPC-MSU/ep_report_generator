@@ -6,9 +6,9 @@
     <table id="report" cellspacing="0" cellpadding="0">
         <thead>
             <tr>
-                <th class="column_name"><span>${_("Имя")}</span></th>
+                <th class="column_name"><span>${_("Точка")}</span></th>
             % if board_img_width is not None:
-                <th class="column_image"><span>${_("Компонент")}</span></th>
+                <th class="column_image"><span>${_("Изображение")}</span></th>
             % endif
                 <th class="column_plot"><span>${_("Сигнатура")}</span></th>
             </tr>
