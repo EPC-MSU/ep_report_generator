@@ -14,7 +14,7 @@ class TimeAnalyzer:
     """
 
     LABELS: Dict[str, str] = {"DRAW BOARD WITH PINS": "Плата с пинами",
-                              "DRAW IVC FOR PIN": "ВАХи на пинах",
+                              "DRAW IVC FOR PIN": "Сигнатуры на пинах",
                               "DRAW FAULT HISTOGRAM": "Гистограмма неисправностей",
                               "DRAW PIN": "Пины",
                               "GENERATE REPORT": "Генерация отчета",

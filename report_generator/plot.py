@@ -192,9 +192,9 @@ def draw_ivc_for_pins(pins_info: List[PinInfo], dir_name: str, signal: pyqtSigna
     viewer.plot.set_x_axis_title(_("Напряжение, В"))
     viewer.plot.set_y_axis_title(_("Ток, мА"))
     viewer.plot.setStyleSheet("background: white")
-    test_curve = viewer.plot.add_curve(_("Тестовая ВАХ"))
+    test_curve = viewer.plot.add_curve(_("Тест"))
     test_curve.set_curve_params(test_curve_pen)
-    ref_curve = viewer.plot.add_curve(_("ВАХ эталона"))
+    ref_curve = viewer.plot.add_curve(_("Эталон"))
     ref_curve.set_curve_params(reference_curve_pen)
     viewer.plot.show_legend(QFont("Times", 10))
 

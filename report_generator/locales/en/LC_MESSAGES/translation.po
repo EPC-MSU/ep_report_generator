@@ -27,8 +27,8 @@ msgstr "Test pins map"
 msgid "Изображение платы с пинами"
 msgstr "Image of the board with pins"
 
-msgid "ВАХ в точке тестирования"
-msgstr "IVC at the test pin"
+msgid "Сигнатуры в точке тестирования"
+msgstr "Signatures at the test pin"
 
 
 # functions.mako
@@ -39,8 +39,8 @@ msgstr "Name"
 msgid "Компонент"
 msgstr "Component"
 
-msgid "ВАХ"
-msgstr "IVC"
+msgid "Сигнатура"
+msgstr "Signature"
 
 msgid "Название компонента"
 msgstr "Component name"
@@ -93,8 +93,8 @@ msgstr "Measurement comment"
 msgid "Комментарий к пину"
 msgstr "Pin comment"
 
-msgid "ВАХ нет"
-msgstr "No IVC"
+msgid "Сигнатур нет"
+msgstr "No signatures"
 
 msgid "Общая информация"
 msgstr "General information"
@@ -177,11 +177,11 @@ msgstr "View report"
 
 # plot.py
 
-msgid "ВАХ эталона"
-msgstr "Reference IVC"
+msgid "Этал"
+msgstr "Reference"
 
-msgid "Тестовая ВАХ"
-msgstr "Test IVC"
+msgid "Тест"
+msgstr "Test"
 
 msgid "Исправные\nточки"
 msgstr "Good points"

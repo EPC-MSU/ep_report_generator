@@ -10,7 +10,7 @@
             % if board_img_width is not None:
                 <th class="column_image"><span>${_("Компонент")}</span></th>
             % endif
-                <th class="column_plot"><span>${_("ВАХ")}</span></th>
+                <th class="column_plot"><span>${_("Сигнатура")}</span></th>
             </tr>
         </thead>
         <tbody>
@@ -28,7 +28,6 @@
                 </td>
             </tr>
             % endif
-            % if pin.measurements or board_img_width is not None:
             <tr>
                 <td class="align_left">
                     <a class="anchor" id="top" name="point_${pin.x}_${pin.y}"></a>
@@ -87,13 +86,12 @@
                 % endif
                 <td>
                 % if pin.measurements:
-                    <img src="static/img/${pin.element_index}_${pin.pin_index}_iv.png" height="${pin_img_size}" alt="${_('ВАХ')}">
+                    <img src="static/img/${pin.element_index}_${pin.pin_index}_iv.png" height="${pin_img_size}" alt="${_('Сигнатуры в точке тестирования')}">
                 % else:
-                    <span>${_("ВАХ нет")}</span>
+                    <span>${_("Сигнатур нет")}</span>
                 % endif
                 </td>
             </tr>
-            % endif
         % endfor
         </tbody>
     </table>
