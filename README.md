@@ -86,7 +86,7 @@
      bash run_example.sh
      ```
 
-   В папке репозитория появится папка **examples**, в которой будут находиться четыре новые папки **report_for_empty_board**, **report_for_manual_board**, **report_for_manual_board_with_user_defined_scales** и **report_for_p10_board с отчетами для соответствующих плат.
+   В папке репозитория появится папка **examples**, в которой будут находиться четыре новые папки **report_for_empty_board**, **report_for_manual_board**, **report_for_manual_board_with_user_defined_scales** и **report_for_p10_board** с отчетами для соответствующих плат.
 
 ## Запуск тестов
 
