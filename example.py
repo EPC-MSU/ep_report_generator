@@ -4,10 +4,8 @@ File with example how to work with report generator.
 
 import os
 import sys
-from datetime import timedelta
 from PyQt5.QtWidgets import QApplication
 from epcore.elements import Board
-from epcore.filemanager import load_board_from_ufiv
 from report_generator import ConfigAttributes, ObjectsForReport, ReportGenerator, ReportTypes, ScalingTypes
 from manual_board import create_manual_board
 from report_generator.logger import save_logs_to_file
