@@ -136,21 +136,26 @@
 
 1. Установите необходимые зависимости из файла **requirements.txt**, а также дополнительный модуль **psutil**.
 
-2. Перейдите в корень репозитория и выполните в терминале команду:
+2. Скопируйте какой-нибудь план тестирование в папку **ep_report_generator**.
+
+3. Перейдите в корень репозитория и выполните в терминале команду:
 
    - если Вы работаете в *Windows*:
 
      ```batch
-     venv\Scripts\python additional_tests\memoryleakstest.py REPORTS_NUMBER
+     venv\Scripts\python additional_tests\memoryleakstest.py REPORTS_NUMBER --plan EXAMPLE_BOARD
      ```
 
    - если Вы работаете в *Linux*:
 
      ```bash
-     venv/bin/python additional_tests/memoryleakstest.py REPORTS_NUMBER
+     venv/bin/python additional_tests/memoryleakstest.py REPORTS_NUMBER --plan EXAMPLE_BOARD
      ```
 
-   Здесь *REPORTS_NUMBER* - количество ответов, которые нужно сгенерировать при тестировании утечки памяти.
+   Здесь:
+   
+   - *REPORTS_NUMBER* - количество ответов, которые нужно сгенерировать при тестировании утечки памяти.
+   - *EXAMPLE_BOARD* - название плана тестирования, который Вы скопировали в папку **ep_report_generator**.
 
 После завершения тестирования можно посмотреть на графике, как менялась память, выделенная генератору отчетов. Для этого перейдите в корень репозитория и выполните в терминале команду:
 
