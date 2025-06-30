@@ -105,6 +105,7 @@ def get_duration_in_str(duration: timedelta) -> Optional[str]:
         minutes = int(duration.total_seconds() // 60)
         seconds = int(duration.total_seconds() % 60)
         return _("{} мин {} сек").format(minutes, seconds)
+
     return None
 
 
@@ -129,6 +130,7 @@ def get_noise_amplitudes(pin: Pin) -> Tuple[float, float]:
     if pin.measurements:
         settings = pin.measurements[0].settings
         return settings.max_voltage / 20, 1000.0 * settings.max_voltage / (20 * settings.internal_resistance)
+
     return default_voltage_noise_amplitude, default_current_noise_amplitude
 
 
@@ -157,16 +159,21 @@ def get_pin_type(pin: Pin, score: Optional[float], tolerance: Optional[float], i
     if is_report_for_test_board:
         if len(pin.measurements) < 2:
             return PinTypes.TEST_EMPTY
+
         if score is not None:
             if tolerance is not None:
                 return PinTypes.TEST_HIGH_SCORE if tolerance < score else PinTypes.TEST_LOW_SCORE
+
             return PinTypes.TEST_LOW_SCORE
+
         return PinTypes.TEST_LOW_SCORE
 
     # Report for reference board
     if len(pin.measurements) == 0:
         return PinTypes.REFERENCE_EMPTY
+
     if len(pin.measurements) == 1:
         if getattr(pin, "is_loss", None):
             return PinTypes.REFERENCE_LOSS
+
         return PinTypes.REFERENCE_NOT_EMPTY

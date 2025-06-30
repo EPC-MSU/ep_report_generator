@@ -86,15 +86,18 @@ def draw_fault_histogram(scores: List[float], tolerance: float, file_name: str) 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111)
     scores = np.array(scores)
+
     good_scores = [scores[index[0]] for index in np.argwhere(scores <= tolerance)]
     bins_number = 100
     if good_scores:
         ax.hist(good_scores, bins=bins_number, rwidth=0.85, color="#46CB18", alpha=0.7, range=([0, 100]),
                 label=_("Исправные\nточки"))
+
     bad_scores = [scores[index[0]] for index in np.argwhere(scores >= tolerance)]
     if bad_scores:
         ax.hist(bad_scores, bins=bins_number, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 100]),
                 label=_("Неисправные\nточки"))
+
     ax.axvline(x=tolerance, color="#232B2B", linewidth=2, label=_("Допуск"))
     ax.set_xlabel(_("Распределение неисправностей"))
     ax.set_xlim(xmin=0, xmax=100)
@@ -160,6 +163,7 @@ def draw_ivc_for_pin(pin_info: PinInfo, index: int, file_name: str, scaling_type
         ref_curve.set_curve(Curve(ref_voltages, ref_currents))
     else:
         ref_curve.clear_curve()
+
     if len(test_currents) and len(test_voltages):
         test_curve.set_curve(Curve(test_voltages, test_currents))
     else:

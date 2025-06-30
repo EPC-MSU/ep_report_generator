@@ -17,9 +17,9 @@ from epcore.elements import Board
 from epcore.measurementmanager import IVCComparator
 from report_generator import utils as ut
 from report_generator.definitions import ReportTypes, ScalingTypes
+from report_generator.plot import draw_board_with_pins, draw_fault_histogram, draw_ivc_for_pins, save_board
 from report_generator.translation import install_translation
 from report_generator.version import VERSION
-from report_generator.plot import draw_board_with_pins, draw_fault_histogram, draw_ivc_for_pins, save_board
 
 
 logger = logging.getLogger("report_generator")
@@ -134,11 +134,11 @@ class ReportGenerator(QObject):
         """
 
         super().__init__(parent=parent)
-        self._app_name: str = None
-        self._app_version: str = None
+        self._app_name: Optional[str] = None
+        self._app_version: Optional[str] = None
         self._bad_pins_info: List[ut.PinInfo] = []
-        self._board: Board = None
-        self._config: Dict[ConfigAttributes, Any] = None
+        self._board: Optional[Board] = None
+        self._config: Optional[Dict[ConfigAttributes, Any]] = None
         self._dir_name: str = ut.get_default_dir_path()
         self._dir_template: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                                _TEMPLATES_DIR_NAME)
@@ -146,7 +146,7 @@ class ReportGenerator(QObject):
         self._is_report_for_test_board: Optional[bool] = None
         self._noise_amplitudes: Optional[List[Optional[Tuple[float, float]]]] = None
         self._open_report_at_finish: bool = False
-        self._pin_diameter: int = None
+        self._pin_diameter: Optional[int] = None
         self._pin_width: int = _PIN_WIDTH
         self._pins_info: List[ut.PinInfo] = []
         self._reports_to_open: List[ReportTypes] = []
@@ -155,8 +155,8 @@ class ReportGenerator(QObject):
         self._required_pins: List[int] = []
         self._results_by_steps: Dict[ReportGenerationSteps, bool] = dict()
         self._scaling_type: ScalingTypes = ScalingTypes.AUTO
-        self._static_dir_name: str = None
-        self._test_duration: timedelta = None
+        self._static_dir_name: Optional[str] = None
+        self._test_duration: Optional[timedelta] = None
         self._tolerance: Optional[float] = None
         self._user_defined_scales: Optional[List[Tuple[float, float]]] = None
         self.stop: bool = False
@@ -396,7 +396,7 @@ class ReportGenerator(QObject):
 
         if not self._results_by_steps[ReportGenerationSteps.DRAW_BOARD_WITH_PINS]:
             self.step_done.emit()
-            return
+            return None
 
         self._check_stop_operation()
         self.step_started.emit("Generating a report with board map")
@@ -433,11 +433,13 @@ class ReportGenerator(QObject):
         else:
             board_image_width = self._board.image.width
             pin_img_size = self._pin_width
+
         pcb_name = None
         pcb_comment = None
         if self._board.pcb is not None:
             if self._board.pcb.pcb_name is not None:
                 pcb_name = self._board.pcb.pcb_name
+
             if self._board.pcb.comment is not None:
                 pcb_comment = self._board.pcb.comment
 
@@ -495,6 +497,7 @@ class ReportGenerator(QObject):
                         score = round(100 * comparator.compare_ivc(pin.measurements[0].ivc, pin.measurements[1].ivc), 1)
                     else:
                         score = None
+
                     pin_type = ut.get_pin_type(pin, score, self._tolerance, self._is_report_for_test_board)
                     info = ut.PinInfo(element.name, element_index, pin_index, pin.x, pin.y, pin.measurements, score,
                                       pin_type, total_pin_index, pin.comment, pin.multiplexer_output)
@@ -529,10 +532,12 @@ class ReportGenerator(QObject):
         self._scaling_type = self._config.get(ConfigAttributes.SCALING_TYPE, ScalingTypes.AUTO)
         self._test_duration = self._config.get(ConfigAttributes.TEST_DURATION, None)
         tolerance = self._config.get(ConfigAttributes.TOLERANCE, None)
+
         if tolerance is not None:
             # The tolerance is given in relative units (0 - minimum value, 1 - maximum). Convert this value to %.
             # The transition to percentages is carried out in the task #85658
             self._tolerance = 100 * tolerance
+
         self._user_defined_scales = self._config.get(ConfigAttributes.USER_DEFINED_SCALES, None)
         required_objects = self._config.get(ConfigAttributes.OBJECTS, {})
         if required_objects.get(ObjectsForReport.BOARD):
