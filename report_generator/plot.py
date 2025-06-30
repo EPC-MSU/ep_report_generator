@@ -86,7 +86,7 @@ def draw_fault_histogram(scores: List[float], tolerance: float, file_name: str) 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111)
     scores = np.array(scores)
-    good_scores = [scores[index[0]] for index in np.argwhere(scores < tolerance)]
+    good_scores = [scores[index[0]] for index in np.argwhere(scores <= tolerance)]
     bins_number = 100
     if good_scores:
         ax.hist(good_scores, bins=bins_number, rwidth=0.85, color="#46CB18", alpha=0.7, range=([0, 100]),
