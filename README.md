@@ -143,13 +143,13 @@
    - если Вы работаете в *Windows*:
 
      ```batch
-     venv\Scripts\python additional_tests\memoryleakstest.py REPORTS_NUMBER --plan EXAMPLE_BOARD
+     venv\Scripts\python additional_tests\memoryleaktest.py REPORTS_NUMBER --plan EXAMPLE_BOARD
      ```
 
    - если Вы работаете в *Linux*:
 
      ```bash
-     venv/bin/python additional_tests/memoryleakstest.py REPORTS_NUMBER --plan EXAMPLE_BOARD
+     venv/bin/python additional_tests/memoryleaktest.py REPORTS_NUMBER --board EXAMPLE_BOARD
      ```
 
    Здесь:

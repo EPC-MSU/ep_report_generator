@@ -47,14 +47,15 @@ def set_logger_for_analyzer(log_file: str) -> None:
     logger.propagate = False
 
 
-def run_test(reports_number: int) -> None:
+def run_test(board_name: str, reports_number: int) -> None:
     """
+    :param board_name: the name of the test board to generate reports for;
     :param reports_number: number of reports to be generated.
     """
 
     # Report for board from P10 file
     dir_for_report = os.path.join(os.getcwd(), "examples", "report_for_p10_board")
-    config = {ConfigAttributes.BOARD: load_board_from_ufiv(os.path.join("example_board", "elements.json")),
+    config = {ConfigAttributes.BOARD: load_board_from_ufiv(board_name),
               ConfigAttributes.DIRECTORY: dir_for_report,
               ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True},
               ConfigAttributes.PIN_SIZE: 200,
@@ -78,10 +79,11 @@ def run_test(reports_number: int) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("-b", "--board", type=str, help="The name of the test board to generate reports for")
     parser.add_argument("reports_number", type=int, help="Number of reports to be generated")
     parsed_args = parser.parse_args(sys.argv[1:])
 
     set_logging_level(logging.ERROR)
     set_logger_for_analyzer("memory_leak_log.txt")
     app = QApplication(sys.argv)
-    run_test(parsed_args.reports_number)
+    run_test(parsed_args.board, parsed_args.reports_number)
