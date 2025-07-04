@@ -1,5 +1,5 @@
 # ep_report_generator
-Библиотека для создания отчетов для плат типа **Board** из библиотеки **epcore.elements**.
+Библиотека для создания отчетов для плат типа **Board** из библиотеки [epcore](https://github.com/EPC-MSU/EPCore "epcore").
 
 ## Применение
 
