@@ -172,8 +172,7 @@ def get_pin_type(pin: Pin, score: Optional[float], tolerance: Optional[float], i
     if len(pin.measurements) == 0:
         return PinTypes.REFERENCE_EMPTY
 
-    if len(pin.measurements) == 1:
-        if getattr(pin, "is_loss", None):
-            return PinTypes.REFERENCE_LOSS
+    if getattr(pin, "is_loss", None):
+        return PinTypes.REFERENCE_LOSS
 
-        return PinTypes.REFERENCE_NOT_EMPTY
+    return PinTypes.REFERENCE_NOT_EMPTY

@@ -64,8 +64,8 @@ class ConfigAttributes(Enum):
     @classmethod
     def get_default_config(cls, board: Optional[Board]) -> Dict["ConfigAttributes", Any]:
         """
-        :param board:
-        :return:
+        :param board: the board object for which to get the default configuration dictionary.
+        :return: default configuration dictionary for report generation.
         """
 
         return {ConfigAttributes.APP_NAME: None,

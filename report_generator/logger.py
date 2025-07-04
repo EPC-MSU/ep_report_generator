@@ -28,5 +28,9 @@ def set_logger() -> None:
 
 
 def set_logging_level(level: int) -> None:
+    """
+    :param level: logging level.
+    """
+
     package_logger = logging.getLogger("report_generator")
     package_logger.setLevel(level)
