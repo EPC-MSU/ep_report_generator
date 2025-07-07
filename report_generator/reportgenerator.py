@@ -42,7 +42,7 @@ _PIN_WIDTH: int = 100
 
 class ConfigAttributes(Enum):
     """
-    Attributes in config directory.
+    Attributes in config dictionary.
     """
 
     APP_NAME = auto()
@@ -172,11 +172,10 @@ class ReportGenerator(QObject):
                 self._check_stop_operation()
                 for pin in element.pins:
                     self._check_stop_operation()
-                    if len(pin.measurements) > 0:
-                        for measurement in pin.measurements:
-                            if not measurement.is_reference:
-                                self._is_report_for_test_board = True
-                                return
+
+                    if pin.get_main_measurement():
+                        self._is_report_for_test_board = True
+                        return
 
     def _calculate_total_number_of_steps(self) -> None:
         """
@@ -333,8 +332,8 @@ class ReportGenerator(QObject):
 
         if len(self._pins_info) > 0:
             dir_name = os.path.join(self._static_dir_name, _IMG_DIR_NAME)
-            draw_ivc_for_pins(self._pins_info, dir_name, self.step_done, self._scaling_type, self._user_defined_scales,
-                              self._check_stop_operation)
+            draw_ivc_for_pins(self._pins_info, self._is_report_for_test_board, dir_name, self.step_done,
+                              self._scaling_type, self._user_defined_scales, self._check_stop_operation)
             result = True
             logger.info("The IV-curve images are saved in the '%s' directory", dir_name)
         else:
@@ -484,7 +483,10 @@ class ReportGenerator(QObject):
             for pin_index, pin in enumerate(element.pins):
                 if (self._required_board or element_index in self._required_elements or
                         total_pin_index in self._required_pins):
-                    if len(pin.measurements) > 1:
+                    reference_measurement = pin.get_reference_measurement()
+                    test_measurement = pin.get_main_measurement()
+
+                    if reference_measurement and test_measurement:
                         if isinstance(self._noise_amplitudes, (list, tuple)) and\
                                 len(self._noise_amplitudes) > accounted_pin_index and\
                                 len(self._noise_amplitudes[accounted_pin_index]) == 2:
@@ -494,13 +496,13 @@ class ReportGenerator(QObject):
                         comparator.set_min_ivc(voltage_noise, current_noise)
                         # Score is in relative units (0 - minimum value, 1 - maximum). Convert this value to %.
                         # The transition to percentages is carried out in the task # 85658
-                        score = round(100 * comparator.compare_ivc(pin.measurements[0].ivc, pin.measurements[1].ivc), 1)
+                        score = round(100 * comparator.compare_ivc(reference_measurement.ivc, test_measurement.ivc), 1)
                     else:
                         score = None
 
-                    pin_type = ut.get_pin_type(pin, score, self._tolerance, self._is_report_for_test_board)
-                    info = ut.PinInfo(element.name, element_index, pin_index, pin.x, pin.y, pin.measurements, score,
-                                      pin_type, total_pin_index, pin.comment, pin.multiplexer_output)
+                    pin_type = ut.get_pin_type(pin, reference_measurement, test_measurement, score, self._tolerance,
+                                               self._is_report_for_test_board)
+                    info = ut.PinInfo(element.name, element_index, pin_index, pin, score, pin_type, total_pin_index)
                     pins_info.append(info)
                     accounted_pin_index += 1
                 total_pin_index += 1
@@ -513,8 +515,7 @@ class ReportGenerator(QObject):
         """
 
         if not isinstance(config, dict):
-            config = ConfigAttributes.get_default_config(self._board) if not isinstance(self._config, dict) else \
-                self._config
+            config = ConfigAttributes.get_default_config(None)
 
         self._config = config
         self._app_name = self._config.get(ConfigAttributes.APP_NAME, None)

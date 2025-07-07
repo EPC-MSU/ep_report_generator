@@ -42,8 +42,8 @@ def draw_board_with_pins(image: Image, pins_info: List[PinInfo], file_name: str,
     for pin_info in pins_info:
         check_stop()
         pin_xy = pins_xy[pin_info.pin_type]
-        pin_xy[0].append(pin_info.x)
-        pin_xy[1].append(pin_info.y)
+        pin_xy[0].append(pin_info.pin.x)
+        pin_xy[1].append(pin_info.pin.y)
 
     check_stop()
     dpi = float(plt.rcParams["figure.dpi"])
@@ -93,7 +93,7 @@ def draw_fault_histogram(scores: List[float], tolerance: float, file_name: str) 
         ax.hist(good_scores, bins=bins_number, rwidth=0.85, color="#46CB18", alpha=0.7, range=([0, 100]),
                 label=_("Исправные\nточки"))
 
-    bad_scores = [scores[index[0]] for index in np.argwhere(scores >= tolerance)]
+    bad_scores = [scores[index[0]] for index in np.argwhere(scores > tolerance)]
     if bad_scores:
         ax.hist(bad_scores, bins=bins_number, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 100]),
                 label=_("Неисправные\nточки"))
@@ -115,12 +115,13 @@ def draw_fault_histogram(scores: List[float], tolerance: float, file_name: str) 
 
 
 @ut.write_time("DRAW IVC FOR PIN")
-def draw_ivc_for_pin(pin_info: PinInfo, index: int, file_name: str, scaling_type: ScalingTypes,
-                     user_defined_scales: list, viewer: Viewer, ref_curve, test_curve,
+def draw_ivc_for_pin(pin_info: PinInfo, index: int, is_report_for_test_board: bool, file_name: str,
+                     scaling_type: ScalingTypes, user_defined_scales: list, viewer: Viewer, ref_curve, test_curve,
                      check_stop: Callable[[], None] = lambda: None) -> None:
     """
     :param pin_info: information about pin for which to draw IV-curve;
     :param index: pin index;
+    :param is_report_for_test_board: if True, then the report is generated for the test board;
     :param file_name: name of the file in which to save the IV-curve image;
     :param scaling_type: type of scaling for a graph with IV-curve;
     :param user_defined_scales: list with user defined scales;
@@ -135,19 +136,23 @@ def draw_ivc_for_pin(pin_info: PinInfo, index: int, file_name: str, scaling_type
     ref_voltages = np.array([])
     test_currents = np.array([])
     test_voltages = np.array([])
-    for measurement in pin_info.measurements:
-        if measurement.is_reference:
-            ref_currents = measurement.ivc.currents
-            ref_voltages = measurement.ivc.voltages
-        else:
-            test_currents = measurement.ivc.currents
-            test_voltages = measurement.ivc.voltages
+
+    reference_measurement = pin_info.pin.get_reference_measurement()
+    if reference_measurement:
+        ref_currents = reference_measurement.ivc.currents
+        ref_voltages = reference_measurement.ivc.voltages
+
+    if is_report_for_test_board:
+        test_measurement = pin_info.pin.get_main_measurement()
+        if test_measurement:
+            test_currents = test_measurement.ivc.currents
+            test_voltages = test_measurement.ivc.voltages
 
     check_stop()
     if scaling_type == ScalingTypes.EYEPOINT_P10:
         scale_coefficient = 1.2
-        v_max = scale_coefficient * pin_info.measurements[0].settings.max_voltage
-        i_max = 1000 * v_max / pin_info.measurements[0].settings.internal_resistance
+        v_max = scale_coefficient * pin_info.pin.measurements[0].settings.max_voltage
+        i_max = 1000 * v_max / pin_info.pin.measurements[0].settings.internal_resistance
     elif (scaling_type == ScalingTypes.USER_DEFINED and isinstance(user_defined_scales, (list, tuple)) and
           index < len(user_defined_scales) and isinstance(user_defined_scales[index], (list, tuple)) and
           len(user_defined_scales[index]) == 2):
@@ -178,12 +183,13 @@ def draw_ivc_for_pin(pin_info: PinInfo, index: int, file_name: str, scaling_type
     viewer.plot.grab().save(file_name, format="PNG")
 
 
-def draw_ivc_for_pins(pins_info: List[PinInfo], dir_name: str, signal: pyqtSignal,
+def draw_ivc_for_pins(pins_info: List[PinInfo], is_report_for_test_board: bool, dir_name: str, signal: pyqtSignal,
                       scaling_type: ScalingTypes = ScalingTypes.AUTO, user_defined_scales: list = None,
                       check_stop: Callable[[], None] = lambda: None) -> None:
     """
     Function draws and saves the IV-curves for the pins.
     :param pins_info: list with information about pins for which to draw IV-curves;
+    :param is_report_for_test_board: if True, then the report is generated for the test board;
     :param dir_name: name of directory where images should be saved;
     :param signal: signal;
     :param scaling_type: type of scaling for a graph with IV-curve;
@@ -210,14 +216,14 @@ def draw_ivc_for_pins(pins_info: List[PinInfo], dir_name: str, signal: pyqtSigna
 
     for index, pin_info in enumerate(pins_info):
         check_stop()
-        if not pin_info.measurements:
+        if not pin_info.pin.measurements:
             signal.emit()
             logger.info("The pin '%s_%s' has no measurements", pin_info.element_index, pin_info.pin_index)
             continue
 
         file_name = os.path.join(dir_name, f"{pin_info.element_index}_{pin_info.pin_index}_iv.png")
-        draw_ivc_for_pin(pin_info, index, file_name, scaling_type, user_defined_scales, viewer, ref_curve, test_curve,
-                         check_stop)
+        draw_ivc_for_pin(pin_info, index, is_report_for_test_board, file_name, scaling_type, user_defined_scales,
+                         viewer, ref_curve, test_curve, check_stop)
         signal.emit()
         logger.info("IV-curve of the pin '%s_%s' is saved to '%s'", pin_info.element_index, pin_info.pin_index,
                     os.path.basename(file_name))

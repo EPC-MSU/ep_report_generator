@@ -30,32 +30,32 @@
             % endif
             <tr>
                 <td class="align_left">
-                    <a class="anchor" id="top" name="point_${pin.x}_${pin.y}"></a>
+                    <a class="anchor" id="top" name="point_${pin.pin.x}_${pin.pin.y}"></a>
                     <span>#${pin.total_pin_index + 1}</span><br>
                     <span>${_("Название компонента")}: ${pin.element_name}</span><br>
                     <span>${_("Индекс компонента")}: ${pin.element_index + 1}</span><br>
                     <span>${_("Индекс точки")}: ${pin.pin_index + 1}</span><br>
-                    <span>X = ${round(pin.x, 2)} ${_("пк")}</span><br>
-                    <span>Y = ${round(pin.y, 2)} ${_("пк")}</span><br>
+                    <span>X = ${round(pin.pin.x, 2)} ${_("пк")}</span><br>
+                    <span>Y = ${round(pin.pin.y, 2)} ${_("пк")}</span><br>
                 % if pin.score is not None:
                     <span>${_("Различие")} = ${round(pin.score, 1)}%</span><br>
                 % endif
-                % if pin.multiplexer_output:
+                % if pin.pin.multiplexer_output:
                     <button class="collapsible" onclick="handle_click(this)">${_("Выход мультиплексора")}</button>
                     <div class="hidden_options">
-                        <span>${_("Номер модуля")} = ${pin.multiplexer_output.module_number}</span><br>
-                        <span>${_("Номер канала")} = ${pin.multiplexer_output.channel_number}</span><br>
+                        <span>${_("Номер модуля")} = ${pin.pin.multiplexer_output.module_number}</span><br>
+                        <span>${_("Номер канала")} = ${pin.pin.multiplexer_output.channel_number}</span><br>
                     </div><br>
                 % endif
-                % if pin.measurements:
+                % if pin.pin.measurements:
                     <button class="collapsible" onclick="handle_click(this)">${_("Параметры измерения")}</button>
                     <div class="hidden_options">
-                        <span>${_("Частота")} = ${round(pin.measurements[0].settings.probe_signal_frequency, 2)} ${_("Гц")}</span><br>
-                        <span>${_("Напряжение")} = ${round(pin.measurements[0].settings.max_voltage, 2)} ${_("В")}</span><br>
-                        <span>${_("Внутреннее сопротивление")} = ${round(pin.measurements[0].settings.internal_resistance, 2)} ${_("Ом")}</span><br>
+                        <span>${_("Частота")} = ${round(pin.pin.measurements[0].settings.probe_signal_frequency, 2)} ${_("Гц")}</span><br>
+                        <span>${_("Напряжение")} = ${round(pin.pin.measurements[0].settings.max_voltage, 2)} ${_("В")}</span><br>
+                        <span>${_("Внутреннее сопротивление")} = ${round(pin.pin.measurements[0].settings.internal_resistance, 2)} ${_("Ом")}</span><br>
                     </div><br>
                     <%
-                        comments = [measurement.comment for measurement in pin.measurements if measurement.comment]
+                        comments = [measurement.comment for measurement in pin.pin.measurements if measurement.comment]
                         comment = "<br>".join(comments)
                     %>
                     % if comment:
@@ -65,27 +65,27 @@
                     </div><br>
                     % endif
                 % endif
-                % if pin.comment:
+                % if pin.pin.comment:
                     <button class="collapsible" onclick="handle_click(this)">${_("Комментарий к пину")}</button>
                     <div class="hidden_options">
-                        <span>${pin.comment}</span>
+                        <span>${pin.pin.comment}</span>
                     </div>
                 % endif
                 </td>
                 % if board_img_width is not None:
                 <td>
                     <a class="img_pin">
-                        <canvas data-pin-data="${pin.x},${pin.y},${pin.pin_type}"></canvas>
+                        <canvas data-pin-data="${pin.pin.x},${pin.pin.y},${pin.pin_type}"></canvas>
                         <span>
                             <img src="static/img/board_clear.jpeg" width="300px" style="position:fixed; top:50px; left:50px">
-                                <div class="pin" style="top:${50 + pin.y * 300 / board_img_width - 2}px; left:${50 + pin.x * 300 / board_img_width - 2}px;"></div>
+                                <div class="pin" style="top:${50 + pin.pin.y * 300 / board_img_width - 2}px; left:${50 + pin.pin.x * 300 / board_img_width - 2}px;"></div>
                             </img>
                         </span>
                     </a>
                 </td>
                 % endif
                 <td>
-                % if pin.measurements:
+                % if pin.pin.measurements:
                     <img src="static/img/${pin.element_index}_${pin.pin_index}_iv.png" height="${pin_img_size}" alt="${_('Сигнатуры в точке тестирования')}">
                 % else:
                     <span>${_("Сигнатур нет")}</span>
@@ -176,7 +176,7 @@
                     <p>
                         <map name="map">
                         % for pin in pins_info:
-                            <area shape="circle" coords="${pin.x},${pin.y},${pin_radius}" href="#point_${pin.x}_${pin.y}" alt="">
+                            <area shape="circle" coords="${pin.pin.x},${pin.pin.y},${pin_radius}" href="#point_${pin.pin.x}_${pin.pin.y}" alt="">
                         % endfor
                         </map>
                     </p>

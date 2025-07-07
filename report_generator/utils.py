@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from typing import Any, List, Optional, Tuple
 from mako.lookup import TemplateLookup
 from PIL.Image import Image
-from epcore.elements import Pin
+from epcore.elements import Measurement, Pin
 from report_generator.definitions import PIN_COLORS, PinInfo, PinTypes
 
 
@@ -143,11 +143,14 @@ def get_pin_diameter(image: Image) -> Optional[int]:
     return image.width // 38 if image else None
 
 
-def get_pin_type(pin: Pin, score: Optional[float], tolerance: Optional[float], is_report_for_test_board: bool
-                 ) -> PinTypes:
+def get_pin_type(pin: Optional[Pin], reference_measurement: Optional[Measurement],
+                 test_measurement: Optional[Measurement], score: Optional[float], tolerance: Optional[float],
+                 is_report_for_test_board: bool) -> PinTypes:
     """
     Function determines type of pin.
     :param pin: pin;
+    :param reference_measurement: reference measurement;
+    :param test_measurement: test measurement;
     :param score: difference of test measurement in pin;
     :param tolerance: tolerance;
     :param is_report_for_test_board: if True then report should be generated for test board, otherwise for reference
@@ -157,19 +160,16 @@ def get_pin_type(pin: Pin, score: Optional[float], tolerance: Optional[float], i
 
     # Report for test board
     if is_report_for_test_board:
-        if len(pin.measurements) < 2:
+        if not test_measurement:
             return PinTypes.TEST_EMPTY
 
         if score is not None:
-            if tolerance is not None:
-                return PinTypes.TEST_HIGH_SCORE if tolerance < score else PinTypes.TEST_LOW_SCORE
-
-            return PinTypes.TEST_LOW_SCORE
+            return PinTypes.TEST_HIGH_SCORE if tolerance < score else PinTypes.TEST_LOW_SCORE
 
         return PinTypes.TEST_LOW_SCORE
 
     # Report for reference board
-    if len(pin.measurements) == 0:
+    if not reference_measurement:
         return PinTypes.REFERENCE_EMPTY
 
     if getattr(pin, "is_loss", None):

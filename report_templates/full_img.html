@@ -19,13 +19,13 @@
     <p>
         <map name="map">
         % for pin in pins:
-            <area onmouseover="hide_or_show_img(this, true);" onmouseout="hide_or_show_img(this, false);" shape="circle" coords="${pin.x},${pin.y},6" href="#point${pin.x}${pin.y}" alt="">
+            <area onmouseover="hide_or_show_img(this, true);" onmouseout="hide_or_show_img(this, false);" shape="circle" coords="${pin.pin.x},${pin.pin.y},6" href="#point${pin.pin.x}${pin.pin.y}" alt="">
         % endfor
         </map>
     </p>
 % for pin in pins:
-    % if pin.measurements:
-    <figure id="img${pin.x},${pin.y},6" onmouseover="change_position(this);" style="display: none;">
+    % if pin.pin.measurements:
+    <figure id="img${pin.pin.x},${pin.pin.y},6" onmouseover="change_position(this);" style="display: none;">
         <p>
             <img src="static/img/${pin.element_index}_${pin.pin_index}_iv.png" alt="${_('Сигнатуры в точке тестирования')}" title="${_('Сигнатуры в точке тестирования')}">
         </p>

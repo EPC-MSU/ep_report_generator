@@ -3,8 +3,8 @@ from enum import auto, Enum
 from typing import Dict
 
 
-PinInfo = namedtuple("PinInfo", ["element_name", "element_index", "pin_index", "x", "y", "measurements", "score",
-                                 "pin_type", "total_pin_index", "comment", "multiplexer_output"])
+PinInfo = namedtuple("PinInfo", ["element_name", "element_index", "pin_index", "pin", "score", "pin_type",
+                                 "total_pin_index"])
 
 
 class PinTypes(Enum):
