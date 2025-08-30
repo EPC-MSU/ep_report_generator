@@ -120,11 +120,19 @@
 
 1. Добавьте перевод в файл **report_generator/locales/en/LC_MESSAGES/translation.po**.
 
-2. В Ubuntu 18 скомпилируйте бинарный файл с переводом. Для этого перейдите в папку **report_generator/locales/en/LC_MESSAGES** и выполните команду:
+2. Скомпилируйте бинарный файл с переводом:
 
-   ```bash
-   msgfmt ./translation.po -o ./translation.mo
-   ```
+   - если Вы работаете в *Windows*, скачайте релиз приложения [gettext-tools-windows](https://github.com/vslavik/gettext-tools-windows), в командной строке перейдите в папку с исполняемым файлом **msgfmt.exe** и выполните команду:
+
+     ```bash
+     msgfmt.exe путь\до\репозитория\ep_report_generator\report_generator\locales\en\LC_MESSAGES\translation.po -o путь\до\репозитория\ep_report_generator\report_generator\locales\en\LC_MESSAGES\translation.mo
+     ```
+
+   - если Вы работаете в *Linux*, перейдите в папку **report_generator/locales/en/LC_MESSAGES** и выполните команду:
+
+     ```bash
+     msgfmt ./translation.po -o ./translation.mo
+     ```
 
 3. Добавьте новый бинарный файл в репозиторий и запушьте изменения.
 
