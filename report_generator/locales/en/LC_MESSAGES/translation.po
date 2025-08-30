@@ -189,11 +189,11 @@ msgstr "Good points"
 msgid "Неисправные\nточки"
 msgstr "Faulty points"
 
-msgid "Распределение неисправностей"
-msgstr "Fault distribution"
+msgid "Различие ВАХ"
+msgstr "Difference in IVC"
 
-msgid "Количество неисправностей"
-msgstr "Faults number"
+msgid "Точки, шт"
+msgstr "Points, pcs"
 
 msgid "Напряжение, В"
 msgstr "Voltage, V"
