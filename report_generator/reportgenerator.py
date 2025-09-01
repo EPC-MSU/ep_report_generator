@@ -485,7 +485,7 @@ class ReportGenerator(QObject):
                     reference_measurement = pin.get_reference_measurement()
                     test_measurement = pin.get_main_measurement()
 
-                    if reference_measurement and test_measurement:
+                    if reference_measurement and test_measurement and self._is_report_for_test_board:
                         if isinstance(self._noise_amplitudes, (list, tuple)) and\
                                 len(self._noise_amplitudes) > accounted_pin_index and\
                                 len(self._noise_amplitudes[accounted_pin_index]) == 2:
