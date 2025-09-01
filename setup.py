@@ -1,11 +1,4 @@
-from distutils.util import convert_path
 from setuptools import find_packages, setup
-
-
-data = {}
-version_path = convert_path("report_generator/version.py")
-with open(version_path) as version_file:
-    exec(version_file.read(), data)
 
 
 setup(name="ep_report_generator",
