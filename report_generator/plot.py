@@ -99,7 +99,7 @@ def draw_fault_histogram(scores: List[float], tolerance: float, file_name: str) 
                 label=_("Неисправные\nточки"))
 
     ax.axvline(x=tolerance, color="#232B2B", linewidth=2, label=_("Допуск"))
-    ax.set_xlabel(_("Различие ВАХ"))
+    ax.set_xlabel(_("Различие ВАХ, %"))
     ax.set_xlim(xmin=0, xmax=100)
     ax.set_ylabel(_("Точки, шт"))
     ax.set_yscale("symlog")
