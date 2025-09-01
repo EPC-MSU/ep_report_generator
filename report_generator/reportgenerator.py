@@ -19,7 +19,6 @@ from report_generator import utils as ut
 from report_generator.definitions import ReportTypes, ScalingTypes
 from report_generator.plot import draw_board_with_pins, draw_fault_histogram, draw_ivc_for_pins, save_board
 from report_generator.translation import install_translation
-from report_generator.version import VERSION
 
 
 logger = logging.getLogger("report_generator")
@@ -624,14 +623,6 @@ class ReportGenerator(QObject):
 
         self._set_to_init_state()
         gc.collect()
-
-    @classmethod
-    def get_version(cls) -> str:
-        """
-        :return: version of package.
-        """
-
-        return VERSION
 
     def run(self, config: Dict[ConfigAttributes, Any]) -> None:
         """

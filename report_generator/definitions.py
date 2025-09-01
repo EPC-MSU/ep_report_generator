@@ -12,12 +12,11 @@ class PinTypes(Enum):
     Pin types.
     """
 
-    REFERENCE_EMPTY = auto()
+    EMPTY = auto()
     REFERENCE_LOSS = auto()
-    REFERENCE_NOT_EMPTY = auto()
-    TEST_EMPTY = auto()
-    TEST_HIGH_SCORE = auto()
-    TEST_LOW_SCORE = auto()
+    REFERENCE_ONLY = auto()
+    TEST_MATCHING = auto()
+    TEST_NONMATCHING = auto()
 
 
 class ReportTypes(Enum):
@@ -40,9 +39,8 @@ class ScalingTypes(Enum):
     USER_DEFINED = auto()
 
 
-PIN_COLORS: Dict[PinTypes, str] = {PinTypes.REFERENCE_EMPTY: "#f0f",
-                                   PinTypes.REFERENCE_LOSS: "#ff9900",
-                                   PinTypes.REFERENCE_NOT_EMPTY: "#0f0",
-                                   PinTypes.TEST_EMPTY: "#f0f",
-                                   PinTypes.TEST_HIGH_SCORE: "#f00",
-                                   PinTypes.TEST_LOW_SCORE: "#0f0"}
+PIN_COLORS: Dict[PinTypes, str] = {PinTypes.EMPTY: "#FF00FF",
+                                   PinTypes.REFERENCE_LOSS: "#FFA500",
+                                   PinTypes.REFERENCE_ONLY: "#0000FF",
+                                   PinTypes.TEST_MATCHING: "#00FF00",
+                                   PinTypes.TEST_NONMATCHING: "#FF0000"}

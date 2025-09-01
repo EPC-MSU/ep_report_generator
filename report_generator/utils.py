@@ -160,19 +160,22 @@ def get_pin_type(pin: Optional[Pin], reference_measurement: Optional[Measurement
 
     # Report for test board
     if is_report_for_test_board:
+        if not test_measurement and not reference_measurement:
+            return PinTypes.EMPTY
+
         if not test_measurement:
-            return PinTypes.TEST_EMPTY
+            return PinTypes.REFERENCE_ONLY
 
         if score is not None:
-            return PinTypes.TEST_HIGH_SCORE if tolerance < score else PinTypes.TEST_LOW_SCORE
+            return PinTypes.TEST_NONMATCHING if tolerance < score else PinTypes.TEST_MATCHING
 
-        return PinTypes.TEST_LOW_SCORE
+        return PinTypes.TEST_MATCHING
 
     # Report for reference board
     if not reference_measurement:
-        return PinTypes.REFERENCE_EMPTY
+        return PinTypes.EMPTY
 
     if getattr(pin, "is_loss", None):
         return PinTypes.REFERENCE_LOSS
 
-    return PinTypes.REFERENCE_NOT_EMPTY
+    return PinTypes.REFERENCE_ONLY

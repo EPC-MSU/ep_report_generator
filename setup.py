@@ -9,7 +9,7 @@ with open(version_path) as version_file:
 
 
 setup(name="ep_report_generator",
-      version=data["VERSION"],
+      version="0.1.17",
       description="Library for generating reports for board objects from epcore.elements library",
       url="https://github.com/EPC-MSU/ep_report_generator",
       author="EPC MSU",

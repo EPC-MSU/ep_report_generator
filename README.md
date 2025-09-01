@@ -112,7 +112,7 @@
 
 ## Выпуск релиза
 
-1. Задайте версию X.X.X выпускаемого релиза в файле **report_generator/version.py**.
+1. Задайте версию X.X.X выпускаемого релиза в поле **version** в файле **setup.py**.
 2. Запушьте соответствующий коммит.
 3. Повесьте тег vX.X.X на коммит.
 
@@ -124,7 +124,7 @@
 
    - если Вы работаете в *Windows*, скачайте релиз приложения [gettext-tools-windows](https://github.com/vslavik/gettext-tools-windows), в командной строке перейдите в папку с исполняемым файлом **msgfmt.exe** и выполните команду:
 
-     ```bash
+     ```batch
      msgfmt.exe путь\до\репозитория\ep_report_generator\report_generator\locales\en\LC_MESSAGES\translation.po -o путь\до\репозитория\ep_report_generator\report_generator\locales\en\LC_MESSAGES\translation.mo
      ```
 

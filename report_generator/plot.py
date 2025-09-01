@@ -33,12 +33,11 @@ def draw_board_with_pins(image: Image, pins_info: List[PinInfo], file_name: str,
     :param check_stop: function that checks whether the operation is stopped.
     """
 
-    pins_xy = {PinTypes.REFERENCE_EMPTY: [[], []],
+    pins_xy = {PinTypes.EMPTY: [[], []],
                PinTypes.REFERENCE_LOSS: [[], []],
-               PinTypes.REFERENCE_NOT_EMPTY: [[], []],
-               PinTypes.TEST_EMPTY: [[], []],
-               PinTypes.TEST_HIGH_SCORE: [[], []],
-               PinTypes.TEST_LOW_SCORE: [[], []]}
+               PinTypes.REFERENCE_ONLY: [[], []],
+               PinTypes.TEST_NONMATCHING: [[], []],
+               PinTypes.TEST_MATCHING: [[], []]}
     for pin_info in pins_info:
         check_stop()
         pin_xy = pins_xy[pin_info.pin_type]

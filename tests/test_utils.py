@@ -51,7 +51,7 @@ class TestUtilsFunctions(unittest.TestCase):
         reference_measurement = pin.get_reference_measurement()
         test_measurement = pin.get_main_measurement()
         self.assertEqual(ut.get_pin_type(pin, reference_measurement, test_measurement, None, None, False),
-                         ut.PinTypes.REFERENCE_EMPTY)
+                         ut.PinTypes.EMPTY)
 
         pin = Pin(x=0, y=0, measurements=[Measurement(settings=MeasurementSettings(sampling_rate=1,
                                                                                    internal_resistance=1000.0,
@@ -72,7 +72,7 @@ class TestUtilsFunctions(unittest.TestCase):
         reference_measurement = pin.get_reference_measurement()
         test_measurement = pin.get_main_measurement()
         self.assertEqual(ut.get_pin_type(pin, reference_measurement, test_measurement, None, None, False),
-                         ut.PinTypes.REFERENCE_NOT_EMPTY)
+                         ut.PinTypes.REFERENCE_ONLY)
 
         pin = Pin(x=0, y=0, measurements=[Measurement(settings=MeasurementSettings(sampling_rate=1,
                                                                                    internal_resistance=1000.0,
@@ -82,7 +82,7 @@ class TestUtilsFunctions(unittest.TestCase):
         reference_measurement = pin.get_reference_measurement()
         test_measurement = pin.get_main_measurement()
         self.assertEqual(ut.get_pin_type(pin, reference_measurement, test_measurement, None, None, True),
-                         ut.PinTypes.TEST_EMPTY)
+                         ut.PinTypes.REFERENCE_ONLY)
 
         pin = Pin(x=0, y=0, measurements=[Measurement(settings=MeasurementSettings(sampling_rate=1,
                                                                                    internal_resistance=1000.0,
@@ -97,6 +97,6 @@ class TestUtilsFunctions(unittest.TestCase):
         reference_measurement = pin.get_reference_measurement()
         test_measurement = pin.get_main_measurement()
         self.assertEqual(ut.get_pin_type(pin, reference_measurement, test_measurement, 0.2, 0.6, True),
-                         ut.PinTypes.TEST_LOW_SCORE)
+                         ut.PinTypes.TEST_MATCHING)
         self.assertEqual(ut.get_pin_type(pin, reference_measurement, test_measurement, 0.2, 0.1, True),
-                         ut.PinTypes.TEST_HIGH_SCORE)
+                         ut.PinTypes.TEST_NONMATCHING)
