@@ -31,7 +31,12 @@
             <tr>
                 <td class="align_left">
                     <a class="anchor" id="top" name="point_${pin.pin.x}_${pin.pin.y}"></a>
-                    <span>#${pin.total_pin_index + 1}</span><br>
+                    % if pin.pin.comment:
+                    <span>#${pin.total_pin_index + 1} - ${pin.pin.comment}</span>
+                    % else:
+                    <span>#${pin.total_pin_index + 1}</span>
+                    % endif
+                    <br>
                     <span>${_("Название компонента")}: ${pin.element_name}</span><br>
                     <span>${_("Индекс компонента")}: ${pin.element_index + 1}</span><br>
                     <span>${_("Индекс точки")}: ${pin.pin_index + 1}</span><br>
@@ -64,12 +69,6 @@
                         <span>${comment}</span>
                     </div><br>
                     % endif
-                % endif
-                % if pin.pin.comment:
-                    <button class="collapsible" onclick="handle_click(this)">${_("Комментарий к пину")}</button>
-                    <div class="hidden_options">
-                        <span>${pin.pin.comment}</span>
-                    </div>
                 % endif
                 </td>
                 % if board_img_width is not None:
