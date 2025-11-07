@@ -54,34 +54,12 @@ class ConfigAttributes(Enum):
     OBJECTS = auto()
     OPEN_REPORT_AT_FINISH = auto()
     PIN_SIZE = auto()
+    REPORT_DIR_NAME = auto()
     REPORTS_TO_OPEN = auto()
     SCALING_TYPE = auto()
     TEST_DURATION = auto()
     TOLERANCE = auto()
     USER_DEFINED_SCALES = auto()
-
-    @classmethod
-    def get_default_config(cls, board: Optional[Board]) -> Dict["ConfigAttributes", Any]:
-        """
-        :param board: the board object for which to get the default configuration dictionary.
-        :return: default configuration dictionary for report generation.
-        """
-
-        return {ConfigAttributes.APP_NAME: None,
-                ConfigAttributes.APP_VERSION: None,
-                ConfigAttributes.BOARD: board,
-                ConfigAttributes.DIRECTORY: ut.get_default_dir_path(),
-                ConfigAttributes.ENGLISH: False,
-                ConfigAttributes.IS_REPORT_FOR_TEST_BOARD: None,
-                ConfigAttributes.NOISE_AMPLITUDES: None,
-                ConfigAttributes.OBJECTS: {},
-                ConfigAttributes.OPEN_REPORT_AT_FINISH: False,
-                ConfigAttributes.PIN_SIZE: _PIN_WIDTH,
-                ConfigAttributes.REPORTS_TO_OPEN: [ReportTypes.SHORT_REPORT],
-                ConfigAttributes.SCALING_TYPE: ScalingTypes.AUTO,
-                ConfigAttributes.TEST_DURATION: None,
-                ConfigAttributes.TOLERANCE: None,
-                ConfigAttributes.USER_DEFINED_SCALES: None}
 
 
 class ObjectsForReport(Enum):
@@ -513,15 +491,13 @@ class ReportGenerator(QObject):
         :param config: dictionary with full information about required report.
         """
 
-        if not isinstance(config, dict):
-            config = ConfigAttributes.get_default_config(None)
-
         self._config = config
         self._app_name = self._config.get(ConfigAttributes.APP_NAME, None)
         self._app_version = self._config.get(ConfigAttributes.APP_VERSION, None)
         self._board = self._config.get(ConfigAttributes.BOARD, None)
         parent_directory = self._config.get(ConfigAttributes.DIRECTORY, ut.get_default_dir_path())
-        self._dir_name = ut.create_report_directory_name(parent_directory, _DEFAULT_REPORT_DIR_NAME)
+        report_dir_name = self._config.get(ConfigAttributes.REPORT_DIR_NAME, _DEFAULT_REPORT_DIR_NAME)
+        self._dir_name = ut.create_report_directory_name(parent_directory, report_dir_name)
         self._english = self._config.get(ConfigAttributes.ENGLISH, False)
         self._is_report_for_test_board = self._config.get(ConfigAttributes.IS_REPORT_FOR_TEST_BOARD, None)
         self._noise_amplitudes = self._config.get(ConfigAttributes.NOISE_AMPLITUDES, None)

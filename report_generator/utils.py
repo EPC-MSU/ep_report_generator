@@ -5,6 +5,7 @@ File with  useful functions.
 import json
 import logging
 import os
+import re
 import time
 from datetime import datetime, timedelta
 from typing import Any, List, Optional, Tuple
@@ -56,17 +57,39 @@ def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
     :return: path to report directory.
     """
 
-    datetime_now = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+    datetime_now = datetime.now().strftime("%d.%m.%y %H.%M")
     report_dir_name_with_time = f"{dir_base} {datetime_now}"
-    report_dir_name = report_dir_name_with_time
-    index = 0
-    while True:
-        report_dir_path = os.path.join(parent_directory, report_dir_name)
-        if os.path.exists(report_dir_path):
-            index += 1
-            report_dir_name = f"{report_dir_name_with_time} {index}"
-        else:
-            return report_dir_path
+
+    number = determine_number_of_directory(parent_directory, report_dir_name_with_time)
+    if number == 1:
+        report_dir_name = report_dir_name_with_time
+    else:
+        report_dir_name = f"{report_dir_name_with_time}_{number}"
+
+    return os.path.join(parent_directory, report_dir_name)
+
+
+def determine_number_of_directory(parent_directory: str, dir_base_name: str) -> int:
+    """
+    :param parent_directory: path to the parent directory;
+    :param dir_base_name: base directory name.
+    :return: number for a new directory that can be created in the parent directory. The new directory will be named
+    'dir_base_name' if there are no directories with that base name, or 'dir_base_name_number' otherwise.
+    """
+
+    numbers = [0]
+    if os.path.exists(parent_directory):
+        for obj_name in os.listdir(parent_directory):
+            path = os.path.join(parent_directory, obj_name)
+            if os.path.isdir(path) and obj_name.startswith(dir_base_name):
+                last_part = obj_name[len(dir_base_name):]
+                result = re.match(r"^_(?P<number>\d+)$", last_part)
+                if not last_part:
+                    numbers.append(1)
+                elif result:
+                    numbers.append(int(result.group("number")))
+
+    return max(numbers) + 1
 
 
 @write_time("GENERATE REPORT")
