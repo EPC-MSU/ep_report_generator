@@ -38,6 +38,7 @@
              ConfigAttributes.TOLERANCE: допуск,
              ConfigAttributes.PIN_SIZE: высота изображения пина в пикселях для отчета,
              ConfigAttributes.OPEN_REPORT_AT_FINISH: если True, то по завершении создания отчета отчет будет открыт,
+             ConfigAttributes.REPORT_DIR_NAME: базовое название папки-отчета, конечное название будет в формате "базовое_название DD.MM.YY HH.MM",
              ConfigAttributes.REPORTS_TO_OPEN: список отчетов, которые нужно открыть в браузере по завершении создания отчетов,
              ConfigAttributes.APP_NAME: название приложения (например, EyePoint P10), которое использует генератор отчетов,
              ConfigAttributes.APP_VERSION: версия приложения, которое использует генератор отчетов,
