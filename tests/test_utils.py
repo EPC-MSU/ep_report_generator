@@ -11,7 +11,7 @@ class TestUtilsFunctions(unittest.TestCase):
     def test_create_report_directory_name(self) -> None:
         dir_name = os.path.dirname(os.path.abspath(__file__))
         base_name = "BASE_NAME"
-        report_dir_name = ut.create_report_directory_name(dir_name, base_name)
+        report_dir_name = ut.create_report_directory_path(dir_name, base_name)
         self.assertFalse(os.path.exists(os.path.join(dir_name, report_dir_name)))
         self.assertTrue(report_dir_name.startswith(os.path.join(dir_name, base_name)))
 

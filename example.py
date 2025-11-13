@@ -18,19 +18,19 @@ if __name__ == "__main__":
     dir_name = os.path.dirname(os.path.abspath(__file__))
 
     # Report for manual board
-    dir_for_report = os.path.join(dir_name, "examples", "report_for_manual_board")
+    dir_for_report = os.path.join(dir_name, "examples")
     config = {ConfigAttributes.BOARD: create_manual_board(),
               ConfigAttributes.DIRECTORY: dir_for_report,
               ConfigAttributes.OBJECTS: {ObjectsForReport.ELEMENT: [0, 2],
                                          ObjectsForReport.PIN: []},
               ConfigAttributes.TOLERANCE: 0.15,
               ConfigAttributes.OPEN_REPORT_AT_FINISH: True,
+              ConfigAttributes.PROJECT_NAME: "manual_board",
               ConfigAttributes.REPORTS_TO_OPEN: [ReportTypes.FULL_REPORT, ReportTypes.SHORT_REPORT]}
     report_generator = ReportGenerator()
     report_generator.run(config)
 
     # Report for manual board with user defined scales
-    dir_for_report = os.path.join(dir_name, "examples", "report_for_manual_board_with_user_defined_scales")
     board = create_manual_board()
     # Define scales for each pin
     required_pins = [3, 4, 5]
@@ -49,14 +49,15 @@ if __name__ == "__main__":
               ConfigAttributes.DIRECTORY: dir_for_report,
               ConfigAttributes.OBJECTS: {ObjectsForReport.ELEMENT: [],
                                          ObjectsForReport.PIN: required_pins},
+              ConfigAttributes.PROJECT_NAME: "manual board with user defined scales",
               ConfigAttributes.SCALING_TYPE: ScalingTypes.USER_DEFINED,
               ConfigAttributes.TOLERANCE: 0.15,
               ConfigAttributes.USER_DEFINED_SCALES: user_defined_scales}
     report_generator.run(config)
 
     # Report for empty board
-    dir_for_report = os.path.join(dir_name, "examples", "report_for_empty_board")
     config = {ConfigAttributes.BOARD: Board(),
               ConfigAttributes.DIRECTORY: dir_for_report,
-              ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True}}
+              ConfigAttributes.OBJECTS: {ObjectsForReport.BOARD: True},
+              ConfigAttributes.PROJECT_NAME: "empty board"}
     report_generator.run(config)

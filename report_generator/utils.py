@@ -49,7 +49,20 @@ def convert_dict_to_json(data: dict):
     return json.dumps({str(key): value for key, value in data.items()})
 
 
-def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
+def create_report_directory_base_name(project_name: Optional[str]) -> str:
+    """
+    :param project_name: the name of the project for which the report is generated.
+    :return: folder name for project report.
+    """
+
+    if not project_name:
+        return "report"
+
+    project_name = project_name.replace(" ", "_")
+    return f"{project_name}_report"
+
+
+def create_report_directory_path(parent_directory: str, dir_base: str) -> str:
     """
     Function creates name for directory where report will be saved.
     :param parent_directory: name of parent directory where directory with report will be placed;
@@ -57,8 +70,8 @@ def create_report_directory_name(parent_directory: str, dir_base: str) -> str:
     :return: path to report directory.
     """
 
-    datetime_now = datetime.now().strftime("%d.%m.%y %H.%M")
-    report_dir_name_with_time = f"{dir_base} {datetime_now}"
+    datetime_now = datetime.now().strftime("%y-%m-%d_%H-%M")
+    report_dir_name_with_time = f"{dir_base}_{datetime_now}"
 
     number = determine_number_of_directory(parent_directory, report_dir_name_with_time)
     if number == 1:
