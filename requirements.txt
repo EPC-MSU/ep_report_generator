@@ -1,8 +1,8 @@
 Mako==1.1.5
-matplotlib<=3.3.0
-numpy==1.18.1
-Pillow==8.0.1
-PyQt5>=5.8.2, <=5.15.2
+matplotlib
+numpy
+Pillow
+PyQt5
 PyQt5-stubs
-git+https://github.com/EPC-MSU/epcore@v0.2.0#egg=epcore
-git+https://github.com/EPC-MSU/ivviewer@v1.0.4#egg=ivviewer
+git+https://github.com/EPC-MSU/epcore@t-126867#egg=epcore
+git+https://github.com/EPC-MSU/ivviewer@t-126867#egg=ivviewer

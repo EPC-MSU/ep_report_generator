@@ -49,7 +49,7 @@ def draw_board_with_pins(image: Image, pins_info: List[PinInfo], file_name: str,
     height = image.height
     width = image.width
     fig = plt.figure(figsize=(width / dpi, height / dpi))
-    ax = fig.add_axes([0, 0, 1, 1])
+    ax = fig.add_axes((0, 0, 1, 1))
     ax.axis("off")
     ax.imshow(image, interpolation="nearest")
 
@@ -89,12 +89,12 @@ def draw_fault_histogram(scores: List[float], tolerance: float, file_name: str) 
     good_scores = [scores[index[0]] for index in np.argwhere(scores <= tolerance)]
     bins_number = 100
     if good_scores:
-        ax.hist(good_scores, bins=bins_number, rwidth=0.85, color="#46CB18", alpha=0.7, range=([0, 100]),
+        ax.hist(good_scores, bins=bins_number, rwidth=0.85, color="#46CB18", alpha=0.7, range=(0, 100),
                 label=_("Исправные\nточки"))
 
     bad_scores = [scores[index[0]] for index in np.argwhere(scores > tolerance)]
     if bad_scores:
-        ax.hist(bad_scores, bins=bins_number, rwidth=0.85, color="#E03C31", alpha=0.7, range=([0, 100]),
+        ax.hist(bad_scores, bins=bins_number, rwidth=0.85, color="#E03C31", alpha=0.7, range=(0, 100),
                 label=_("Неисправные\nточки"))
 
     ax.axvline(x=tolerance, color="#232B2B", linewidth=2, label=_("Допуск"))
