@@ -12,7 +12,7 @@ import webbrowser
 from datetime import datetime, timedelta
 from enum import auto, Enum
 from typing import Any, Dict, List, Optional, Tuple
-from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt6.QtCore import pyqtSignal, QObject
 from epcore.elements import Board
 from epcore.measurementmanager import IVCComparator
 from report_generator import utils as ut

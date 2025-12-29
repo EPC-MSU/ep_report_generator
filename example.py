@@ -4,7 +4,7 @@ File with example how to work with report generator.
 
 import os
 import sys
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 from epcore.elements import Board
 from report_generator import ConfigAttributes, ObjectsForReport, ReportGenerator, ReportTypes, ScalingTypes
 from manual_board import create_manual_board

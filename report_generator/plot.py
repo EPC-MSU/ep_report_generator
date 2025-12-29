@@ -10,8 +10,8 @@ if True:
     import numpy as np
     from matplotlib.ticker import MaxNLocator, ScalarFormatter
     from PIL.Image import Image
-    from PyQt5.QtCore import pyqtSignal
-    from PyQt5.QtGui import QBrush, QColor, QFont, QPen
+    from PyQt6.QtCore import pyqtSignal
+    from PyQt6.QtGui import QBrush, QColor, QFont, QPen
     from ivviewer import Curve, Viewer
     from report_generator import utils as ut
     from report_generator.definitions import PIN_COLORS, PinInfo, PinTypes, ScalingTypes

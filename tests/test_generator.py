@@ -3,7 +3,7 @@ import os
 import sys
 import unittest
 from bs4 import BeautifulSoup
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 from epcore.elements import Board
 from report_generator import ConfigAttributes, ObjectsForReport, ReportGenerator
 from tests.utils import create_simple_board, read_file
